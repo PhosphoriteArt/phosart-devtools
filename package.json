@@ -45,5 +45,9 @@
 		"vite": "^7.2.6",
 		"vitest": "^4.0.15",
 		"vitest-browser-svelte": "^2.0.1"
+	},
+	"dependencies": {
+		"phosart-bsky": "github:phosphoriteart/phosart-bsky#main",
+		"phosart-common": "github:phosphoriteart/phosart-common#main"
 	}
 }
