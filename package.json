@@ -5,9 +5,11 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "vite build && node ./postbuild.mjs",
 		"preview": "vite preview",
+		"compiled": "PORT=3000 HOST=127.0.0.1 node build",
 		"prepare": "(svelte-kit sync || echo '') && husky",
+		"prepack": "vite build && node ./postbuild.mjs",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
@@ -49,5 +51,10 @@
 	"dependencies": {
 		"phosart-bsky": "github:phosphoriteart/phosart-bsky#main",
 		"phosart-common": "github:phosphoriteart/phosart-common#main"
-	}
+	},
+	"files": [
+		"build"
+	],
+	"main": "build/index.js",
+	"bin": "build/index.js"
 }
