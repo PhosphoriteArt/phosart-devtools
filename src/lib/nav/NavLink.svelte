@@ -1,0 +1,21 @@
+<script lang="ts">
+	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
+	import type { RouteId } from '$app/types';
+	import type { Snippet } from 'svelte';
+
+	let { href, children }: { href: RouteId; children?: Snippet } = $props();
+	let path = $derived(page.route.id);
+</script>
+
+<a
+	href={resolve(href)}
+	class="mx-4 rounded-xl px-8 py-2"
+	class:bg-gray-300={path == href}
+	class:bg-gray-200={path != href}
+	class:hover:bg-gray-400={path != href}
+	class:active:bg-gray-500={path != href}
+	class:cursor-default={path == href}
+>
+	{@render children?.()}
+</a>

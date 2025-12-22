@@ -31,7 +31,9 @@ export default defineConfig(
 
 		languageOptions: {
 			parserOptions: {
-				projectService: true,
+				projectService: {
+					allowDefaultProject: ['*.js', 'playwright.config.ts', 'e2e/*.ts']
+				},
 				extraFileExtensions: ['.svelte'],
 				parser: ts.parser,
 				svelteConfig

@@ -49,6 +49,7 @@
 		"vitest-browser-svelte": "^2.0.1"
 	},
 	"dependencies": {
+		"@fortawesome/fontawesome-free": "^7.1.0",
 		"phosart-bsky": "github:phosphoriteart/phosart-bsky#main",
 		"phosart-common": "github:phosphoriteart/phosart-common#main"
 	},

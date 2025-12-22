@@ -1,3 +1,6 @@
 onlyBuiltDependencies:
   - esbuild
   - sharp
+
+overrides:
+  phosart-common: link:../../../../Library/pnpm/global/5/node_modules/phosart-common
