@@ -2,3 +2,4 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - phosart-common
+  - phosart-bsky
