@@ -11,15 +11,24 @@ importers:
       '@fortawesome/fontawesome-free':
         specifier: ^7.1.0
         version: 7.1.0
+      chrono-node:
+        specifier: ^2.9.0
+        version: 2.9.0
       fuzzysort:
         specifier: ^3.1.0
         version: 3.1.0
+      luxon:
+        specifier: ^3.7.2
+        version: 3.7.2
       phosart-bsky:
         specifier: github:phosphoriteart/phosart-bsky#main
         version: https://codeload.github.com/phosphoriteart/phosart-bsky/tar.gz/674fe044ef53136a01d9ed3e4c342f7081caef1d(svelte@5.46.0)
       phosart-common:
         specifier: github:phosphoriteart/phosart-common#main
-        version: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/0a6d5005e5d3b2c621325d448487e804773c6ce3(svelte@5.46.0)
+        version: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/3d91e9700907bc04cd9f318f5e07a3d022032017(svelte@5.46.0)
+      yaml:
+        specifier: ^2.8.2
+        version: 2.8.2
     devDependencies:
       '@eslint/compat':
         specifier: ^1.4.0
@@ -45,6 +54,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.1.17
         version: 4.1.18(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2))
+      '@types/luxon':
+        specifier: ^3.7.1
+        version: 3.7.1
       '@types/node':
         specifier: ^22
         version: 22.19.3
@@ -833,6 +845,9 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/luxon@3.7.1':
+    resolution: {integrity: sha512-H3iskjFIAn5SlJU7OuxUmTEpebK6TKB8rxZShDslBMZJ5u9S//KM1sbdAisiSrqwLQncVjnpi2OK2J51h+4lsg==}
+
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
 
@@ -1050,6 +1065,10 @@ packages:
   chokidar@4.0.3:
     resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
     engines: {node: '>= 14.16.0'}
+
+  chrono-node@2.9.0:
+    resolution: {integrity: sha512-glI4YY2Jy6JII5l3d5FN6rcrIbKSQqKPhWsIRYPK2IK8Mm4Q1ZZFdYIaDqglUNf7gNwG+kWIzTn0omzzE0VkvQ==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   cli-cursor@5.0.0:
     resolution: {integrity: sha512-aCj4O5wKyszjMmDT4tZj93kxyydN/K5zPWSCe6/0AV/AA1pqe5ZBIw0a2ZfPQV7lL5/yb5HsUreJ6UFAF1tEQw==}
@@ -1530,6 +1549,10 @@ packages:
     resolution: {integrity: sha512-B5Y16Jr9LB9dHVkh6ZevG+vAbOsNOYCX+sXvFWFu7B3Iz5mijW3zdbMyhsh8ANd2mSWBYdJgnqi+mL7/LrOPYg==}
     engines: {node: 20 || >=22}
 
+  luxon@3.7.2:
+    resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
+    engines: {node: '>=12'}
+
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
@@ -1786,8 +1809,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/0a6d5005e5d3b2c621325d448487e804773c6ce3:
-    resolution: {tarball: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/0a6d5005e5d3b2c621325d448487e804773c6ce3}
+  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/3d91e9700907bc04cd9f318f5e07a3d022032017:
+    resolution: {tarball: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/3d91e9700907bc04cd9f318f5e07a3d022032017}
     version: 0.0.1
     peerDependencies:
       svelte: ^5.0.0
@@ -2928,6 +2951,8 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/luxon@3.7.1': {}
+
   '@types/mdast@4.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -3184,6 +3209,8 @@ snapshots:
   chokidar@4.0.3:
     dependencies:
       readdirp: 4.1.2
+
+  chrono-node@2.9.0: {}
 
   cli-cursor@5.0.0:
     dependencies:
@@ -3646,6 +3673,8 @@ snapshots:
 
   lru-cache@11.2.4: {}
 
+  luxon@3.7.2: {}
+
   magic-string@0.30.21:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -4059,7 +4088,7 @@ snapshots:
       - snappy
       - socks
 
-  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/0a6d5005e5d3b2c621325d448487e804773c6ce3(svelte@5.46.0):
+  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/3d91e9700907bc04cd9f318f5e07a3d022032017(svelte@5.46.0):
     dependencies:
       '@fortawesome/fontawesome-free': 7.1.0
       glob: 13.0.0

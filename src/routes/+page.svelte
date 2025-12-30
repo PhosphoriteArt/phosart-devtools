@@ -11,7 +11,7 @@
 	{#snippet file(fileName, _file, path)}
 		<TreeButton
 			icon="file"
-			onclick={() => void go(resolve(`/gallery/${btoa(path.join('/') + '/' + fileName)}`))}
+			onclick={() => void go(resolve(`/gallery/${path.join('/') + '/' + fileName}`))}
 			>{fileName}</TreeButton
 		>
 	{/snippet}

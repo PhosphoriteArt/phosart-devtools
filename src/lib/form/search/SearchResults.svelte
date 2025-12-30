@@ -1,19 +1,4 @@
 <script lang="ts" module>
-	export function makeObjectToString<T>(provided?: (t: T) => string): (t: T) => string {
-		return (
-			provided ??
-			((t: T) => {
-				if (t && typeof t === 'object' && 'toString' in t && typeof t.toString === 'function') {
-					const s = t.toString();
-					if (typeof s === 'string') {
-						return s;
-					}
-				}
-				throw new Error('t had no toString');
-			})
-		);
-	}
-
 	export interface SearchResultsImperativeHandle {
 		increment(): void;
 		decrement(): void;
@@ -21,6 +6,12 @@
 		select(): void;
 		getResults(): ReadonlyArray<unknown>;
 		getSelected(): number;
+	}
+
+	export function arrAsObject(arr: string[]): Record<string, string>;
+	export function arrAsObject<T>(arr: T[], asString: (t: T) => string): Record<string, T>;
+	export function arrAsObject<T>(arr: T[], asString?: (t: T) => string): Record<string, T> {
+		return arr.reduce((acc, cur) => ({ ...acc, [asString?.(cur) ?? (cur as string)]: cur }), {});
 	}
 
 	export function control(
@@ -66,23 +57,30 @@
 	import type { Attachment } from 'svelte/attachments';
 	interface Props {
 		search: string;
-		onconfirm: (t: T) => void;
-		options?: Array<T>;
-		asString: (t: T) => string;
+		onconfirm: (key: string, value: T) => void;
+		options?: Record<string, T>;
 	}
 
-	let { search, onconfirm, options, asString }: Props = $props();
+	let { search, onconfirm, options }: Props = $props();
 
-	let results: ReadonlyArray<Fuzzysort.KeyResult<T>> = $derived.by(() => {
+	let results: ReadonlyArray<Fuzzysort.KeysResult<[string, T]>> = $derived.by(() => {
 		if (!options) {
 			return [];
 		}
 
-		return fz.go<T>(search, options, {
+		return fz.go(search, Object.entries(options), {
 			limit: 10,
-			key: asString
+			keys: [([k]) => k],
+			scoreFn(kr): number {
+				if (kr.obj[0].startsWith('[new]')) {
+					return kr.score;
+				}
+
+				return kr.score * 2;
+			}
 		});
 	});
+
 	let justConfirmed = $state(false);
 	let enableKeyboardSelector = $state(true);
 	let showPicker = $derived(results.length > 0 && !justConfirmed);
@@ -127,11 +125,12 @@
 		selected = -1;
 	}
 	export function select(): void {
-		onconfirm(results[selected].obj);
+		const [k, v] = results[selected].obj;
+		onconfirm(k, v);
 		selected = -1;
 		justConfirmed = true;
 	}
-	export function getResults(): ReadonlyArray<Fuzzysort.KeyResult<T>> {
+	export function getResults(): ReadonlyArray<Fuzzysort.KeysResult<[string, T]>> {
 		return results;
 	}
 	export function getSelected(): number {
@@ -146,10 +145,11 @@
 		onpointerleave={() => void (enableKeyboardSelector = true)}
 		bind:this={container}
 	>
-		{#each results as result, i (result.target)}
+		{#each results as result, i (result.obj[0])}
 			<button
 				onclick={() => {
-					onconfirm(result.obj);
+					const [k, v] = result.obj;
+					onconfirm(k, v);
 					selected = -1;
 					justConfirmed = true;
 				}}
@@ -158,7 +158,7 @@
 				class:bg-blue-300={selected === i && enableKeyboardSelector}
 				{@attach manageRef(i)}
 			>
-				{result.target}
+				{result.obj[0]}
 			</button>
 		{/each}
 	</div>

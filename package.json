@@ -27,6 +27,7 @@
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.1.17",
+		"@types/luxon": "^3.7.1",
 		"@types/node": "^22",
 		"@vitest/browser-playwright": "^4.0.15",
 		"eslint": "^9.39.1",
@@ -51,9 +52,12 @@
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-free": "^7.1.0",
+		"chrono-node": "^2.9.0",
 		"fuzzysort": "^3.1.0",
+		"luxon": "^3.7.2",
 		"phosart-bsky": "github:phosphoriteart/phosart-bsky#main",
-		"phosart-common": "github:phosphoriteart/phosart-common#main"
+		"phosart-common": "github:phosphoriteart/phosart-common#main",
+		"yaml": "^2.8.2"
 	},
 	"files": [
 		"build"
