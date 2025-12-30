@@ -36,6 +36,7 @@
 		"globals": "^16.5.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.2.7",
+		"opener": "^1.5.2",
 		"playwright": "^1.57.0",
 		"prettier": "^3.7.4",
 		"prettier-plugin-svelte": "^3.4.0",
