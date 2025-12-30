@@ -50,15 +50,16 @@
 		"vitest-browser-svelte": "^2.0.1"
 	},
 	"dependencies": {
-		"opener": "^1.5.2",
-		"sharp": "^0.34.5",
+		"@ffmpeg-installer/ffmpeg": "^1.1.0",
 		"@fortawesome/fontawesome-free": "^7.1.0",
 		"@monaco-editor/loader": "^1.7.0",
 		"chrono-node": "^2.9.0",
 		"fuzzysort": "^3.1.0",
 		"luxon": "^3.7.2",
 		"monaco-editor": "^0.55.1",
+		"opener": "^1.5.2",
 		"phosart-common": "github:phosphoriteart/phosart-common#main",
+		"sharp": "^0.34.5",
 		"yaml": "^2.8.2"
 	},
 	"files": [

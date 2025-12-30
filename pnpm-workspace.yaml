@@ -1,5 +1,6 @@
 onlyBuiltDependencies:
+  - '@ffmpeg-installer/darwin-arm64'
   - esbuild
-  - sharp
-  - phosart-common
   - phosart-bsky
+  - phosart-common
+  - sharp

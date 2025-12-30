@@ -10,7 +10,7 @@
 
 <a
 	href={resolve(href)}
-	class="mx-4 rounded-xl px-8 py-2"
+	class="mx-4 cursor-pointer rounded-xl px-8 py-2 select-none"
 	class:bg-gray-300={path == href}
 	class:bg-gray-200={path != href}
 	class:hover:bg-gray-400={path != href}

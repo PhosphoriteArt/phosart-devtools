@@ -39,20 +39,21 @@ export function createNewPiece(
 	image: File,
 	filePath: string,
 	index: number,
-	identifiers: string[]
+	identifiers: string[],
+	thumbPath?: string
 ): BaseArtPiece {
 	let id = image.name.replaceAll(/[^A-Za-z0-9]/g, '-') + '-' + index;
 	while (identifiers.includes(id)) {
 		id += ' copy';
 	}
 
-	return {
+	const piece: BaseArtPiece = {
 		id,
 		alt: '',
 		characters: [],
 		date: new Date(image.lastModified),
 		name: image.name,
-		image: filePath,
+		image: '',
 		slug: id,
 		tags: [],
 		alts: [],
@@ -61,4 +62,14 @@ export function createNewPiece(
 		position: undefined,
 		video: undefined
 	};
+
+	if (image.type.startsWith('video')) {
+		console.log({ thumbPath });
+		piece.video = { full: filePath, thumb: filePath };
+		piece.image = thumbPath ?? '';
+	} else {
+		piece.image = filePath;
+	}
+
+	return piece;
 }

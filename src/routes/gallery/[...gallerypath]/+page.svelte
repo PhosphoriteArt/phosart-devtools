@@ -14,12 +14,27 @@
 	import TextBox from '$lib/form/TextBox.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte.js';
-	import { isExtendsGallery } from '$lib/galleryutil.js';
-	import { useArtistsContext, useCharacterContext, type RawGallery } from 'phosart-common/util';
+	import { isBaseGallery, isExtendsGallery } from '$lib/galleryutil.js';
+	import {
+		useArtistsContext,
+		useCharacterContext,
+		type BaseArtPiece,
+		type RawGallery
+	} from 'phosart-common/util';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
 	const g: RawGallery = $state(data.rawGallery);
+
+	const sorted: (readonly [BaseArtPiece, number])[] = $derived(
+		g && isBaseGallery(g)
+			? g.pieces
+					.map((v, i) => [v, i] as const)
+					.toSorted(([a], [b]) => b.date.getTime() - a.date.getTime())
+			: []
+	);
+
+	$inspect({ sorted });
 
 	// svelte-ignore state_referenced_locally
 	useArtistsContext(Object.values(data.allArtists));
@@ -69,7 +84,7 @@
 
 	{@render addButton()}
 
-	{#each g?.pieces ?? [] as piece, i (piece.slug)}
+	{#each sorted as [piece, i] (piece.slug)}
 		<Collapsable title={piece.name} class="m-2 rounded-2xl border p-2">
 			{#snippet collapsedRight()}
 				<div class="h-16 max-h-16 w-16 max-w-16">
@@ -124,16 +139,28 @@
 				</div>
 			</div>
 
-			{#if !loading}
-				<button onclick={() => void save()} class="cursor-pointer rounded-2xl border p-3"
-					>Save</button
-				>
-			{:else}
-				<div class="cursor-pointer rounded-sm border p-3">Saving...</div>
-			{/if}
-			{#if error}
-				<div>ERROR: {error}</div>
-			{/if}
+			<div class="flex justify-between">
+				<div>
+					{#if !loading}
+						<button onclick={() => void save()} class="cursor-pointer rounded-2xl border p-3"
+							>Save</button
+						>
+					{:else}
+						<div class="cursor-pointer rounded-2xl border p-3">Saving...</div>
+					{/if}
+					{#if error}
+						<div>ERROR: {error}</div>
+					{/if}
+				</div>
+				<div>
+					<button
+						onclick={() => {
+							g.pieces = [...g.pieces.slice(0, i), ...g.pieces.slice(i + 1)];
+						}}
+						class="cursor-pointer rounded-2xl border p-3">Delete</button
+					>
+				</div>
+			</div>
 		</Collapsable>
 	{/each}
 

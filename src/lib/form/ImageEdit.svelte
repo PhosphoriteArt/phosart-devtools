@@ -35,8 +35,8 @@
 
 			const newOverride = URL.createObjectURL(f);
 			setOverride(newOverride, f.type);
-			uploadImage(galleryPath, f).then((fpath) => {
-				set(fpath, f.type);
+			uploadImage(galleryPath, f).then(({ filename }) => {
+				set(filename, f.type);
 			});
 		};
 	}

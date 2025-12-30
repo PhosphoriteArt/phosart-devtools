@@ -32,12 +32,12 @@
 			const cur = extra;
 			promises.push(
 				(async () => {
-					const fpath = await uploadImage(galleryPath, file);
+					const { filename: fpath, thumbnail } = await uploadImage(galleryPath, file);
 					if (!fpath) {
 						return null;
 					}
 
-					const piece = createNewPiece(file, fpath, cur, existingIdentifiers);
+					const piece = createNewPiece(file, fpath, cur, existingIdentifiers, thumbnail);
 					return { piece, file: file };
 				})()
 			);

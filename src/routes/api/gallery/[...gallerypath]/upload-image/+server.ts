@@ -6,6 +6,8 @@ import { writeFile } from 'node:fs/promises';
 import { getGalleryDir, getGalleryName, normalizeGalleryPath } from '$lib/galleryutil';
 import { getImageExtension } from '$lib/fileutil';
 import { asNodeStream } from '$lib/server/fileutil';
+import { spawn } from 'node:child_process';
+import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 
 export const POST: RequestHandler = async ({ request, params }) => {
 	const galleryPath = normalizeGalleryPath(params.gallerypath);
@@ -16,7 +18,29 @@ export const POST: RequestHandler = async ({ request, params }) => {
 
 	await uploadImage(galleryPath, f, fname, ftype);
 
-	return json({ fname: './' + relpath(galleryPath, fname, ftype) });
+	if (ftype.startsWith('video')) {
+		spawn(ffmpegPath, [
+			'-i',
+			npath.join($ART, getGalleryDir(galleryPath), relpath(galleryPath, fname, ftype)),
+			'-vf',
+			'select=eq(n\\,0)',
+			'-vf',
+			'scale=320:-2',
+			'-q:v',
+			'3',
+			npath.join(
+				$ART,
+				getGalleryDir(galleryPath),
+				relpath(galleryPath, fname + '_thumb', 'image/jpeg')
+			),
+			'-y'
+		]);
+	}
+
+	return json({
+		fname: './' + relpath(galleryPath, fname, ftype),
+		tname: './' + relpath(galleryPath, fname + '_thumb', 'image/jpeg')
+	});
 };
 
 async function uploadImage(galleryPath: string, image: File, fname: string, ftype: string) {
