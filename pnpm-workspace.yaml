@@ -3,3 +3,12 @@ onlyBuiltDependencies:
   - sharp
   - phosart-common
   - phosart-bsky
+supportedArchitectures:
+  os:
+    - win32
+    - darwin-arm64
+    - win64
+    - wasm32
+  cpu:
+    - x64
+    - arm64

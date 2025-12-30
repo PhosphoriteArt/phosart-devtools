@@ -36,12 +36,10 @@
 		"globals": "^16.5.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.2.7",
-		"opener": "^1.5.2",
 		"playwright": "^1.57.0",
 		"prettier": "^3.7.4",
 		"prettier-plugin-svelte": "^3.4.0",
 		"prettier-plugin-tailwindcss": "^0.7.2",
-		"sharp": "^0.34.5",
 		"svelte": "^5.45.6",
 		"svelte-check": "^4.3.4",
 		"tailwindcss": "^4.1.17",
@@ -52,6 +50,8 @@
 		"vitest-browser-svelte": "^2.0.1"
 	},
 	"dependencies": {
+		"opener": "^1.5.2",
+		"sharp": "^0.34.5",
 		"@fortawesome/fontawesome-free": "^7.1.0",
 		"@monaco-editor/loader": "^1.7.0",
 		"chrono-node": "^2.9.0",
