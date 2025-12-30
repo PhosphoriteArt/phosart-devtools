@@ -1,21 +1,23 @@
 <script lang="ts">
+	import CodeEditor from '$lib/CodeEditor.svelte';
+
 	interface Props {
-		value?: string;
+		value: string | undefined;
 		label: string;
-		placeholder?: string;
 	}
 
-	let { value = $bindable(), label, placeholder }: Props = $props();
-
-	const id = $props.id();
+	let { value = $bindable(), label }: Props = $props();
 </script>
 
 <div class="flex flex-row items-center gap-x-2">
-	<label for="form-{id}"><pre>{label}</pre></label>
-	<textarea
-		id="form-{id}"
-		bind:value
-		class="m-2 min-h-36 max-w-full min-w-1/2 rounded-xl border bg-white p-2 focus:border-blue-300"
-		{placeholder}
-	></textarea>
+	<pre class="w-36">{label}</pre>
+	<div
+		class="m-2 h-36 min-h-36 max-w-full min-w-1/2 rounded-xl border bg-white p-2 focus:border-blue-300"
+	>
+		<CodeEditor
+			language="markdown"
+			bind:value={() => value ?? '', (v) => void (value = v)}
+			theme="vs-light"
+		/>
+	</div>
 </div>

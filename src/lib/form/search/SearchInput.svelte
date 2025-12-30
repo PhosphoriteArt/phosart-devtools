@@ -8,6 +8,7 @@
 		search?: string;
 		options?: Record<string, T>;
 		validationError?: string;
+		noReportValidation?: true;
 		onSelect?: (selected: string, option?: T) => void;
 		onDeselect?: () => void;
 	}
@@ -18,7 +19,8 @@
 		options,
 		validationError,
 		onSelect,
-		onDeselect
+		onDeselect,
+		noReportValidation
 	}: Props = $props();
 
 	let uncontrolledSearch = $state('');
@@ -27,6 +29,17 @@
 
 	let inputRef: HTMLInputElement | null = $state(null);
 	let searchRef: SearchResultsImperativeHandle | null = $state(null);
+
+	$effect(() => {
+		if (validationError) {
+			inputRef?.setCustomValidity(validationError);
+			if (!noReportValidation) {
+				inputRef?.reportValidity();
+			}
+		} else {
+			inputRef?.setCustomValidity('');
+		}
+	});
 
 	function setSearch(val: string) {
 		if (controlledSearch !== undefined) {

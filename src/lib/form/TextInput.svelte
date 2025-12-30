@@ -8,6 +8,7 @@
 		onkeydown?: (kev: KeyboardEvent) => void;
 		onclick?: (mev: MouseEvent) => void;
 		class?: string;
+		validationError?: string;
 	}
 
 	const id = $props.id();
@@ -19,10 +20,21 @@
 		placeholder,
 		class: cls,
 		disabled,
-		onclick
+		onclick,
+		validationError
 	}: Props = $props();
 
 	let inputRef: HTMLInputElement | null = $state(null);
+
+	$effect(() => {
+		if (validationError) {
+			inputRef?.setCustomValidity(validationError);
+			inputRef?.reportValidity();
+		} else {
+			inputRef?.setCustomValidity('');
+		}
+		inputRef?.reportValidity();
+	});
 
 	export function focus() {
 		inputRef?.focus();
@@ -30,7 +42,7 @@
 </script>
 
 <div class="flex flex-row items-center gap-x-2">
-	<label for="form-{id}"><pre>{label}</pre></label>
+	<label for="form-{id}"><pre class="w-36">{label}</pre></label>
 	<input
 		id="form-{id}"
 		type="text"
@@ -40,7 +52,7 @@
 		{onkeydown}
 		{disabled}
 		class:text-gray-400={disabled}
-		class="m-2 rounded-xl border p-2 focus:border-blue-300 {cls}"
+		class="m-2 min-w-sm rounded-xl border p-2 focus:border-blue-300 {cls}"
 		class:bg-white={!disabled}
 		class:bg-gray-100={disabled}
 		onpointerdown={onclick}

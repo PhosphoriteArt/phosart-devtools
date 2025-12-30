@@ -5,6 +5,12 @@
 	import { resolve } from '$app/paths';
 
 	const { data } = $props();
+
+	$effect(() => {
+		if (data.redirectGallery) {
+			go(resolve(`/gallery/${data.redirectGallery}`));
+		}
+	});
 </script>
 
 <FileTree structure={data.galleries} filter={(file) => file.$type === 'gallery'}>

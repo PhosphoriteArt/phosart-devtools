@@ -14,11 +14,13 @@ export async function uploadImage(galleryPath: string, f: File): Promise<string>
 		method: 'POST',
 		body: formData
 	});
-	const json = res.json();
+	const json = await res.json();
 	if (typeof json === 'object' && 'fname' in json && typeof json.fname === 'string') {
 		return json.fname;
 	}
-	throw new Error('return value from image upload did not contain expected filename');
+	throw new Error(
+		`return value from image upload did not contain expected filename: ${JSON.stringify(json)}`
+	);
 }
 
 export interface BaseResource {

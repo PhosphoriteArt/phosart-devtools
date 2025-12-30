@@ -12,6 +12,7 @@
 		onDeselect?: () => void;
 		onRemove?: (option: T, index: number) => void;
 		validationError?: string;
+		noReportValidation?: true;
 
 		options?: Record<string, T>;
 		search: string;
@@ -31,7 +32,8 @@
 		onDeselect,
 		onSelect,
 		validationError,
-		onRemove
+		onRemove,
+		noReportValidation
 	}: Props = $props();
 
 	const dedupedOptions = $derived.by(() => {
@@ -54,7 +56,7 @@
 {/snippet}
 
 <div class="flex flex-row items-center gap-x-2">
-	<label for="form-{id}"><pre>{label}</pre></label>
+	<label for="form-{id}"><pre class="w-36">{label}</pre></label>
 	<div
 		class="relative m-2 flex flex-wrap items-center gap-1 rounded-xl border bg-white p-2 focus:border-blue-300"
 	>
@@ -75,9 +77,24 @@
 		<div
 			class="relative flex rounded-lg border border-dotted border-gray-600 px-1 py-0.5"
 			class:border-red-400={!!validationError}
+			title="Type and press enter to add"
 		>
+			<div class="pr-0.5">
+				<i
+					class="fa-regular fa-square-plus text-sm"
+					class:text-gray-400={!validationError}
+					class:text-red-600={validationError}
+				></i>
+			</div>
 			<div class="pr-0.5">{prefix}</div>
-			<SearchInput options={dedupedOptions} bind:search {validationError} {onSelect} {onDeselect} />
+			<SearchInput
+				options={dedupedOptions}
+				bind:search
+				{validationError}
+				{onSelect}
+				{onDeselect}
+				{noReportValidation}
+			/>
 		</div>
 	</div>
 </div>

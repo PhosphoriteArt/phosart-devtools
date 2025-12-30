@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { disableWindowDrag } from '$lib/dragutil.svelte.js';
+	import AddImageButton from '$lib/AddImageButton.svelte';
+	import Collapsable from '$lib/Collapsable.svelte';
 	import { getEpoch } from '$lib/epoch.svelte.js';
 	import ArtistEdit from '$lib/form/ArtistEdit.svelte';
 	import CharactersEdit from '$lib/form/CharactersEdit.svelte';
@@ -7,13 +8,13 @@
 	import ExtendsEdit from '$lib/form/ExtendsEdit.svelte';
 	import ImageEdit from '$lib/form/ImageEdit.svelte';
 	import OptionalInput from '$lib/form/OptionalInput.svelte';
+	import OriginalImage from '$lib/form/OriginalImage.svelte';
 	import PieceAltEdit from '$lib/form/PieceAltEdit.svelte';
 	import TagEdit from '$lib/form/TagEdit.svelte';
 	import TextBox from '$lib/form/TextBox.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte.js';
-	import { createNewPiece, isBaseGallery, isExtendsGallery } from '$lib/galleryutil.js';
-	import { uploadImage } from '$lib/util.js';
+	import { isExtendsGallery } from '$lib/galleryutil.js';
 	import { useArtistsContext, useCharacterContext, type RawGallery } from 'phosart-common/util';
 
 	const { data } = $props();
@@ -27,7 +28,6 @@
 
 	let refs: Record<string, TextInput> = $state({});
 
-	let loadingAdd = $state(false);
 	let loading = $state(false);
 	let error: string | null = $state(null);
 
@@ -48,82 +48,52 @@
 			loading = false;
 		}
 	}
-
-	async function onDrop(dev: DragEvent): Promise<void> {
-		if (!dev.dataTransfer || !isBaseGallery(g)) return;
-		loadingAdd = true;
-		let extra = g.pieces.length;
-		const promises: Array<Promise<void>> = [];
-		for (const item of dev.dataTransfer.items) {
-			const f = item.getAsFile();
-			if (!f) continue;
-
-			const cur = extra;
-			promises.push(
-				(async () => {
-					const fpath = await uploadImage(data.galleryPath, f);
-					if (!fpath) {
-						return;
-					}
-
-					const piece = createNewPiece(f, fpath, cur, g.pieces);
-					overrides.setFromNew(data.galleryPath, piece.slug, undefined, f);
-					g.pieces.push(piece);
-				})()
-			);
-			extra++;
-		}
-
-		try {
-			await Promise.all(promises);
-		} finally {
-			loadingAdd = false;
-		}
-	}
-
-	disableWindowDrag();
 </script>
 
 {#if isExtendsGallery(g)}
 	<ExtendsEdit bind:value={g.$extends} allGalleries={data.allGalleryRelpaths} />
 {:else}
-	<div>--GALLERY--</div>
-	{#each g.pieces as piece, i (piece.slug)}
-		<div class="m-2 rounded-md border p-2">
-			<div>
-				<div>
-					<div>General</div>
-					<div>
-						<TextInput label="Name" bind:value={piece.name} />
-						<ArtistEdit bind:artists={piece.artist} />
-						<DateEdit bind:date={piece.date} />
-						<TagEdit bind:value={piece.tags} possibleTags={data.allTags} prefix="#" />
-						<CharactersEdit
-							bind:characters={piece.characters}
-							allCharacters={data.allCharacterRefs}
-						/>
-						<TextBox label="Description" bind:value={piece.description} />
-						<TextBox
-							label="Alt Text"
-							bind:value={piece.alt}
-							placeholder="defaults to description"
-						/>
-						<ImageEdit
-							bind:resource={g.pieces[i]}
-							galleryPath={data.galleryPath}
-							pieceSlug={piece.slug}
-						/>
-					</div>
-				</div>
-				<div>
-					<div>Advanced</div>
-					<PieceAltEdit
-						bind:value={piece.alts}
-						pieceSlug={piece.slug}
-						galleryPath={data.galleryPath}
-					/>
+	{#snippet addButton()}
+		<AddImageButton
+			class="m-2"
+			existingIdentifiers={g.pieces?.map((p) => p.slug) ?? []}
+			galleryPath={data.galleryPath}
+			onUpload={(additionalPieces) => {
+				for (const piece of additionalPieces) {
+					overrides.setFromNew(data.galleryPath, piece.piece.slug, undefined, piece.file);
+				}
+				g.pieces = [...g.pieces, ...additionalPieces.map((p) => p.piece)];
+			}}
+		/>
+	{/snippet}
 
-					<div>
+	{@render addButton()}
+
+	{#each g?.pieces ?? [] as piece, i (piece.slug)}
+		<Collapsable title={piece.name} class="m-2 rounded-2xl border p-2">
+			{#snippet collapsedRight()}
+				<div class="h-16 max-h-16 w-16 max-w-16">
+					<OriginalImage galleryPath={data.galleryPath} pieceSlug={piece.slug} resource={piece} />
+				</div>
+			{/snippet}
+			<div>
+				<TextInput label="Name" bind:value={piece.name} />
+				<ArtistEdit bind:artists={piece.artist} />
+				<DateEdit bind:date={piece.date} />
+				<TagEdit bind:value={piece.tags} possibleTags={data.allTags} prefix="#" />
+				<CharactersEdit bind:characters={piece.characters} allCharacters={data.allCharacterRefs} />
+				<TextBox
+					label="Description"
+					bind:value={() => piece.description ?? '', (v) => void (piece.description = v)}
+				/>
+				<TextBox label="Alt Text" bind:value={piece.alt} />
+				<ImageEdit
+					bind:resource={g.pieces[i]}
+					galleryPath={data.galleryPath}
+					pieceSlug={piece.slug}
+				/>
+				<div>
+					<Collapsable title="Advanced" class="my-3">
 						<OptionalInput bind:value={piece.id} empty="">
 							{#snippet control(enabled, value)}
 								<TextInput
@@ -138,15 +108,24 @@
 								/>
 							{/snippet}
 						</OptionalInput>
-					</div>
+
+						<PieceAltEdit
+							bind:value={piece.alts}
+							pieceSlug={piece.slug}
+							galleryPath={data.galleryPath}
+						/>
+						<Collapsable
+							title="JSON"
+							class="mt-2 overflow-scroll border-t border-gray-300 text-gray-400"
+						>
+							<pre class="text-gray-900">{JSON.stringify(piece, null, 4)}</pre>
+						</Collapsable>
+					</Collapsable>
 				</div>
-			</div>
-			<div class="mt-2 border-t border-gray-300">
-				<pre>{JSON.stringify(piece, null, 4)}</pre>
 			</div>
 
 			{#if !loading}
-				<button onclick={() => void save()} class="cursor-pointer rounded-sm border p-3"
+				<button onclick={() => void save()} class="cursor-pointer rounded-2xl border p-3"
 					>Save</button
 				>
 			{:else}
@@ -155,13 +134,8 @@
 			{#if error}
 				<div>ERROR: {error}</div>
 			{/if}
-		</div>
+		</Collapsable>
 	{/each}
-	<div ondrop={onDrop} role="form" class="cursor-pointer rounded-sm border p-3">
-		{#if loadingAdd}
-			ADDING...
-		{:else}
-			DROP IMAGE(S) HERE TO CREATE NEW
-		{/if}
-	</div>
+
+	{@render addButton()}
 {/if}

@@ -52,9 +52,11 @@
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-free": "^7.1.0",
+		"@monaco-editor/loader": "^1.7.0",
 		"chrono-node": "^2.9.0",
 		"fuzzysort": "^3.1.0",
 		"luxon": "^3.7.2",
+		"monaco-editor": "^0.55.1",
 		"phosart-bsky": "github:phosphoriteart/phosart-bsky#main",
 		"phosart-common": "github:phosphoriteart/phosart-common#main",
 		"yaml": "^2.8.2"

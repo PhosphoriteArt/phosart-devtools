@@ -19,7 +19,7 @@ export function isBaseGallery(gallery: RawGallery): gallery is BaseGallery {
 	return !isExtendsGallery(gallery);
 }
 export function isExtendsGallery(gallery: RawGallery): gallery is ExtendedGallery {
-	return '$extends' in gallery;
+	return !!gallery && '$extends' in gallery;
 }
 
 export function baseGallery(gallery: RawGallery): BaseGallery | null {
@@ -39,10 +39,10 @@ export function createNewPiece(
 	image: File,
 	filePath: string,
 	index: number,
-	pieces: BaseArtPiece[]
+	identifiers: string[]
 ): BaseArtPiece {
 	let id = image.name.replaceAll(/[^A-Za-z0-9]/g, '-') + '-' + index;
-	while (pieces.find((p) => p.slug === id || p.id === id)) {
+	while (identifiers.includes(id)) {
 		id += ' copy';
 	}
 

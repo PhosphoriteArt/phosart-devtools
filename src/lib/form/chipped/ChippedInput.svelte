@@ -32,6 +32,7 @@
 	{options}
 	{value}
 	validationError={search !== '' && !onAddUnknown && !lastSelected ? 'Select an option' : ''}
+	noReportValidation
 	onDeselect={() => {
 		lastSelected = null;
 	}}

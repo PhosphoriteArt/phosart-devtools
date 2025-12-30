@@ -31,6 +31,9 @@
 				dateString = '';
 			}
 		}}
+		validationError={dateString ? 'Press enter to confirm' : undefined}
 	/>
-	<span> = {dateParsed?.toFormat('fff')} </span>
+	{#if dateParsed}
+		<span> = {dateParsed.toFormat('fff')} </span>
+	{/if}
 </div>
