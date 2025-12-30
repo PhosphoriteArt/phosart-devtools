@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { disableWindowDrag } from '$lib/dragutil.svelte.js';
 	import { getEpoch } from '$lib/epoch.svelte.js';
 	import ArtistEdit from '$lib/form/ArtistEdit.svelte';
 	import CharactersEdit from '$lib/form/CharactersEdit.svelte';
@@ -11,8 +12,9 @@
 	import TextBox from '$lib/form/TextBox.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte.js';
+	import { createNewPiece, isBaseGallery, isExtendsGallery } from '$lib/galleryutil.js';
+	import { uploadImage } from '$lib/util.js';
 	import { useArtistsContext, useCharacterContext, type RawGallery } from 'phosart-common/util';
-	import { onMount } from 'svelte';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -35,7 +37,7 @@
 	async function save() {
 		loading = true;
 		try {
-			await fetch(`/api/gallery/${data.galPath}/save`, {
+			await fetch(`/api/gallery/${data.galleryPath}/save`, {
 				method: 'POST',
 				body: JSON.stringify(g),
 				headers: { 'Content-Type': 'application/json' }
@@ -47,24 +49,43 @@
 		}
 	}
 
-	// TODO FACTOR OUT
-	onMount(() => {
-		const f = (e: DragEvent) => {
-			if ([...(e.dataTransfer?.items ?? [])].some((item) => item.kind === 'file')) {
-				e.preventDefault();
-			}
-		};
-		window.addEventListener('drop', f);
-		window.addEventListener('dragover', f);
-		return () => {
-			window.removeEventListener('drop', f);
-			window.removeEventListener('dragover', f);
-		};
-	});
+	async function onDrop(dev: DragEvent): Promise<void> {
+		if (!dev.dataTransfer || !isBaseGallery(g)) return;
+		loadingAdd = true;
+		let extra = g.pieces.length;
+		const promises: Array<Promise<void>> = [];
+		for (const item of dev.dataTransfer.items) {
+			const f = item.getAsFile();
+			if (!f) continue;
+
+			const cur = extra;
+			promises.push(
+				(async () => {
+					const fpath = await uploadImage(data.galleryPath, f);
+					if (!fpath) {
+						return;
+					}
+
+					const piece = createNewPiece(f, fpath, cur, g.pieces);
+					overrides.setFromNew(data.galleryPath, piece.slug, undefined, f);
+					g.pieces.push(piece);
+				})()
+			);
+			extra++;
+		}
+
+		try {
+			await Promise.all(promises);
+		} finally {
+			loadingAdd = false;
+		}
+	}
+
+	disableWindowDrag();
 </script>
 
-{#if '$extends' in g}
-	<ExtendsEdit bind:value={g.$extends} allGalleries={data.allGalleries} />
+{#if isExtendsGallery(g)}
+	<ExtendsEdit bind:value={g.$extends} allGalleries={data.allGalleryRelpaths} />
 {:else}
 	<div>--GALLERY--</div>
 	{#each g.pieces as piece, i (piece.slug)}
@@ -89,14 +110,18 @@
 						/>
 						<ImageEdit
 							bind:resource={g.pieces[i]}
-							galleryPath={data.galPath}
+							galleryPath={data.galleryPath}
 							pieceSlug={piece.slug}
 						/>
 					</div>
 				</div>
 				<div>
 					<div>Advanced</div>
-					<PieceAltEdit bind:value={piece.alts} pieceSlug={piece.slug} galleryPath={data.galPath} />
+					<PieceAltEdit
+						bind:value={piece.alts}
+						pieceSlug={piece.slug}
+						galleryPath={data.galleryPath}
+					/>
 
 					<div>
 						<OptionalInput bind:value={piece.id} empty="">
@@ -132,82 +157,7 @@
 			{/if}
 		</div>
 	{/each}
-	<div
-		ondrop={async (dev) => {
-			if (!dev.dataTransfer) return;
-			loadingAdd = true;
-			let extra = g.pieces.length;
-			const promises: Array<Promise<void>> = [];
-			for (const item of dev.dataTransfer.items) {
-				const f = item.getAsFile();
-				if (!f) continue;
-
-				const cur = extra;
-				promises.push(
-					(async () => {
-						// TODO: Factor out
-						const formData = new FormData();
-						formData.append('file', f);
-						formData.append('filename', f.name);
-						formData.append('filetype', f.type);
-
-						const fpath = await fetch(`/api/gallery/${data.galPath}/upload-image`, {
-							method: 'POST',
-							body: formData
-						})
-							.then((res) => res.json())
-							.then((t) => {
-								if (typeof t === 'object' && 'fname' in t && typeof t.fname === 'string') {
-									return t.fname;
-								}
-								return null;
-							});
-
-						if (!fpath) {
-							return;
-						}
-
-						let id = f.name.replaceAll(/[^A-Za-z0-9]/g, '-') + '-' + cur;
-						while (g.pieces.find((p) => p.slug === id || p.id === id)) {
-							id += ' copy';
-						}
-						const durl = URL.createObjectURL(f);
-						if (f.type.startsWith('video')) {
-							overrides.setVideoFull(data.galPath, id, undefined, durl);
-							overrides.setVideoThumb(data.galPath, id, undefined, durl);
-						} else {
-							overrides.setImage(data.galPath, id, undefined, durl);
-						}
-
-						g.pieces.push({
-							id,
-							alt: '',
-							characters: [],
-							date: new Date(f.lastModified),
-							name: f.name,
-							image: fpath,
-							slug: id,
-							tags: [],
-							alts: [],
-							artist: undefined,
-							description: '',
-							position: undefined,
-							video: undefined
-						});
-					})()
-				);
-				extra++;
-			}
-
-			try {
-				await Promise.all(promises);
-			} finally {
-				loadingAdd = false;
-			}
-		}}
-		role="form"
-		class="cursor-pointer rounded-sm border p-3"
-	>
+	<div ondrop={onDrop} role="form" class="cursor-pointer rounded-sm border p-3">
 		{#if loadingAdd}
 			ADDING...
 		{:else}

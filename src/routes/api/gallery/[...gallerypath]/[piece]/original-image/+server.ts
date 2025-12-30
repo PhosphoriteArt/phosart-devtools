@@ -3,47 +3,56 @@ import type { RequestHandler } from './$types';
 import { $ART, rawGalleries } from 'phosart-common/server';
 import { error } from '@sveltejs/kit';
 import { open } from 'node:fs/promises';
-import { Readable } from 'node:stream';
+import { asWebStream } from '$lib/server/fileutil';
+import { getGalleryDir, isBaseGallery, normalizeGalleryPath } from '$lib/galleryutil';
+import type { BaseResource } from '$lib/util';
 
 export const GET: RequestHandler = async ({ params, url }) => {
-	const { gallerypath, piece } = params;
-	const gPath = gallerypath.replaceAll(/^\/*/g, '');
-	const gal = (await rawGalleries())[gPath];
-	if ('$extends' in gal) {
+	const galleryPath = normalizeGalleryPath(params.gallerypath);
+	const gallery = (await rawGalleries())[galleryPath];
+	if (!isBaseGallery(gallery)) {
 		return error(404);
 	}
 
-	function ofVideo(v: { full: string; thumb?: string } | null | undefined): string | null {
-		return (url.searchParams.get('thumb') === 'true' ? (v?.thumb ?? v?.full) : v?.full) ?? null;
+	const piece = gallery.pieces.find((p) => p.slug === params.piece);
+	if (!piece) {
+		return error(404);
 	}
 
-	const pei = gal.pieces.find((p) => p.slug === piece);
-	let img = ofVideo(pei?.video) ?? pei?.image;
-	if (!img) {
+	const getResource = (resource: BaseResource): string | null => {
+		if (url.searchParams.get('video') !== 'true') {
+			return resource.image;
+		}
+
+		return (
+			(url.searchParams.get('thumb') === 'true'
+				? (resource.video?.thumb ?? resource.video?.full)
+				: resource.video?.full) ?? null
+		);
+	};
+
+	let resourceUrl = getResource(piece);
+	if (!resourceUrl) {
 		return error(404);
 	}
 
 	const alt = url.searchParams.get('alt');
 	if (alt) {
-		const altPei = pei?.alts?.find((a) => a.name === alt);
+		const altPei = piece?.alts?.find((a) => a.name === alt);
 		if (!altPei) {
 			return error(404);
 		}
-		img = ofVideo(altPei.video) ?? altPei.image;
+		resourceUrl = getResource(altPei);
 	}
 
-	const path = join(
-		$ART,
-		gPath
-			.split('/')
-			.reduceRight((acc, cur) => (!acc ? ' ' : cur + '/' + acc), '')
-			.trim(),
-		img
-	);
+	if (!resourceUrl) {
+		return error(404);
+	}
+
+	const path = join($ART, getGalleryDir(galleryPath), resourceUrl);
 	const file = await open(path);
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	return new Response(Readable.toWeb(file.createReadStream({ autoClose: true })) as any, {
+	return new Response(asWebStream(file.createReadStream({ autoClose: true })), {
 		status: 200,
 		headers: {}
 	});

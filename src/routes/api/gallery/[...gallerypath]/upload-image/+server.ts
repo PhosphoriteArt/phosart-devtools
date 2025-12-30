@@ -3,45 +3,33 @@ import type { RequestHandler } from './$types';
 import npath from 'node:path';
 import { $ART } from 'phosart-common/server';
 import { writeFile } from 'node:fs/promises';
-import { Readable } from 'node:stream';
+import { getGalleryDir, getGalleryName, normalizeGalleryPath } from '$lib/galleryutil';
+import { getImageExtension } from '$lib/fileutil';
+import { asNodeStream } from '$lib/server/fileutil';
 
 export const POST: RequestHandler = async ({ request, params }) => {
-	const slug = params.gallerypath ?? '';
-	const n = slug.replaceAll(/^\/*/g, '');
+	const galleryPath = normalizeGalleryPath(params.gallerypath);
 	const data = await request.formData();
 	const f = data.get('file') as File;
 	const fname = data.get('filename') as string;
 	const ftype = data.get('filetype') as string;
 
-	await uploadImage(n, f, fname, ftype);
+	await uploadImage(galleryPath, f, fname, ftype);
 
-	return json({ fname: './' + relpath(n, fname, ftype) });
+	return json({ fname: './' + relpath(galleryPath, fname, ftype) });
 };
 
 async function uploadImage(galleryPath: string, image: File, fname: string, ftype: string) {
-	const fpath = galleryPath
-		.split('/')
-		.reduceRight((acc, cur) => (!acc ? ' ' : cur + '/' + acc), '')
-		.trim();
-	const fp = npath.join($ART, fpath, relpath(galleryPath, fname, ftype));
+	const galleryDir = getGalleryDir(galleryPath);
+	const fp = npath.join($ART, galleryDir, relpath(galleryPath, fname, ftype));
 
-	// TODO factor out
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	await writeFile(fp, Readable.fromWeb(image.stream() as any), { encoding: 'utf-8' });
+	await writeFile(fp, asNodeStream(image.stream()), { encoding: 'utf-8' });
 }
 
 function relpath(galleryPath: string, fname: string, ftype: string) {
-	const gname = galleryPath.split('/').at(-1)?.split('.')[0] ?? 'unknown';
+	const galleryName = getGalleryName(galleryPath);
+	const safeName = fname.replaceAll(/[^A-Za-z0-9-_]|\.\./g, '');
+	const ext = getImageExtension(ftype);
 
-	return (
-		gname +
-		'_' +
-		fname.replaceAll(/[^A-Za-z0-9-_]|\.\./g, '') +
-		'.' +
-		({
-			'image/jpg': 'jpeg',
-			'image/jpeg': 'jpeg',
-			'image/png': 'png'
-		}[ftype] ?? 'bin')
-	);
+	return `${galleryName}_${safeName}.${ext}`;
 }

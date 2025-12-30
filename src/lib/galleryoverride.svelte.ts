@@ -18,14 +18,39 @@ export class GalleryOverrides {
 		return this.#overrides.overrides[gpath]?.[piece]?.main ?? null;
 	}
 
+	setFromNew(gpath: string, piece: string, alt: string | undefined, f: File): void {
+		const durl = URL.createObjectURL(f);
+		if (f.type.startsWith('video')) {
+			this.setVideoFull(gpath, piece, alt, durl);
+			this.setVideoThumb(gpath, piece, alt, durl);
+		} else {
+			this.setImage(gpath, piece, alt, durl);
+		}
+	}
+
 	setImage(gpath: string, piece: string, alt: string | undefined, override: string | null) {
-		this.#ensure(gpath, piece, alt).image = override ?? undefined;
+		this.#set(gpath, piece, alt, 'image', override);
 	}
 	setVideoFull(gpath: string, piece: string, alt: string | undefined, override: string | null) {
-		this.#ensure(gpath, piece, alt).videoFull = override ?? undefined;
+		this.#set(gpath, piece, alt, 'videoFull', override);
 	}
 	setVideoThumb(gpath: string, piece: string, alt: string | undefined, override: string | null) {
-		this.#ensure(gpath, piece, alt).videoThumb = override ?? undefined;
+		this.#set(gpath, piece, alt, 'videoThumb', override);
+	}
+
+	#set(
+		gpath: string,
+		piece: string,
+		alt: string | undefined,
+		key: keyof Override,
+		override: string | null
+	) {
+		const obj = this.#ensure(gpath, piece, alt);
+		if (obj[key]) {
+			URL.revokeObjectURL(obj[key]);
+		}
+
+		obj[key] = override ?? undefined;
 	}
 
 	#ensure(gpath: string, piece: string, alt: string | undefined): Override {
