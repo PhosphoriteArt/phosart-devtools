@@ -1,4 +1,7 @@
 <script lang="ts">
+	import type { SearchResultsImperativeHandle } from './search/SearchResults.svelte';
+	import SearchResults, { arrAsObject, control } from './search/SearchResults.svelte';
+
 	interface Props {
 		label: string;
 		value: string;
@@ -9,6 +12,7 @@
 		onclick?: (mev: MouseEvent) => void;
 		class?: string;
 		validationError?: string;
+		options?: string[];
 		icon?: string;
 	}
 
@@ -23,6 +27,7 @@
 		disabled,
 		onclick,
 		validationError,
+		options,
 		icon
 	}: Props = $props();
 
@@ -41,6 +46,8 @@
 	export function focus() {
 		inputRef?.focus();
 	}
+
+	let searchRef: SearchResultsImperativeHandle | null = $state(null);
 </script>
 
 <div class="flex flex-row items-center gap-x-2">
@@ -66,10 +73,21 @@
 			{onkeydown}
 			{disabled}
 			class:text-gray-400={disabled}
-			class="grow rounded-xl p-2 focus:border-blue-300 {cls}"
+			class=" grow rounded-xl p-2 focus:border-blue-300 {cls}"
 			class:bg-white={!disabled}
 			class:bg-gray-100={disabled}
 			onpointerdown={onclick}
+			{@attach control(searchRef)}
 		/>
+		{#if options}
+			<SearchResults
+				bind:this={searchRef}
+				options={arrAsObject(options)}
+				search={value}
+				onconfirm={(key) => {
+					value = key;
+				}}
+			/>
+		{/if}
 	</div>
 </div>
