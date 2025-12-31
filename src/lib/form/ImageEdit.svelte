@@ -12,7 +12,7 @@
 		alt?: string;
 		altIndex?: number;
 		label?: string;
-		disabled?: boolen;
+		disabled?: boolean;
 	}
 
 	let {

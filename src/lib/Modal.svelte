@@ -4,7 +4,7 @@
 	interface Props {
 		title: string;
 		subtitle?: string;
-		open?: boolean;
+		open?: boolean | null;
 		children?: Snippet;
 		class?: string;
 		right?: Snippet;
@@ -51,6 +51,10 @@
 			}
 		}
 	});
+
+	export function setOpen(flag: boolean) {
+		open = flag;
+	}
 </script>
 
 <div class="rounded-2xl border {cls}">

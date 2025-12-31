@@ -81,7 +81,7 @@
 		});
 	});
 
-	let justConfirmed = $state(false);
+	let justConfirmed = $state(true);
 	let enableKeyboardSelector = $state(true);
 	let showPicker = $derived(results.length > 0 && !justConfirmed);
 	let selected = $state(-1);
