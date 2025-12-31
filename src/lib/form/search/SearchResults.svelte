@@ -3,7 +3,7 @@
 		increment(): void;
 		decrement(): void;
 		reset(): void;
-		select(): void;
+		select(): boolean;
 		getResults(): ReadonlyArray<unknown>;
 		getSelected(): number;
 	}
@@ -39,7 +39,13 @@
 					kev.preventDefault();
 				} else {
 					if (!kev.shiftKey && !kev.metaKey && !kev.ctrlKey && !kev.altKey) {
-						ctl.reset();
+						if (kev.code === 'Tab') {
+							if (ctl.select()) {
+								kev.preventDefault();
+							}
+						} else {
+							ctl.reset();
+						}
 					}
 				}
 			};
@@ -124,11 +130,16 @@
 		justConfirmed = false;
 		selected = -1;
 	}
-	export function select(): void {
+	export function select(): boolean {
+		if (justConfirmed || results.length == 0) {
+			return false;
+		}
+		if (selected < 0 || selected >= results.length) selected = 0;
 		const [k, v] = results[selected].obj;
 		onconfirm(k, v);
 		selected = -1;
 		justConfirmed = true;
+		return true;
 	}
 	export function getResults(): ReadonlyArray<Fuzzysort.KeysResult<[string, T]>> {
 		return results;
