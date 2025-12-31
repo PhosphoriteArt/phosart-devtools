@@ -58,7 +58,7 @@
 		"luxon": "^3.7.2",
 		"monaco-editor": "^0.55.1",
 		"opener": "^1.5.2",
-		"phosart-common": "github:phosphoriteart/phosart-common#main",
+		"phosart-common": "github:phosphoriteart/phosart-common#v0.1.0",
 		"sharp": "^0.34.5",
 		"yaml": "^2.8.2",
 		"zod": "^4.3.2"
