@@ -4,3 +4,4 @@ onlyBuiltDependencies:
   - phosart-bsky
   - phosart-common
   - sharp
+  - msgpackr-extract
