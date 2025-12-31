@@ -63,7 +63,7 @@
 		onclick={() => {
 			open = !open;
 		}}
-		class="flex cursor-pointer items-center justify-between overflow-hidden rounded-2xl px-3 select-none hover:bg-gray-300 active:bg-gray-500"
+		class="hover-effect flex h-full cursor-pointer items-center justify-between overflow-hidden rounded-2xl px-3 select-none"
 	>
 		<div class="flex flex-col items-start p-2">
 			<div class="font-semibold">{title}</div>
@@ -111,3 +111,11 @@
 		</div>
 	</div>
 </dialog>
+
+<style lang="postcss">
+	@reference "tailwindcss";
+
+	.hover-effect:not(:has(*[data-blockhover]:hover)) {
+		@apply hover:bg-gray-300 active:bg-gray-500;
+	}
+</style>

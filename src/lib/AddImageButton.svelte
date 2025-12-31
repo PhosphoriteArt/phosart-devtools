@@ -2,7 +2,7 @@
 	import type { BaseArtPiece } from 'phosart-common/util';
 	import { createNewPiece } from './galleryutil';
 	import { disableWindowDrag } from './dragutil.svelte';
-	import { uploadImage } from './util';
+	import { uploadImage, type UploadPath } from './util';
 	import Droppable from './form/Droppable.svelte';
 
 	interface PieceData {
@@ -12,7 +12,7 @@
 
 	interface Props {
 		existingIdentifiers: Array<string>;
-		galleryPath: string;
+		galleryPath: UploadPath;
 		onUpload: (pieces: PieceData[]) => void;
 
 		title?: string;

@@ -4,8 +4,12 @@ export function unique<T>(arr: T[]): T[] {
 	return [...new Set(arr)];
 }
 
+export type UploadPath =
+	| { character: string; gallery?: undefined; for: 'full' | 'thumb' }
+	| { character?: undefined; gallery: string };
+
 export async function uploadImage(
-	galleryPath: string,
+	path: UploadPath,
 	f: File
 ): Promise<{ filename: string; thumbnail?: string /* only for videos */ }> {
 	const formData = new FormData();
@@ -13,7 +17,14 @@ export async function uploadImage(
 	formData.append('filename', f.name);
 	formData.append('filetype', f.type);
 
-	const res = await fetch(`/api/gallery/${galleryPath}/upload-image`, {
+	let reqpath: string;
+	if (path.character !== undefined) {
+		reqpath = `/api/characters/upload-image?for=${path.for}`;
+	} else {
+		reqpath = `/api/gallery/${path.gallery}/upload-image`;
+	}
+
+	const res = await fetch(reqpath, {
 		method: 'POST',
 		body: formData
 	});

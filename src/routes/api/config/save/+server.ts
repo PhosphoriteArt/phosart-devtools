@@ -1,5 +1,5 @@
 import type { RawGallery } from 'phosart-common/util';
-import { $ART, clearCache, RawGallery as ZRawGallery } from 'phosart-common/server';
+import { $ART, clearCache, galleries, RawGallery as ZRawGallery } from 'phosart-common/server';
 import type { RequestHandler } from './$types';
 import path from 'node:path';
 import { json } from '@sveltejs/kit';
@@ -13,6 +13,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 
 	await saveGallery(galleryPath, gallery);
 	clearCache();
+	await galleries();
 
 	return json({ ok: true });
 };

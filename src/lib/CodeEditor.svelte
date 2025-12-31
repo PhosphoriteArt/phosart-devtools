@@ -12,9 +12,10 @@
 		value: string;
 		language?: string;
 		theme?: string;
+		disabled?: boolean;
 	}
 
-	let { value = $bindable(), language = 'html', theme = 'vs-dark' }: Props = $props();
+	let { value = $bindable(), language = 'html', theme = 'vs-dark', disabled }: Props = $props();
 
 	onMount(() => {
 		(async () => {
@@ -35,7 +36,8 @@
 				overviewRulerBorder: false,
 				wordWrap: 'on',
 
-				scrollbar: { alwaysConsumeMouseWheel: false }
+				scrollbar: { alwaysConsumeMouseWheel: false },
+				readOnly: disabled
 			});
 
 			editor.onDidChangeModelContent((e) => {
@@ -47,6 +49,15 @@
 				}
 			});
 		})();
+	});
+
+	$effect(() => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		disabled;
+
+		if (editor) {
+			editor.updateOptions({ readOnly: disabled });
+		}
 	});
 
 	$effect(() => {

@@ -34,13 +34,16 @@ importers:
         version: 1.5.2
       phosart-common:
         specifier: github:phosphoriteart/phosart-common#main
-        version: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/207ea7b3abc4b66958bc484a5f8c7f133ec724e5(svelte@5.46.0)
+        version: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b5322ba077a35710a4907131dbbc01878fc1a2c9(svelte@5.46.0)
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
       yaml:
         specifier: ^2.8.2
         version: 2.8.2
+      zod:
+        specifier: ^4.3.2
+        version: 4.3.2
     devDependencies:
       '@eslint/compat':
         specifier: ^1.4.0
@@ -1840,8 +1843,8 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
-  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/207ea7b3abc4b66958bc484a5f8c7f133ec724e5:
-    resolution: {tarball: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/207ea7b3abc4b66958bc484a5f8c7f133ec724e5}
+  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b5322ba077a35710a4907131dbbc01878fc1a2c9:
+    resolution: {tarball: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b5322ba077a35710a4907131dbbc01878fc1a2c9}
     version: 0.0.1
     peerDependencies:
       svelte: ^5.0.0
@@ -2375,8 +2378,8 @@ packages:
   zimmerframe@1.1.4:
     resolution: {integrity: sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ==}
 
-  zod@4.2.1:
-    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
+  zod@4.3.2:
+    resolution: {integrity: sha512-b8L8yn4rIVfiXyHAmnr52/ZEpDumlT0bmxiq3Ws1ybrinhflGpt12Hvv54kYnEsGPRs6o/Ka3/ppA2OWY21IVg==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -4098,7 +4101,7 @@ snapshots:
 
   pathe@2.0.3: {}
 
-  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/207ea7b3abc4b66958bc484a5f8c7f133ec724e5(svelte@5.46.0):
+  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b5322ba077a35710a4907131dbbc01878fc1a2c9(svelte@5.46.0):
     dependencies:
       '@fortawesome/fontawesome-free': 7.1.0
       glob: 13.0.0
@@ -4113,7 +4116,7 @@ snapshots:
       tslog: 4.10.2
       unified: 11.0.5
       yaml: 2.8.2
-      zod: 4.2.1
+      zod: 4.3.2
     transitivePeerDependencies:
       - supports-color
 
@@ -4611,6 +4614,6 @@ snapshots:
 
   zimmerframe@1.1.4: {}
 
-  zod@4.2.1: {}
+  zod@4.3.2: {}
 
   zwitch@2.0.4: {}

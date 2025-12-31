@@ -1,4 +1,5 @@
 import { createContext } from 'svelte';
+import type { UploadPath } from './util';
 
 type Override = { image?: string; videoFull?: string; videoThumb?: string };
 type PieceOverride = { main: Override; alts: Record<string | number, Override> };
@@ -11,7 +12,9 @@ export class GalleryOverrides {
 		this.#overrides.overrides = {};
 	}
 
-	get(gpath: string, piece: string, alt?: string, altIndex?: number): Override | null {
+	get(path: UploadPath, piece: string, alt?: string, altIndex?: number): Override | null {
+		const gpath = JSON.stringify(path);
+
 		if (alt) {
 			return (
 				this.#overrides.overrides[gpath]?.[piece]?.alts[alt] ??
@@ -25,7 +28,7 @@ export class GalleryOverrides {
 	}
 
 	setFromNew(
-		gpath: string,
+		path: UploadPath,
 		piece: string,
 		alt: string | undefined,
 		altIndex: number | undefined,
@@ -33,49 +36,50 @@ export class GalleryOverrides {
 	): void {
 		const durl = URL.createObjectURL(f);
 		if (f.type.startsWith('video')) {
-			this.setVideoFull(gpath, piece, alt, altIndex, durl);
-			this.setVideoThumb(gpath, piece, alt, altIndex, durl);
+			this.setVideoFull(path, piece, alt, altIndex, durl);
+			this.setVideoThumb(path, piece, alt, altIndex, durl);
 		} else {
-			this.setImage(gpath, piece, alt, altIndex, durl);
+			this.setImage(path, piece, alt, altIndex, durl);
 		}
 	}
 
 	setImage(
-		gpath: string,
+		path: UploadPath,
 		piece: string,
 		alt: string | undefined,
 		altIndex: number | undefined,
 		override: string | null
 	) {
-		this.#set(gpath, piece, alt, altIndex, 'image', override);
+		this.#set(path, piece, alt, altIndex, 'image', override);
 	}
 	setVideoFull(
-		gpath: string,
+		path: UploadPath,
 		piece: string,
 		alt: string | undefined,
 		altIndex: number | undefined,
 		override: string | null
 	) {
-		this.#set(gpath, piece, alt, altIndex, 'videoFull', override);
+		this.#set(path, piece, alt, altIndex, 'videoFull', override);
 	}
 	setVideoThumb(
-		gpath: string,
+		path: UploadPath,
 		piece: string,
 		alt: string | undefined,
 		altIndex: number | undefined,
 		override: string | null
 	) {
-		this.#set(gpath, piece, alt, altIndex, 'videoThumb', override);
+		this.#set(path, piece, alt, altIndex, 'videoThumb', override);
 	}
 
 	#set(
-		gpath: string,
+		path: UploadPath,
 		piece: string,
 		alt: string | undefined,
 		altIndex: number | undefined,
 		key: keyof Override,
 		override: string | null
 	) {
+		const gpath = JSON.stringify(path);
 		const obj = this.#ensure(gpath, piece, alt);
 		if (obj[key]) {
 			URL.revokeObjectURL(obj[key]);

@@ -1,14 +1,12 @@
 import type { FileStructure } from '$lib/structure';
-import type { ArtistCache, CharacterCache, RawGalleryCache } from 'phosart-common/server';
+import type { ArtistCache, RawGalleryCache } from 'phosart-common/server';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { Character } from 'phosart-common/util';
 import { isExtendsGallery } from '$lib/galleryutil';
 
 export async function search(
 	dir: string,
 	galleries: RawGalleryCache,
-	characters: CharacterCache,
 	artists: ArtistCache,
 	relative: string = ''
 ): Promise<FileStructure> {
@@ -18,13 +16,7 @@ export async function search(
 	for (const element of list) {
 		const newPath = relative + element.name;
 		if (element.isDirectory()) {
-			const f = await search(
-				path.join(dir, element.name),
-				galleries,
-				characters,
-				artists,
-				newPath + '/'
-			);
+			const f = await search(path.join(dir, element.name), galleries, artists, newPath + '/');
 			structure.structure[element.name] = f;
 			structure.items += f.items;
 		} else if (element.isFile()) {
@@ -50,23 +42,6 @@ export async function search(
 					$type: 'artist',
 					data: artists[newPath]
 				};
-			} else {
-				const chars: Character[] = [];
-
-				for (const [fname, char] of Object.entries(characters)) {
-					const [base] = fname.split('#');
-					if (base == newPath) {
-						chars.push(char);
-					}
-				}
-
-				if (chars.length > 0) {
-					structure.items += 1;
-					structure.structure[element.name] = {
-						$type: 'character',
-						data: chars
-					};
-				}
 			}
 		}
 	}

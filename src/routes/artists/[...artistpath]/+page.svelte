@@ -90,11 +90,11 @@
 			class="m-2"
 			defaultArtist={data.config?.defaultArtist ?? null}
 			existingIdentifiers={g.pieces?.map((p) => p.slug) ?? []}
-			galleryPath={{ gallery: data.galleryPath }}
+			galleryPath={data.galleryPath}
 			onUpload={(additionalPieces) => {
 				for (const piece of additionalPieces) {
 					overrides.setFromNew(
-						{ gallery: data.galleryPath },
+						data.galleryPath,
 						piece.piece.slug,
 						undefined,
 						undefined,
@@ -117,11 +117,7 @@
 			>
 				{#snippet right()}
 					<div class="h-16 max-h-16 w-16 max-w-16">
-						<OriginalImage
-							galleryPath={{ gallery: data.galleryPath }}
-							pieceSlug={piece.slug}
-							resource={piece}
-						/>
+						<OriginalImage galleryPath={data.galleryPath} pieceSlug={piece.slug} resource={piece} />
 					</div>
 				{/snippet}
 				{#snippet modalRight()}
@@ -184,7 +180,7 @@
 					<TextBox label="Alt Text" bind:value={piece.alt} />
 					<ImageEdit
 						bind:resource={g.pieces[i]}
-						galleryPath={{ gallery: data.galleryPath }}
+						galleryPath={data.galleryPath}
 						pieceSlug={piece.slug}
 					/>
 					<div>
@@ -207,7 +203,7 @@
 							<PieceAltEdit
 								bind:value={piece.alts}
 								pieceSlug={piece.slug}
-								galleryPath={{ gallery: data.galleryPath }}
+								galleryPath={data.galleryPath}
 							/>
 							<Collapsable
 								title="JSON"

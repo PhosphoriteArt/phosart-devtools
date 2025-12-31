@@ -60,7 +60,8 @@
 		"opener": "^1.5.2",
 		"phosart-common": "github:phosphoriteart/phosart-common#main",
 		"sharp": "^0.34.5",
-		"yaml": "^2.8.2"
+		"yaml": "^2.8.2",
+		"zod": "^4.3.2"
 	},
 	"files": [
 		"build"

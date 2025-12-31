@@ -14,20 +14,26 @@
 	const enabled = $derived((value ?? null) != null);
 </script>
 
-<div class="flex gap-x-4">
+<div class="relative flex items-stretch gap-x-4">
 	{@render control(enabled, value ?? oldValue ?? empty)}
-	<Checkbox
-		bind:checked={
-			() => enabled,
-			(c) => {
-				if (c) {
-					value = value ?? oldValue ?? empty;
-				} else {
-					console.log('X', { value, oldValue });
-					oldValue = value ?? oldValue ?? null;
-					value = null;
+	<div class="bottom-0 flex w-2 items-center border border-l-0">
+		<div class="flex gap-x-2">
+			<Checkbox
+				label="Enabled"
+				right
+				bind:checked={
+					() => enabled,
+					(c) => {
+						if (c) {
+							value = value ?? oldValue ?? empty;
+						} else {
+							console.log('X', { value, oldValue });
+							oldValue = value ?? oldValue ?? null;
+							value = null;
+						}
+					}
 				}
-			}
-		}
-	/>
+			/>
+		</div>
+	</div>
 </div>

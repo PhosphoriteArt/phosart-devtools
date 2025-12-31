@@ -42,19 +42,19 @@ export function createNewPiece(
 	identifiers: string[],
 	thumbPath?: string
 ): BaseArtPiece {
-	let id = image.name.replaceAll(/[^A-Za-z0-9]/g, '-') + '-' + index;
-	while (identifiers.includes(id)) {
-		id += ' copy';
+	let slug = image.name.replaceAll(/[^A-Za-z0-9]/g, '-') + '-' + index;
+	while (identifiers.includes(slug)) {
+		slug += ' copy';
 	}
 
 	const piece: BaseArtPiece = {
-		id,
+		id: undefined,
 		alt: '',
 		characters: [],
 		date: new Date(image.lastModified),
 		name: image.name,
 		image: '',
-		slug: id,
+		slug: slug,
 		tags: [],
 		alts: [],
 		artist: undefined,

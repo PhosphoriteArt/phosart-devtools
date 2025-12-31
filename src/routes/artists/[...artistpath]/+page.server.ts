@@ -1,6 +1,7 @@
 import {
 	artists,
 	characters,
+	galleries,
 	rawGalleries,
 	readThemeConfig,
 	readThemeSchema
@@ -43,16 +44,17 @@ export const load: PageServerLoad = async ({ params }) => {
 	const galleryDir = getGalleryDir(galleryPath);
 
 	return {
+		gallery: (await galleries())[galleryPath],
 		rawGallery: (await rawGalleries())[galleryPath],
 		allArtists: await artists(),
 		allCharacterRefs,
 		allCharacters: await characters(),
 		allTags: uniq(
-			Object.values(await rawGalleries())
-				.flatMap((g) => (isBaseGallery(g) ? g.pieces : []))
+			Object.values(await galleries())
+				.flatMap((g) => g.pieces)
 				.flatMap((p) => p.tags)
 		),
-		allGalleryRelpaths: Object.keys(await rawGalleries())
+		allGalleryRelpaths: Object.keys(await galleries())
 			.filter((k) => k.startsWith(galleryDir))
 			.map((p) => './' + p.replace(galleryDir, '')),
 		galleryPath,

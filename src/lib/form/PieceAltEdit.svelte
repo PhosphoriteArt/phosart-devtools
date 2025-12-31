@@ -7,10 +7,11 @@
 	import AddImageButton from '$lib/AddImageButton.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte';
 	import OriginalImage from './OriginalImage.svelte';
+	import type { UploadPath } from '$lib/util';
 
 	interface Props {
 		pieceSlug: string;
-		galleryPath: string;
+		galleryPath: UploadPath;
 		value: BaseArtPiece['alts'];
 	}
 
