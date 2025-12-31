@@ -3,6 +3,7 @@
 	import TextInput from '$lib/form/TextInput.svelte';
 
 	const { data } = $props();
+	// svelte-ignore state_referenced_locally
 	let settings = $state(data.themeConfig);
 	let loading = $state(false);
 

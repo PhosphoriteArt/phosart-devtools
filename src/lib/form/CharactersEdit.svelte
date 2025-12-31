@@ -50,7 +50,7 @@
 	{#snippet renderChip(ch)}
 		<div>
 			{#if typeof ch === 'string'}
-				{@const fullCh = fullCharacters.find((och) => och.name === ch)}
+				{@const fullCh = fullCharacters[ch]}
 				{#if fullCh}
 					{fullCh.name}
 				{:else}

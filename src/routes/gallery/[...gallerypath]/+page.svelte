@@ -41,7 +41,7 @@
 	// svelte-ignore state_referenced_locally
 	useArtistsContext(data.allArtists);
 	// svelte-ignore state_referenced_locally
-	useCharacterContext(Object.values(data.allCharacters));
+	useCharacterContext(data.allCharacters);
 
 	let refs: Record<string, TextInput> = $state({});
 

@@ -16,14 +16,7 @@
 </script>
 
 {#snippet file(fileName: string, file: File, path: string[])}
-	{@const base =
-		file.$type === 'gallery'
-			? 'gallery'
-			: file.$type === 'artist'
-				? 'artists'
-				: file.$type === 'character'
-					? 'characters'
-					: null}
+	{@const base = file.$type === 'gallery' ? 'gallery' : file.$type === 'artist' ? 'artists' : null}
 	{@const icon =
 		file.$type === 'gallery' && file.isBase
 			? 'images'
@@ -31,9 +24,7 @@
 				? 'anchor'
 				: file.$type === 'artist'
 					? 'palette'
-					: file.$type === 'character'
-						? 'user-group'
-						: undefined}
+					: undefined}
 	<TreeButton
 		{icon}
 		onclick={() => {
