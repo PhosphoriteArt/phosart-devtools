@@ -37,8 +37,17 @@ export const GET: RequestHandler = async ({ params, url }) => {
 	}
 
 	const alt = url.searchParams.get('alt');
-	if (alt) {
-		const altPei = piece?.alts?.find((a) => a.name === alt);
+	let altIndex: number = -1;
+	const altIndexS = url.searchParams.get('altIndex');
+	if (altIndexS) {
+		try {
+			altIndex = parseInt(altIndexS);
+		} catch {
+			// ignore
+		}
+	}
+	if (alt || altIndex >= 0) {
+		const altPei = piece?.alts?.find((a) => a.name === alt) ?? piece?.alts?.[altIndex];
 		if (!altPei) {
 			return error(404);
 		}

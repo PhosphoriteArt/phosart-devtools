@@ -10,17 +10,18 @@
 		pieceSlug: string;
 		galleryPath: string;
 		alt?: string;
+		altIndex?: number;
 	}
 
-	let { resource = $bindable(), galleryPath, alt, pieceSlug }: Props = $props();
+	let { resource = $bindable(), galleryPath, alt, altIndex, pieceSlug }: Props = $props();
 
 	const epoch = getEpoch();
 	const overrides = getOverrides();
-	const override = $derived(overrides.get(galleryPath, pieceSlug, alt));
+	const override = $derived(overrides.get(galleryPath, pieceSlug, alt, altIndex));
 	const src = $derived(
 		override?.videoFull ??
 			override?.image ??
-			`/api/gallery/${galleryPath}/${pieceSlug}/original-image?alt=${alt ?? ''}&epoch=${epoch.epoch}`
+			`/api/gallery/${galleryPath}/${pieceSlug}/original-image?alt=${alt ?? ''}&altIndex=${altIndex ?? ''}&epoch=${epoch.epoch}`
 	);
 	const videoSrc = $derived(override?.videoThumb ?? src + '&video=true&thumb=false');
 	const thumbSrc = $derived(override?.videoThumb ?? src + '&video=true&thumb=true');
@@ -53,7 +54,7 @@
 				<Droppable
 					onDrop={makeDropHandler(
 						(img) => void (resource.video = { full: img, ...(resource.video ?? {}), thumb: img }),
-						(img) => void overrides.setVideoThumb(galleryPath, pieceSlug, alt, img)
+						(img) => void overrides.setVideoThumb(galleryPath, pieceSlug, alt, altIndex, img)
 					)}
 					class="h-64 max-h-64 w-64 max-w-64 overflow-hidden rounded-2xl border p-4"
 				>
@@ -66,7 +67,7 @@
 				<Droppable
 					onDrop={makeDropHandler(
 						(img) => void (resource.video = { thumb: img, ...(resource.video ?? {}), full: img }),
-						(img) => void overrides.setVideoFull(galleryPath, pieceSlug, alt, img)
+						(img) => void overrides.setVideoFull(galleryPath, pieceSlug, alt, altIndex, img)
 					)}
 					class="h-64 max-h-64 w-64 max-w-64 overflow-hidden rounded-2xl border p-4"
 				>
@@ -82,7 +83,7 @@
 			<Droppable
 				onDrop={makeDropHandler(
 					(img) => void (resource.image = img),
-					(img) => void overrides.setImage(galleryPath, pieceSlug, alt, img)
+					(img) => void overrides.setImage(galleryPath, pieceSlug, alt, altIndex, img)
 				)}
 				class="h-64 max-h-64 w-64 max-w-64 overflow-hidden rounded-2xl border p-4"
 			>

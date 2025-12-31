@@ -33,7 +33,9 @@
 				automaticLayout: true,
 				overviewRulerLanes: 0,
 				overviewRulerBorder: false,
-				wordWrap: 'on'
+				wordWrap: 'on',
+
+				scrollbar: { alwaysConsumeMouseWheel: false }
 			});
 
 			editor.onDidChangeModelContent((e) => {

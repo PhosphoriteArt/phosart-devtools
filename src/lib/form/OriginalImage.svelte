@@ -8,9 +8,10 @@
 		pieceSlug: string;
 		galleryPath: string;
 		alt?: string;
+		altIndex?: number;
 	}
 
-	let { resource = $bindable(), galleryPath, alt, pieceSlug }: Props = $props();
+	let { resource = $bindable(), galleryPath, alt, altIndex, pieceSlug }: Props = $props();
 
 	const epoch = getEpoch();
 	const overrides = getOverrides();
@@ -18,7 +19,7 @@
 	const src = $derived(
 		override?.videoFull ??
 			override?.image ??
-			`/api/gallery/${galleryPath}/${pieceSlug}/original-image?alt=${alt ?? ''}&epoch=${epoch.epoch}`
+			`/api/gallery/${galleryPath}/${pieceSlug}/original-image?alt=${alt ?? ''}&altIndex=${altIndex ?? ''}&epoch=${epoch.epoch}`
 	);
 	const thumbSrc = $derived(override?.videoThumb ?? src + '&video=true&thumb=true');
 </script>

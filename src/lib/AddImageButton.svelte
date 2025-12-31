@@ -17,9 +17,17 @@
 
 		title?: string;
 		class?: string;
+		defaultArtist?: string | null;
 	}
 
-	const { existingIdentifiers, galleryPath, onUpload, title, class: cls }: Props = $props();
+	const {
+		existingIdentifiers,
+		galleryPath,
+		onUpload,
+		title,
+		class: cls,
+		defaultArtist
+	}: Props = $props();
 
 	let numLoading = $state(0);
 	let over = $state(false);
@@ -38,6 +46,9 @@
 					}
 
 					const piece = createNewPiece(file, fpath, cur, existingIdentifiers, thumbnail);
+					if (defaultArtist) {
+						piece.artist = defaultArtist;
+					}
 					return { piece, file: file };
 				})()
 			);
@@ -48,6 +59,7 @@
 			onUpload((await Promise.all(promises)).filter((v): v is PieceData => !!v));
 		} finally {
 			numLoading--;
+			over = false;
 		}
 	}
 
@@ -56,7 +68,9 @@
 
 <Droppable
 	bind:over
-	class="block grow cursor-copy rounded-2xl border p-4 text-left select-none {cls}"
+	class="block grow cursor-copy rounded-2xl border p-4 text-left select-none {over
+		? ''
+		: 'border-dashed'} {cls}"
 	{onDrop}
 >
 	{#if numLoading === 0}

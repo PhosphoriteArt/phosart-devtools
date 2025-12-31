@@ -1,4 +1,11 @@
-import { artists, characters, galleries, rawGalleries } from 'phosart-common/server';
+import {
+	artists,
+	characters,
+	galleries,
+	rawGalleries,
+	readThemeConfig,
+	readThemeSchema
+} from 'phosart-common/server';
 import type { PageServerLoad } from './$types';
 import type { CharacterRef } from 'phosart-common/util';
 import { getGalleryDir, normalizeGalleryPath } from '$lib/galleryutil';
@@ -50,6 +57,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		allGalleryRelpaths: Object.keys(await galleries())
 			.filter((k) => k.startsWith(galleryDir))
 			.map((p) => './' + p.replace(galleryDir, '')),
-		galleryPath
+		galleryPath,
+		config: await readThemeConfig(await readThemeSchema())
 	};
 };

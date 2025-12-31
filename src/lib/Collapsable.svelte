@@ -41,10 +41,11 @@
 			}
 			uncontrolledCollapsed = !uncontrolledCollapsed;
 		}}
-		class="flex cursor-pointer items-center justify-between select-none"
+		class="flex cursor-pointer items-center justify-between overflow-hidden rounded-t-2xl select-none hover:bg-gray-300 active:bg-gray-500"
+		class:rounded-b-2xl={isCollapsed}
 		class:pb-0={!isCollapsed}
 	>
-		<div class="flex items-center p-4">
+		<div class="flex items-center p-2">
 			<i class="fa-solid" class:fa-chevron-right={isCollapsed} class:fa-chevron-down={!isCollapsed}
 			></i>
 			<span>{title}</span>
@@ -56,8 +57,8 @@
 		{/if}
 	</div>
 	{#if !isCollapsed}
-		<div class="p-4">
-			<div class="mb-4 border-b border-gray-300"></div>
+		<div class="mb-4 border-b border-gray-300"></div>
+		<div class="m-4">
 			{@render children?.()}
 		</div>
 	{/if}
