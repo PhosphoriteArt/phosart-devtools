@@ -39,7 +39,7 @@
 	);
 
 	// svelte-ignore state_referenced_locally
-	useArtistsContext(Object.values(data.allArtists));
+	useArtistsContext(data.allArtists);
 	// svelte-ignore state_referenced_locally
 	useCharacterContext(Object.values(data.allCharacters));
 
@@ -89,7 +89,7 @@
 		<AddImageButton
 			class="m-2"
 			defaultArtist={data.config?.defaultArtist ?? null}
-			existingIdentifiers={g.pieces?.map((p) => p.slug) ?? []}
+			existingIdentifiers={g?.pieces?.map((p) => p.slug) ?? []}
 			galleryPath={{ gallery: data.galleryPath }}
 			onUpload={(additionalPieces) => {
 				for (const piece of additionalPieces) {

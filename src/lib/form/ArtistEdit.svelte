@@ -10,12 +10,7 @@
 	let { artists: pieceArtists = $bindable() }: Props = $props();
 
 	const allArtists = useArtists();
-	const normalizedAll = $derived(
-		normalizeArtist(
-			allArtists.map((a) => a.handle),
-			allArtists
-		)
-	);
+	const normalizedAll = $derived(normalizeArtist(Object.keys(allArtists), allArtists));
 	const normalized = $derived(normalizeArtist(pieceArtists, allArtists));
 </script>
 
