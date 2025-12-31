@@ -34,8 +34,6 @@
 			: []
 	);
 
-	$inspect({ sorted });
-
 	// svelte-ignore state_referenced_locally
 	useArtistsContext(Object.values(data.allArtists));
 	// svelte-ignore state_referenced_locally

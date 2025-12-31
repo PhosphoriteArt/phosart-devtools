@@ -10,7 +10,10 @@
 	const { children, icon, onclick }: Props = $props();
 </script>
 
-<button {onclick} class="rounded-2xl border p-2">
+<button
+	{onclick}
+	class="m-1 cursor-pointer rounded-2xl border bg-white p-2 select-none hover:bg-gray-300 active:bg-gray-500"
+>
 	{#if icon}
 		<i class="fa-solid fa-{icon}"></i>
 	{/if}
