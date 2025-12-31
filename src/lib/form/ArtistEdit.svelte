@@ -19,6 +19,9 @@
 	options={arrAsObject(normalizedAll, (s) => s.name)}
 	bind:value={() => normalized, (v) => void (pieceArtists = v.map((v) => v.name))}
 	prefix="@"
+	onAddUnknown={(s) => {
+		return { name: s, anonymous: false, info: null };
+	}}
 >
 	{#snippet renderChip(na)}
 		@{na.name}
