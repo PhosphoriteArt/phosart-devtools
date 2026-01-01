@@ -67,7 +67,7 @@
 		"msgpackr": "^1.11.8",
 		"opener": "^1.5.2",
 		"phosart-bsky": "github:phosphoriteart/phosart-bsky#v0.2.1",
-		"phosart-common": "github:phosphoriteart/phosart-common#v0.2.0",
+		"phosart-common": "github:phosphoriteart/phosart-common#main",
 		"sharp": "^0.34.5",
 		"sharp-phash": "^2.2.0",
 		"yaml": "^2.8.2",
