@@ -5,6 +5,9 @@ import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
+	ssr: {
+		external: ['@atproto/api', '@atproto/common-web', '@atproto/lexicon', '@atproto/xrpc']
+	},
 
 	test: {
 		expect: { requireAssertions: true },
@@ -41,7 +44,7 @@ export default defineConfig({
 	},
 	build: {
 		rollupOptions: {
-			external: ['sharp']
+			external: ['sharp', 'phosart-common/server']
 		}
 	}
 });

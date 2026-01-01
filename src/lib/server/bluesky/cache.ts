@@ -1,25 +1,7 @@
 import { type Post } from 'phosart-bsky/util';
 import { readPack, writePack } from 'phosart-common/server';
 import { mkdir } from 'fs/promises';
-import { createWriteStream } from 'node:fs';
-import { pipeline } from 'node:stream/promises';
-import { rename } from 'node:fs/promises';
-import https from 'node:https';
-import path from 'node:path/posix';
-import type { GalleryPath } from '$lib/util';
-import { $CACHEDIR, $CACHEFILE, $FILESET, $IMGDIR, $SKIPSET } from './paths';
-
-export interface ExtendedPost extends Post {
-	image_fullsize_ids: string[] | null;
-	image_fullsize_phash: string[] | null;
-	video_thumb_id: string | null;
-	video_thumb_phash: string | null;
-}
-
-export interface PostWithMatch extends ExtendedPost {
-	image_fullsize_matches: GalleryPath[][];
-	video_thumb_matches: GalleryPath[];
-}
+import { $CACHEDIR, $CACHEFILE, $FILESET, $SKIPSET } from './paths';
 
 export async function writeCache(posts: Post[]) {
 	await mkdir($CACHEDIR, { recursive: true });
@@ -59,26 +41,4 @@ export async function readSkipSet(): Promise<Record<string, Set<string>>> {
 	} catch {
 		return {};
 	}
-}
-
-export async function downloadAndWrite(h: string, uri: string) {
-	await mkdir($IMGDIR, { recursive: true });
-
-	const p = path.join($IMGDIR, h + '.jpg');
-	const tmp = p + '.tmp.' + Date.now();
-
-	const ws = createWriteStream(tmp);
-
-	await new Promise((resolve, reject) => {
-		https.get(uri, (res) => {
-			res.on('error', (err) => {
-				reject(err);
-			});
-			const pipe = pipeline(res, ws);
-
-			pipe.then(resolve).catch(reject);
-		});
-	});
-
-	await rename(tmp, p);
 }

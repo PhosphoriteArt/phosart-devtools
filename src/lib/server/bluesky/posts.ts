@@ -11,9 +11,10 @@ import path from 'node:path/posix';
 import phash from 'sharp-phash';
 import dist from 'sharp-phash/distance';
 import type { GalleryPath } from '$lib/util';
-import { downloadAndWrite, type ExtendedPost, type PostWithMatch } from './cache';
+import { downloadAndWrite } from './images';
 import { $IMGDIR } from './paths';
 import { isExtendsGallery } from '$lib/galleryutil';
+import type { ExtendedPost, PostWithMatch } from './types';
 
 export async function findMatches(posts: ExtendedPost[]): Promise<PostWithMatch[]> {
 	const gcache = await galleries();

@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { readSkipSet, writeSkipSet } from '$lib/bluesky/cache';
+import { readSkipSet, writeSkipSet } from '$lib/server/bluesky/cache';
 
 export const PATCH: RequestHandler = async ({ url, request }) => {
 	const body: Record<string, string[]> | string[] = await request.json();

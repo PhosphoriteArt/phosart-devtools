@@ -1,9 +1,10 @@
 import { PostsClient } from 'phosart-bsky/util';
-import { readCache, readSet, writeCache, writeSet, type PostWithMatch } from './cache';
+import { readCache, readSet, writeCache, writeSet } from './cache';
 import { error } from '@sveltejs/kit';
 import { findMatches, getImages, mergePosts } from './posts';
 import { stat } from 'fs/promises';
 import { $CACHEFILE } from './paths';
+import type { PostWithMatch } from './types';
 
 export async function sync(cfg?: Record<string, string>): Promise<PostWithMatch[] | Response> {
 	const [cache, fileset] = await Promise.all([readCache(), readSet()]);

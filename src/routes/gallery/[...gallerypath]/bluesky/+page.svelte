@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ActionButton from '$lib/ActionButton.svelte';
-	import type { PostWithMatch } from '$lib/bluesky/cache.js';
+	import type { PostWithMatch } from '$lib/server/bluesky/types.js';
 	import Checkbox from '$lib/form/Checkbox.svelte';
 	import OriginalImage from '$lib/form/OriginalImage.svelte';
 	import { isBaseGallery } from '$lib/galleryutil';

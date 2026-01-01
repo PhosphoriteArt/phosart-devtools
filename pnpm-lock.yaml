@@ -8,6 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@atproto/api':
+        specifier: ^0.18.9
+        version: 0.18.9
+      '@atproto/common-web':
+        specifier: ^0.4.8
+        version: 0.4.8
+      '@atproto/lexicon':
+        specifier: ^0.6.0
+        version: 0.6.0
+      '@atproto/xrpc':
+        specifier: ^0.7.7
+        version: 0.7.7
       '@ffmpeg-installer/ffmpeg':
         specifier: ^1.1.0
         version: 1.1.0

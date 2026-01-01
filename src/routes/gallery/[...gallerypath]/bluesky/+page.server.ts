@@ -1,6 +1,6 @@
-import { sync } from '$lib/bluesky/sync';
+import { sync } from '$lib/server/bluesky/sync';
 import type { PageServerLoad } from './$types';
-import { readSkipSet } from '$lib/bluesky/cache';
+import { readSkipSet } from '$lib/server/bluesky/cache';
 import { rawGalleries, readThemeConfig, readThemeSchema } from 'phosart-common/server';
 
 export const load: PageServerLoad = async ({ params }) => {

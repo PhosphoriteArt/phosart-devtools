@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { readSkipSet, writeSkipSet } from '$lib/bluesky/cache';
+import { readSkipSet, writeSkipSet } from '$lib/server/bluesky/cache';
 
 export const DELETE: RequestHandler = async ({ params }) => {
 	const ss = await readSkipSet();

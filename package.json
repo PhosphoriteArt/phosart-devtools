@@ -53,6 +53,10 @@
 		"vitest-browser-svelte": "^2.0.1"
 	},
 	"dependencies": {
+		"@atproto/api": "^0.18.9",
+		"@atproto/common-web": "^0.4.8",
+		"@atproto/lexicon": "^0.6.0",
+		"@atproto/xrpc": "^0.7.7",
 		"@ffmpeg-installer/ffmpeg": "^1.1.0",
 		"@fortawesome/fontawesome-free": "^7.1.0",
 		"@monaco-editor/loader": "^1.7.0",
