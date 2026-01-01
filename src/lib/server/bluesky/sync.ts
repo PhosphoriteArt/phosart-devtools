@@ -41,5 +41,8 @@ export async function sync(cfg?: Record<string, string>): Promise<PostWithMatch[
 	const allPosts = mergePosts(cache, await client.getPosts(undefined as any));
 	const withImages = await getImages(allPosts, fileset);
 	await writeSet(fileset);
+	if (withImages.length !== allPosts.length) {
+		return error(500, `Failed to load ${allPosts.length - withImages.length} image(s); try again`);
+	}
 	return await findMatches(withImages);
 }

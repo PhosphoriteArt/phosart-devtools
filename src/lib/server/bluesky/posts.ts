@@ -70,9 +70,18 @@ export function findMatch(
 }
 
 export async function getImages(posts: Post[], fileset: Set<string>): Promise<ExtendedPost[]> {
-	return (await Promise.all(posts.map((post) => getImage(post, fileset)))).filter(
-		(p): p is ExtendedPost => !!p
-	);
+	return (
+		await Promise.all(
+			posts.map(async (post) => {
+				try {
+					return await getImage(post, fileset);
+				} catch (e) {
+					console.warn('getting image failed: ', e);
+					return null;
+				}
+			})
+		)
+	).filter((p): p is ExtendedPost => !!p);
 }
 
 export async function phashImage(h: string): Promise<string> {
