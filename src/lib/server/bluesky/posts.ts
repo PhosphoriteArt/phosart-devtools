@@ -19,8 +19,7 @@ import type { ExtendedPost, PostWithMatch } from './types';
 export async function findMatches(posts: ExtendedPost[]): Promise<PostWithMatch[]> {
 	const gcache = await galleries();
 	const rgcache = await rawGalleries();
-	const x = await Promise.all(posts.map((p) => findMatch(p, gcache, rgcache)));
-	return x;
+	return posts.map((p) => findMatch(p, gcache, rgcache));
 }
 
 function matchesForPhash(
@@ -55,20 +54,19 @@ function matchesForPhash(
 	return matches.toSorted(([, d1], [, d2]) => d1 - d2).map(([up]) => up);
 }
 
-export async function findMatch(
+export function findMatch(
 	post: ExtendedPost,
 	galleries: GalleryCache,
 	rawGalleries: RawGalleryCache,
 	threshold: number = 5
-): Promise<PostWithMatch> {
-	const matches: GalleryPath[][] = (post.image_fullsize_phash ?? []).map((p) =>
-		matchesForPhash(p, galleries, rawGalleries, threshold)
-	);
-	const videoMatch = post.video_thumb_phash
-		? matchesForPhash(post.video_thumb_phash, galleries, rawGalleries, threshold)
-		: [];
-
-	return { ...post, image_fullsize_matches: matches, video_thumb_matches: videoMatch };
+): PostWithMatch {
+	return {
+		...post,
+		image_details: post.image_details.map((v) => ({
+			...v,
+			matches: matchesForPhash(v.phash, galleries, rawGalleries, threshold)
+		}))
+	};
 }
 
 export async function getImages(posts: Post[], fileset: Set<string>): Promise<ExtendedPost[]> {
@@ -86,14 +84,15 @@ export async function phashImage(h: string): Promise<string> {
 export async function getImage(post: Post, fileset: Set<string>): Promise<ExtendedPost | null> {
 	return {
 		...post,
-		image_fullsize_ids: post.image_fullsize_url?.map(imageId) ?? null,
-		image_fullsize_phash: post.image_fullsize_url
-			? await Promise.all(post.image_fullsize_url.map((u) => doPhashImage(u, fileset)))
-			: null,
-		video_thumb_id: post.video_thumb_url ? imageId(post.video_thumb_url) : null,
-		video_thumb_phash: post.video_thumb_url
-			? await doPhashImage(post.video_thumb_url, fileset)
-			: null
+		image_details: await Promise.all(
+			post.image_details.map((v) =>
+				doPhashImage(v.full_url, fileset).then((phash) => ({
+					...v,
+					phash,
+					id: imageId(v.full_url)
+				}))
+			)
+		)
 	};
 }
 

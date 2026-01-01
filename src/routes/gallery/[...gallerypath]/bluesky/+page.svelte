@@ -1,3 +1,32 @@
+<script lang="ts" module>
+	function applySkipsetAndGallery(skipset: Set<string>, galleryPath: string, post: PostWithMatch) {
+		const image_details = post.image_details.filter((v) => !skipset.has(v.id));
+		return {
+			...post,
+			image_details: image_details.map((v) => ({
+				...v,
+				matches: v.matches.filter((match) => match.gallery === galleryPath)
+			})),
+			original: { ...post, image_details }
+		};
+	}
+	function makeSkipsetAndGalleryApplicator(
+		skipset: Set<string>,
+		galleryPath: string
+	): (p: PostWithMatch) => FilteredPost {
+		return (p) => applySkipsetAndGallery(skipset, galleryPath, p);
+	}
+	type FilteredPost = ReturnType<typeof applySkipsetAndGallery>;
+
+	function postHasContent(p: FilteredPost): boolean {
+		return p.image_details.length > 0;
+	}
+
+	function postHasMatches(p: PostWithMatch): boolean {
+		return p.image_details.flatMap((m) => m.matches).length > 0;
+	}
+</script>
+
 <script lang="ts">
 	import ActionButton from '$lib/ActionButton.svelte';
 	import type { PostWithMatch } from '$lib/server/bluesky/types.js';
@@ -20,41 +49,20 @@
 
 	const posts = $derived.by(() => {
 		const posts = data.posts
-			.map((p) => {
-				const ids = p.image_fullsize_ids ?? [];
-				function filterIds(_: unknown, i: number) {
-					return !skipset.has(ids[i]);
-				}
-				return {
-					...p,
-					image_alt: p.image_alt?.filter(filterIds) ?? null,
-					image_fullsize_url: p.image_fullsize_url?.filter(filterIds) ?? null,
-					image_fullsize_ids: p.image_fullsize_ids?.filter(filterIds) ?? null,
-					image_fullsize_phash: p.image_fullsize_phash?.filter(filterIds) ?? null,
-					image_fullsize_matches: p.image_fullsize_matches
-						.filter(filterIds)
-						.map((arr) => arr.filter((path) => path.gallery === data.galleryPath)),
-					video_thumb_matches: skipset.has(p.video_thumb_id ?? '')
-						? []
-						: p.video_thumb_matches.filter((path) => path.gallery === data.galleryPath),
-					video_thumb_id: skipset.has(p.video_thumb_id ?? '') ? null : p.video_thumb_id,
-					video_thumb_phash: skipset.has(p.video_thumb_id ?? '') ? null : p.video_thumb_phash,
-					video_thumb_url: skipset.has(p.video_thumb_id ?? '') ? null : p.video_thumb_url,
-					original: p
-				};
-			})
-			.filter((p) => {
-				return (p.image_fullsize_ids?.length ?? 0) + (p.video_thumb_id ? 1 : 0) > 0;
-			});
+			.map(makeSkipsetAndGalleryApplicator(skipset, data.galleryPath))
+			.filter(postHasContent);
+
 		if (showMatched) {
 			return posts;
 		}
+
+		// Else, skip those with any matches
 		return posts.filter((post) => {
 			let p: PostWithMatch = post;
 			if (!showMatchedElsewhere) {
 				p = post.original;
 			}
-			return p.image_fullsize_matches.flatMap((m) => m).length + p.video_thumb_matches.length === 0;
+			return !postHasMatches(p);
 		});
 	});
 
@@ -98,44 +106,40 @@
 		};
 	}
 
-	function makeAddAsNew(
-		ref: GalleryPath,
-		fsid: string,
-		alt: string,
-		post: Post
-	): () => Promise<void> {
+	async function newPieceFromPost(fsid: string, alt: string, post: Post): Promise<BaseArtPiece> {
+		const blobUrl = `/api/bluesky/image/${fsid}`;
+		const imageRes = await fetch(blobUrl);
+		const blob = await imageRes.blob();
+
+		const newImage = await uploadImage({ gallery: data.galleryPath, piece: fsid }, blob, fsid);
+
+		return {
+			alt,
+			name: post.text.split(' ').slice(0, 5).join(' '),
+			characters: tagsFromPost(post)
+				.filter((t) => /^oc:/.test(t))
+				.map((t) => t.replace(/^oc:/, '')),
+			tags: tagsFromPost(post).filter((t) => !/^oc:/.test(t)),
+			date: DateTime.fromISO(post.date).toJSDate(),
+			image: newImage.filename,
+			slug: fsid,
+			id: fsid,
+			alts: undefined,
+			artist: data.config?.defaultArtist ?? undefined,
+			description: post.text,
+			position: undefined,
+			video: undefined
+		};
+	}
+
+	function makeAddAsNew(fsid: string, alt: string, post: Post): () => Promise<void> {
 		return async () => {
 			if (!isBaseGallery(data.gallery)) {
 				return;
 			}
 
-			const blobUrl = `/api/bluesky/image/${fsid}`;
-			const imageRes = await fetch(blobUrl);
-			const blob = await imageRes.blob();
-
-			const newImage = await uploadImage(ref, blob, fsid);
-
 			const updatedGallery = {
-				pieces: [
-					...data.gallery.pieces,
-					{
-						alt,
-						name: post.text.split(' ').slice(0, 5).join(' '),
-						characters: tagsFromPost(post)
-							.filter((t) => /^oc:/.test(t))
-							.map((t) => t.replace(/^oc:/, '')),
-						tags: tagsFromPost(post).filter((t) => !/^oc:/.test(t)),
-						date: DateTime.fromISO(post.date).toJSDate(),
-						image: newImage.filename,
-						slug: fsid,
-						id: fsid,
-						alts: undefined,
-						artist: data.config?.defaultArtist ?? undefined,
-						description: post.text,
-						position: undefined,
-						video: undefined
-					} satisfies BaseArtPiece
-				]
+				pieces: [...data.gallery.pieces, await newPieceFromPost(fsid, alt, post)]
 			};
 			await persistGallery(data.galleryPath, updatedGallery);
 		};
@@ -174,6 +178,30 @@
 		<span class="ml-6">
 			<Checkbox label="Include Matched Elsewhere" bind:checked={showMatchedElsewhere} />
 		</span>
+		<ActionButton
+			{setLoading}
+			disabled={loading}
+			action={async () => {
+				if (!isBaseGallery(data.gallery)) {
+					return;
+				}
+
+				const pieces = await Promise.all(
+					posts.flatMap((post) => {
+						return post.image_details.map(async (deets) => {
+							return await newPieceFromPost(deets.id, deets.alt_text, post);
+						});
+					})
+				);
+				const updatedGallery = {
+					pieces: [...data.gallery.pieces, ...pieces]
+				};
+				await persistGallery(data.galleryPath, updatedGallery);
+				await invalidateAll();
+			}}
+		>
+			Add All
+		</ActionButton>
 	{/if}
 	{#if skipset.size > 0}
 		<ActionButton
@@ -186,13 +214,9 @@
 		</ActionButton>
 	{/if}
 </div>
-{#snippet match(
-	post: (typeof posts)[number],
-	i: number,
-	fsid: string,
-	matches: GalleryPath[],
-	origMatches: GalleryPath[]
-)}
+{#snippet match(post: FilteredPost, i: number)}
+	{@const details = post.image_details[i]!}
+	{@const original = post.original.image_details[i]!}
 	<div class="flex h-full">
 		<div class="flex items-center">
 			<span style="writing-mode: tb-rl" class=" inline-block rotate-180 text-center">
@@ -202,14 +226,14 @@
 		<div class="m-4 flex w-full items-center rounded-xl border p-4">
 			<div class="flex flex-col items-center">
 				<img
-					src="/api/bluesky/image/{fsid}"
+					src="/api/bluesky/image/{details.id}"
 					class="max-h-64 max-w-64"
-					alt={post.image_alt?.[i] ?? ''}
+					alt={details.alt_text}
 				/>
 				<div
 					class="max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
 				>
-					<pre class="font-serif whitespace-pre-wrap">{post.image_alt?.[i] ?? ''}</pre>
+					<pre class="font-serif whitespace-pre-wrap">{details.alt_text}</pre>
 				</div>
 			</div>
 			<div class="px-4">
@@ -218,36 +242,51 @@
 			<div class="flex h-full grow flex-col items-center justify-center">
 				<div class="text-xl underline">Matches</div>
 				<div class="flex grow flex-col items-center justify-center">
-					{#if matches.length === 0}
+					{#if details.matches.length === 0}
 						<ActionButton
 							{setLoading}
 							disabled={loading}
 							class="p-4 px-4"
-							action={makeAddAsNew(
-								{ gallery: data.galleryPath, piece: '' },
-								fsid,
-								post.image_alt?.[i] ?? '',
-								post
-							)}
+							action={makeAddAsNew(details.id, details.alt_text, post)}
 						>
 							No matches; add as new.
 						</ActionButton>
-						{#if origMatches.length !== 0}
+						{#if original.matches.length !== 0}
 							<div class="mt-2 text-xs text-gray-500 italic">
 								FYI: this image matches in other galleries
 							</div>
 						{/if}
 					{/if}
-					{#each matches as match (match)}
+					{#each details.matches as match (match)}
 						{@const piece = isBaseGallery(data.gallery)
 							? data.gallery.pieces.find((p) => p.slug === match.piece)
 							: null}
 						<div class="my-2 flex items-stretch">
-							<OriginalImage class="max-h-64 max-w-64" galleryPath={match}></OriginalImage>
+							<div class="flex flex-col items-stretch">
+								<OriginalImage class="max-h-64 max-w-64" galleryPath={match}></OriginalImage>
+								<div
+									class="max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
+								>
+									<pre class="font-serif whitespace-pre-wrap">{piece?.alt || '(no alt text)'}</pre>
+								</div>
+							</div>
 							<div class="mx-2 w-2 border border-l-0"></div>
 							<div class="flex flex-col items-stretch justify-center">
-								<div class="mb-2 text-center italic underline decoration-gray-400 decoration-1">
+								<div class=" text-center italic underline decoration-gray-400 decoration-1">
 									{piece?.name ?? match.piece}
+								</div>
+								<div
+									class="max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
+								>
+									<pre class="font-serif whitespace-pre-wrap">{piece?.description ||
+											'(no description)'}</pre>
+								</div>
+								<div
+									class="mb-2 max-h-16 max-w-64 overflow-scroll border-l-2 border-l-green-800 pl-2 text-xs text-green-800 italic"
+								>
+									<pre class="font-serif whitespace-pre-wrap">{piece?.tags
+											.map((t) => `#${t}`)
+											.join(', ') || '(no tags)'}</pre>
 								</div>
 								<div class="flex grow flex-col gap-y-2">
 									<ActionButton
@@ -267,13 +306,13 @@
 									>
 										Import Tags from Post
 									</ActionButton>
-									{#if post.image_alt?.[i]}
+									{#if details.alt_text}
 										<ActionButton
 											{setLoading}
 											disabled={loading}
 											action={makeImport(match, (p) => ({
 												...p,
-												alt: post.image_alt?.[i] ?? p.alt
+												alt: details.alt_text
 											}))}
 										>
 											Import Alt Text from Image
@@ -283,7 +322,7 @@
 										{setLoading}
 										disabled={loading}
 										class="border-red-500 text-red-800"
-										action={makeOverwriteImage(match, fsid)}
+										action={makeOverwriteImage(match, details.id)}
 									>
 										Overwrite Image
 									</ActionButton>
@@ -291,7 +330,7 @@
 							</div>
 						</div>
 					{/each}
-					{#if matches.length !== 0}
+					{#if details.matches.length !== 0}
 						<div class="relative my-2 flex w-full justify-center">
 							<div class="absolute top-1/2 -z-10 w-full border-t border-gray-300"></div>
 							<span class="float-start bg-white px-2">or</span>
@@ -299,12 +338,7 @@
 						<ActionButton
 							{setLoading}
 							disabled={loading}
-							action={makeAddAsNew(
-								{ gallery: data.galleryPath, piece: '' },
-								fsid,
-								post.image_alt?.[i] ?? '',
-								post
-							)}
+							action={makeAddAsNew(details.id, details.alt_text, post)}
 						>
 							Add as New
 						</ActionButton>
@@ -314,7 +348,7 @@
 		</div>
 		<div class="flex items-center">
 			<span style="writing-mode: tb-rl" class=" inline-block text-center">
-				<ActionButton action={makeMarkDone(fsid)}>Done</ActionButton>
+				<ActionButton action={makeMarkDone(details.id)}>Hide</ActionButton>
 			</span>
 		</div>
 	</div>
@@ -325,20 +359,8 @@
 		<div class="border-l-2 border-l-gray-400 pl-2 text-gray-600 italic">
 			<pre class="font-serif whitespace-pre-wrap">{post.text}</pre>
 		</div>
-		{#each post.image_fullsize_url ?? [] as url, i (url)}
-			{@const fsid = post.image_fullsize_ids![i]!}
-			{@const fsmatches = post.image_fullsize_matches![i]!}
-			{@const origfsmatches = post.original.image_fullsize_matches![i]!}
-			{@render match(post, i, fsid, fsmatches, origfsmatches)}
+		{#each post.image_details as url, i (url)}
+			{@render match(post, i)}
 		{/each}
-		{#if post.video_thumb_url && post.video_thumb_id}
-			{@render match(
-				post,
-				0,
-				post.video_thumb_id,
-				post.video_thumb_matches,
-				post.original.video_thumb_matches
-			)}
-		{/if}
 	</div>
 {/each}
