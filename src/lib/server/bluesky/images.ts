@@ -5,8 +5,12 @@ import { rename } from 'node:fs/promises';
 import https from 'node:https';
 import path from 'node:path';
 import { $IMGDIR } from './paths';
+import { RateLimit } from 'async-sema';
+
+const sema = RateLimit(3);
 
 export async function downloadAndWrite(h: string, uri: string) {
+	await sema();
 	await mkdir($IMGDIR(), { recursive: true });
 
 	const p = path.join($IMGDIR(), h + '.jpg');
@@ -21,7 +25,15 @@ export async function downloadAndWrite(h: string, uri: string) {
 			});
 			const pipe = pipeline(res, ws);
 
-			pipe.then(resolve).catch(reject);
+			pipe
+				.then((_) => {
+					if (res.statusCode && res.statusCode > 299) {
+						reject(res.statusCode);
+					} else {
+						resolve(_);
+					}
+				})
+				.catch(reject);
 		});
 	});
 
