@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 import { open } from 'node:fs/promises';
 import { asWebStream } from '$lib/server/fileutil';
 import { $IMGDIR } from '../../../../../lib/server/bluesky/paths';
-import path from 'node:path/posix';
+import path from 'node:path';
 
 export const GET: RequestHandler = async ({ params }) => {
 	const file = await open(

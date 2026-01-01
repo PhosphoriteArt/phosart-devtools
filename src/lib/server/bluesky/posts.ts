@@ -7,7 +7,7 @@ import {
 } from 'phosart-common/server';
 import crypto from 'node:crypto';
 import { readFile } from 'node:fs/promises';
-import path from 'node:path/posix';
+import path from 'node:path';
 import phash from 'sharp-phash';
 import dist from 'sharp-phash/distance';
 import type { GalleryPath } from '$lib/util';

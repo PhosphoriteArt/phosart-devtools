@@ -1,4 +1,4 @@
-import path from 'node:path/posix';
+import path from 'node:path';
 import { $ART } from 'phosart-common/server';
 
 export const $CACHEDIR = () => path.join($ART(), '..', '..', '.cache', 'bluesky');

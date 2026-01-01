@@ -3,7 +3,7 @@ import { createWriteStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { rename } from 'node:fs/promises';
 import https from 'node:https';
-import path from 'node:path/posix';
+import path from 'node:path';
 import { $IMGDIR } from './paths';
 
 export async function downloadAndWrite(h: string, uri: string) {

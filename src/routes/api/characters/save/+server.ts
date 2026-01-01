@@ -1,6 +1,6 @@
 import { $ART, clearCache, RawCharacter } from 'phosart-common/server';
 import type { RequestHandler } from './$types';
-import path from 'node:path/posix';
+import path from 'node:path';
 import { json } from '@sveltejs/kit';
 import { stringify } from 'yaml';
 import { writeFile } from 'node:fs/promises';

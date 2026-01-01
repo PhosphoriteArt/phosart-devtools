@@ -1,4 +1,4 @@
-import { join } from 'node:path/posix';
+import { join } from 'node:path';
 import type { RequestHandler } from './$types';
 import { $ART, rawCharacters } from 'phosart-common/server';
 import { error } from '@sveltejs/kit';
