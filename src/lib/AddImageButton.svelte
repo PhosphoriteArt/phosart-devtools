@@ -40,7 +40,7 @@
 			const cur = extra;
 			promises.push(
 				(async () => {
-					const { filename: fpath, thumbnail } = await uploadImage(galleryPath, file);
+					const { filename: fpath, thumbnail } = await uploadImage(galleryPath, file, file.name);
 					if (!fpath) {
 						return null;
 					}

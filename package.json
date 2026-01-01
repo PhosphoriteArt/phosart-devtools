@@ -4,10 +4,10 @@
 	"version": "0.1.4",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "dotenvx run -- vite dev",
 		"build": "vite build && node ./postbuild.mjs",
-		"preview": "vite preview",
-		"compiled": "PORT=3000 HOST=127.0.0.1 node build",
+		"preview": "dotenvx run -- vite preview",
+		"compiled": "dotenvx run -- PORT=3000 HOST=127.0.0.1 node build",
 		"prepare": "(svelte-kit sync || echo '') && husky",
 		"prepack": "vite build && node ./postbuild.mjs",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -19,6 +19,7 @@
 		"test:e2e": "playwright test"
 	},
 	"devDependencies": {
+		"@dotenvx/dotenvx": "^1.51.4",
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.39.1",
 		"@playwright/test": "^1.57.0",
@@ -30,6 +31,8 @@
 		"@types/luxon": "^3.7.1",
 		"@types/node": "^22",
 		"@vitest/browser-playwright": "^4.0.15",
+		"concurrently": "^9.2.1",
+		"cross-env": "^10.1.0",
 		"eslint": "^9.39.1",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.13.1",
@@ -60,8 +63,9 @@
 		"msgpackr": "^1.11.8",
 		"opener": "^1.5.2",
 		"phosart-bsky": "github:phosphoriteart/phosart-bsky#v0.1.1",
-		"phosart-common": "github:phosphoriteart/phosart-common#v0.1.2",
+		"phosart-common": "github:phosphoriteart/phosart-common#v0.1.5",
 		"sharp": "^0.34.5",
+		"sharp-phash": "^2.2.0",
 		"yaml": "^2.8.2",
 		"zod": "^4.3.2"
 	},

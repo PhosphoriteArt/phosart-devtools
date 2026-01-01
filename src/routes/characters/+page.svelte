@@ -95,8 +95,6 @@
 								character: character.name,
 								for: character.thumbnail ? 'thumb' : 'full'
 							}}
-							pieceSlug={character.name}
-							resource={character.picture}
 						/>
 					</div>
 					<div class="flex flex-col justify-around" data-blockhover>
@@ -195,7 +193,6 @@
 				</OptionalInput>
 				<ImageEdit
 					galleryPath={{ character: character.name, for: 'full' }}
-					pieceSlug={character.name}
 					bind:resource={character.picture}
 				/>
 				<TextBox label="Alt Text" bind:value={character.picture.alt} />
@@ -207,8 +204,6 @@
 									disabled={!enabled}
 									label="Thumbnail"
 									galleryPath={{ character: character.name, for: enabled ? 'thumb' : 'full' }}
-									pieceSlug={character.name}
-									alt="thumb"
 									bind:resource={() => value, (v) => (character.thumbnail = v)}
 								/>
 							</div>

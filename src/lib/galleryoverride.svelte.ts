@@ -27,64 +27,33 @@ export class GalleryOverrides {
 		return this.#overrides.overrides[gpath]?.[piece]?.main ?? null;
 	}
 
-	setFromNew(
-		path: UploadPath,
-		piece: string,
-		alt: string | undefined,
-		altIndex: number | undefined,
-		f: File
-	): void {
+	setFromNew(path: UploadPath, f: File): void {
 		const durl = URL.createObjectURL(f);
 		if (f.type.startsWith('video')) {
-			this.setVideoFull(path, piece, alt, altIndex, durl);
-			this.setVideoThumb(path, piece, alt, altIndex, durl);
+			this.setVideoFull(path, durl);
+			this.setVideoThumb(path, durl);
 		} else {
-			this.setImage(path, piece, alt, altIndex, durl);
+			this.setImage(path, durl);
 		}
 	}
 
-	setImage(
-		path: UploadPath,
-		piece: string,
-		alt: string | undefined,
-		altIndex: number | undefined,
-		override: string | null
-	) {
-		this.#set(path, piece, alt, altIndex, 'image', override);
+	setImage(path: UploadPath, override: string | null) {
+		this.#set(path, 'image', override);
 	}
-	setVideoFull(
-		path: UploadPath,
-		piece: string,
-		alt: string | undefined,
-		altIndex: number | undefined,
-		override: string | null
-	) {
-		this.#set(path, piece, alt, altIndex, 'videoFull', override);
+	setVideoFull(path: UploadPath, override: string | null) {
+		this.#set(path, 'videoFull', override);
 	}
-	setVideoThumb(
-		path: UploadPath,
-		piece: string,
-		alt: string | undefined,
-		altIndex: number | undefined,
-		override: string | null
-	) {
-		this.#set(path, piece, alt, altIndex, 'videoThumb', override);
+	setVideoThumb(path: UploadPath, override: string | null) {
+		this.#set(path, 'videoThumb', override);
 	}
 
-	#set(
-		path: UploadPath,
-		piece: string,
-		alt: string | undefined,
-		altIndex: number | undefined,
-		key: keyof Override,
-		override: string | null
-	) {
+	#set(path: UploadPath, key: keyof Override, override: string | null) {
 		const gpath = JSON.stringify(path);
-		const obj = this.#ensure(gpath, piece, alt);
+		const obj = this.#ensure(gpath, path.piece ?? 'character', path.alt);
 		if (obj[key]) {
 			URL.revokeObjectURL(obj[key]);
 		}
-		const indexObj = this.#ensure(gpath, piece, altIndex);
+		const indexObj = this.#ensure(gpath, path.piece ?? 'character', path.altIndex);
 		if (indexObj[key]) {
 			URL.revokeObjectURL(indexObj[key]);
 		}

@@ -7,15 +7,14 @@
 	import AddImageButton from '$lib/AddImageButton.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte';
 	import OriginalImage from './OriginalImage.svelte';
-	import type { UploadPath } from '$lib/util';
+	import type { GalleryPath } from '$lib/util';
 
 	interface Props {
-		pieceSlug: string;
-		galleryPath: UploadPath;
+		galleryPath: GalleryPath;
 		value: BaseArtPiece['alts'];
 	}
 
-	let { value = $bindable(), pieceSlug, galleryPath }: Props = $props();
+	let { value = $bindable(), galleryPath }: Props = $props();
 	const overrides = getOverrides();
 </script>
 
@@ -26,7 +25,10 @@
 			<Collapsable title={alt.name} class="my-2 border">
 				{#snippet collapsedRight()}
 					<div class="h-16 max-h-16 w-16 max-w-16">
-						<OriginalImage {galleryPath} {pieceSlug} resource={alt} alt={alt.name} altIndex={i} />
+						<OriginalImage
+							galleryPath={{ ...galleryPath, alt: alt.name, altIndex: i }}
+							isVideo={!!alt.video}
+						/>
 					</div>
 				{/snippet}
 
@@ -35,10 +37,7 @@
 				<TextBox label="Alt Text" bind:value={alt.alt} />
 
 				<ImageEdit
-					{galleryPath}
-					{pieceSlug}
-					alt={alt.name}
-					altIndex={i}
+					galleryPath={{ ...galleryPath, alt: alt.name, altIndex: i }}
 					bind:resource={value![i]}
 				/>
 				<div>
@@ -64,10 +63,7 @@
 					}
 					for (let i = 0; i < data.length; i++) {
 						overrides.setFromNew(
-							galleryPath,
-							pieceSlug,
-							data[i].piece.name,
-							value.length + i,
+							{ ...galleryPath, alt: data[i].piece.name, altIndex: value.length + i },
 							data[i].file
 						);
 					}

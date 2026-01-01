@@ -10,13 +10,13 @@
 </script>
 
 {#snippet lbl()}
-	<label for={id}>{label}</label>
+	<label class="cursor-pointer select-none" for={id}>{label}</label>
 {/snippet}
 
 {#if !right}
 	{@render lbl()}
 {/if}
-<input {id} type="checkbox" bind:checked />
+<input {id} type="checkbox" class="cursor-pointer" bind:checked />
 {#if right}
 	{@render lbl()}
 {/if}

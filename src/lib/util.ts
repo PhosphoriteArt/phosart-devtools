@@ -4,17 +4,32 @@ export function unique<T>(arr: T[]): T[] {
 	return [...new Set(arr)];
 }
 
-export type UploadPath =
-	| { character: string; gallery?: undefined; for: 'full' | 'thumb' }
-	| { character?: undefined; gallery: string };
+export type CharacterPath = {
+	character: string;
+	for: 'full' | 'thumb';
+	gallery?: undefined;
+	piece?: undefined;
+	alt?: undefined;
+	altIndex?: undefined;
+};
+export type GalleryPath = {
+	character?: undefined;
+	for?: undefined;
+	gallery: string;
+	piece: string;
+	alt?: string;
+	altIndex?: number;
+};
+export type UploadPath = CharacterPath | GalleryPath;
 
 export async function uploadImage(
 	path: UploadPath,
-	f: File
+	f: Blob,
+	name: string
 ): Promise<{ filename: string; thumbnail?: string /* only for videos */ }> {
 	const formData = new FormData();
 	formData.append('file', f);
-	formData.append('filename', f.name);
+	formData.append('filename', name);
 	formData.append('filetype', f.type);
 
 	let reqpath: string;

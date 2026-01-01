@@ -1,3 +1,17 @@
+<script lang="ts" module>
+	export async function persistGallery(galleryPath: string, gallery: RawGallery) {
+		try {
+			await fetch(`/api/gallery/${galleryPath}/save`, {
+				method: 'POST',
+				body: JSON.stringify(gallery),
+				headers: { 'Content-Type': 'application/json' }
+			});
+		} finally {
+			await invalidateAll();
+		}
+	}
+</script>
+
 <script lang="ts">
 	import AddImageButton from '$lib/AddImageButton.svelte';
 	import Collapsable from '$lib/Collapsable.svelte';
@@ -25,6 +39,7 @@
 	import { DateTime } from 'luxon';
 	import { onMount } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -68,16 +83,11 @@
 	async function save() {
 		loading = true;
 		try {
-			await fetch(`/api/gallery/${data.galleryPath}/save`, {
-				method: 'POST',
-				body: JSON.stringify(g),
-				headers: { 'Content-Type': 'application/json' }
-			});
+			await persistGallery(data.galleryPath, g);
 			epoch.epoch += 1;
 			overrides.reset();
 		} finally {
 			loading = false;
-			invalidateAll();
 		}
 	}
 </script>
@@ -86,24 +96,34 @@
 	<ExtendsEdit bind:value={g.$extends} allGalleries={data.allGalleryRelpaths} />
 {:else}
 	{#snippet addButton()}
-		<AddImageButton
-			class="m-2"
-			defaultArtist={data.config?.defaultArtist ?? null}
-			existingIdentifiers={g?.pieces?.map((p) => p.slug) ?? []}
-			galleryPath={{ gallery: data.galleryPath }}
-			onUpload={(additionalPieces) => {
-				for (const piece of additionalPieces) {
-					overrides.setFromNew(
-						{ gallery: data.galleryPath },
-						piece.piece.slug,
-						undefined,
-						undefined,
-						piece.file
-					);
-				}
-				g.pieces = [...g.pieces, ...additionalPieces.map((p) => p.piece)];
-			}}
-		/>
+		<div class="flex items-center">
+			<div class="grow">
+				<AddImageButton
+					class="m-2"
+					defaultArtist={data.config?.defaultArtist ?? null}
+					existingIdentifiers={g?.pieces?.map((p) => p.slug) ?? []}
+					galleryPath={{ gallery: data.galleryPath, piece: '' }}
+					onUpload={(additionalPieces) => {
+						for (const piece of additionalPieces) {
+							overrides.setFromNew(
+								{ gallery: data.galleryPath, piece: piece.piece.slug },
+								piece.file
+							);
+						}
+						g.pieces = [...g.pieces, ...additionalPieces.map((p) => p.piece)];
+					}}
+				/>
+			</div>
+			<div>
+				<a
+					href={resolve('/gallery/[...gallerypath]/bluesky', { gallerypath: data.galleryPath })}
+					class="block grow cursor-pointer rounded-2xl border border-blue-400 p-4 text-left text-blue-600 select-none hover:bg-blue-100 active:bg-blue-200"
+				>
+					<i class="fa-brands fa-bluesky"></i>
+					Import from Bluesky
+				</a>
+			</div>
+		</div>
 	{/snippet}
 
 	{@render addButton()}
@@ -118,9 +138,8 @@
 				{#snippet right()}
 					<div class="h-16 max-h-16 w-16 max-w-16">
 						<OriginalImage
-							galleryPath={{ gallery: data.galleryPath }}
-							pieceSlug={piece.slug}
-							resource={piece}
+							galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
+							isVideo={!!piece.video}
 						/>
 					</div>
 				{/snippet}
@@ -184,8 +203,7 @@
 					<TextBox label="Alt Text" bind:value={piece.alt} />
 					<ImageEdit
 						bind:resource={g.pieces[i]}
-						galleryPath={{ gallery: data.galleryPath }}
-						pieceSlug={piece.slug}
+						galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
 					/>
 					<div>
 						<Collapsable title="Advanced" class="my-3">
@@ -206,8 +224,7 @@
 
 							<PieceAltEdit
 								bind:value={piece.alts}
-								pieceSlug={piece.slug}
-								galleryPath={{ gallery: data.galleryPath }}
+								galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
 							/>
 							<Collapsable
 								title="JSON"

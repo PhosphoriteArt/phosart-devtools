@@ -7,33 +7,29 @@
 
 	interface Props {
 		resource: BaseResource;
-		pieceSlug: string;
 		galleryPath: UploadPath;
-		alt?: string;
-		altIndex?: number;
 		label?: string;
 		disabled?: boolean;
 	}
 
-	let {
-		resource = $bindable(),
-		galleryPath,
-		alt,
-		altIndex,
-		pieceSlug,
-		label,
-		disabled
-	}: Props = $props();
+	let { resource = $bindable(), galleryPath, label, disabled }: Props = $props();
 
 	const epoch = getEpoch();
 	const overrides = getOverrides();
-	const override = $derived(overrides.get(galleryPath, pieceSlug, alt, altIndex));
+	const override = $derived(
+		overrides.get(
+			galleryPath,
+			galleryPath.piece ?? 'character',
+			galleryPath.alt,
+			galleryPath.altIndex
+		)
+	);
 	const src = $derived.by(() => {
 		if (galleryPath.gallery !== undefined) {
 			return (
 				override?.videoFull ??
 				override?.image ??
-				`/api/gallery/${galleryPath.gallery}/${pieceSlug}/original-image?alt=${alt ?? ''}&altIndex=${altIndex ?? ''}&epoch=${epoch.epoch}`
+				`/api/gallery/${galleryPath.gallery}/${galleryPath.piece}/original-image?alt=${galleryPath.alt ?? ''}&altIndex=${galleryPath.altIndex ?? ''}&epoch=${epoch.epoch}`
 			);
 		} else {
 			return `/api/characters/${galleryPath.character}/${galleryPath.for}/original-image?epoch=${epoch.epoch}`;
@@ -52,7 +48,7 @@
 
 			const newOverride = URL.createObjectURL(f);
 			setOverride(newOverride, f.type);
-			uploadImage(galleryPath, f).then(({ filename }) => {
+			uploadImage(galleryPath, f, f.name).then(({ filename }) => {
 				set(filename, f.type);
 			});
 		};
@@ -76,7 +72,7 @@
 				<Droppable
 					onDrop={makeDropHandler(
 						(img) => void (resource.video = { full: img, ...(resource.video ?? {}), thumb: img }),
-						(img) => void overrides.setVideoThumb(galleryPath, pieceSlug, alt, altIndex, img)
+						(img) => void overrides.setVideoThumb(galleryPath, img)
 					)}
 					class="h-64 max-h-64 w-64 max-w-64 overflow-hidden rounded-2xl {border} p-4"
 				>
@@ -89,7 +85,7 @@
 				<Droppable
 					onDrop={makeDropHandler(
 						(img) => void (resource.video = { thumb: img, ...(resource.video ?? {}), full: img }),
-						(img) => void overrides.setVideoFull(galleryPath, pieceSlug, alt, altIndex, img)
+						(img) => void overrides.setVideoFull(galleryPath, img)
 					)}
 					class="h-64 max-h-64 w-64 max-w-64 overflow-hidden rounded-2xl {border} p-4"
 				>
@@ -105,7 +101,7 @@
 			<Droppable
 				onDrop={makeDropHandler(
 					(img) => void (resource.image = img),
-					(img) => void overrides.setImage(galleryPath, pieceSlug, alt, altIndex, img)
+					(img) => void overrides.setImage(galleryPath, img)
 				)}
 				class="h-64 max-h-64 w-64 max-w-64 overflow-hidden rounded-2xl {border} p-4"
 			>
