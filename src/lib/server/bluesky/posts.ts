@@ -109,9 +109,10 @@ export async function doPhashImage(uri: string, fileset: Set<string>): Promise<s
 	const id = imageId(uri);
 	if (!fileset.has(id)) {
 		await downloadAndWrite(id, uri);
-		fileset.add(id);
 	}
-	return await phashImage(id);
+	const hash = await phashImage(id);
+	fileset.add(id);
+	return hash;
 }
 
 export function imageId(uri: string) {
