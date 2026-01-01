@@ -49,7 +49,7 @@ export function createNewPiece(
 	}
 
 	const piece: BaseArtPiece = {
-		id: undefined,
+		id: slug,
 		alt: '',
 		characters: [],
 		date: new Date(image.lastModified),

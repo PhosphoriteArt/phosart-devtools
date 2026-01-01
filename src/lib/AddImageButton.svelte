@@ -83,7 +83,7 @@
 			{/if}
 		</span>
 	{:else}
-		<i class="fa-solid fa-loading"></i>
+		<i class="fa-solid fa-spinner"></i>
 		<span> Adding... </span>
 	{/if}
 </Droppable>

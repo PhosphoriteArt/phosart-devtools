@@ -1,5 +1,9 @@
 <script lang="ts" module>
-	export async function persistGallery(galleryPath: string, gallery: RawGallery) {
+	export async function persistGallery(
+		galleryPath: string,
+		gallery: RawGallery,
+		invalidate = true
+	) {
 		try {
 			await fetch(`/api/gallery/${galleryPath}/save`, {
 				method: 'POST',
@@ -7,7 +11,9 @@
 				headers: { 'Content-Type': 'application/json' }
 			});
 		} finally {
-			await invalidateAll();
+			if (invalidate) {
+				await invalidateAll();
+			}
 		}
 	}
 </script>
@@ -43,7 +49,7 @@
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
-	const g: RawGallery = $state(data.rawGallery);
+	let g: RawGallery = $state(data.rawGallery);
 
 	const sorted: (readonly [BaseArtPiece, number])[] = $derived(
 		g && isBaseGallery(g)
@@ -83,9 +89,11 @@
 	async function save() {
 		loading = true;
 		try {
-			await persistGallery(data.galleryPath, g);
+			await persistGallery(data.galleryPath, g, /* invalidate = */ false);
 			epoch.epoch += 1;
 			overrides.reset();
+			await invalidateAll();
+			g = data.rawGallery;
 		} finally {
 			loading = false;
 		}
@@ -111,6 +119,8 @@
 							);
 						}
 						g.pieces = [...g.pieces, ...additionalPieces.map((p) => p.piece)];
+
+						save();
 					}}
 				/>
 			</div>
