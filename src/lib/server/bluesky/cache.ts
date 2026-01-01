@@ -3,6 +3,8 @@ import { readPack, writePack } from 'phosart-common/server';
 import { mkdir } from 'fs/promises';
 import { $CACHEDIR, $CACHEFILE, $FILESET, $SKIPSET } from './paths';
 
+export type Fileset = Record<string, string>;
+
 export async function writeCache(posts: Post[]) {
 	await mkdir($CACHEDIR(), { recursive: true });
 	await writePack($CACHEFILE(), posts);
@@ -16,16 +18,17 @@ export async function readCache(): Promise<Post[]> {
 	}
 }
 
-export async function writeSet(posts: Set<string>) {
+export async function writeSet(posts: Fileset) {
 	await mkdir($CACHEDIR(), { recursive: true });
-	await writePack($FILESET(), [...posts]);
+	await writePack($FILESET(), posts);
 }
 
-export async function readSet(): Promise<Set<string>> {
+export async function readSet(): Promise<Fileset> {
 	try {
-		return new Set(await readPack($CACHEFILE()));
-	} catch {
-		return new Set();
+		return await readPack($CACHEFILE());
+	} catch (e) {
+		console.warn('Error reading fileset', e);
+		return {};
 	}
 }
 

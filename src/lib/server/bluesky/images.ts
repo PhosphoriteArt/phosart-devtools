@@ -18,6 +18,7 @@ export async function downloadAndWrite(h: string, uri: string) {
 
 	const ws = createWriteStream(tmp);
 
+	console.log('Downloading image:', h, '@', uri);
 	await new Promise((resolve, reject) => {
 		https.get(uri, (res) => {
 			res.on('error', (err) => {
@@ -36,6 +37,7 @@ export async function downloadAndWrite(h: string, uri: string) {
 				.catch(reject);
 		});
 	});
+	console.log('Finished downloading image:', h, '@', uri);
 
 	await rename(tmp, p);
 }

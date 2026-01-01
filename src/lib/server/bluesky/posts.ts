@@ -15,6 +15,7 @@ import { downloadAndWrite } from './images';
 import { $IMGDIR } from './paths';
 import { isExtendsGallery } from '$lib/galleryutil';
 import type { ExtendedPost, PostWithMatch } from './types';
+import type { Fileset } from './cache';
 
 export async function findMatches(posts: ExtendedPost[]): Promise<PostWithMatch[]> {
 	const gcache = await galleries();
@@ -69,7 +70,7 @@ export function findMatch(
 	};
 }
 
-export async function getImages(posts: Post[], fileset: Set<string>): Promise<ExtendedPost[]> {
+export async function getImages(posts: Post[], fileset: Fileset): Promise<ExtendedPost[]> {
 	return (
 		await Promise.all(
 			posts.map(async (post) => {
@@ -90,7 +91,7 @@ export async function phashImage(h: string): Promise<string> {
 	return await phash(await readFile(p));
 }
 
-export async function getImage(post: Post, fileset: Set<string>): Promise<ExtendedPost | null> {
+export async function getImage(post: Post, fileset: Fileset): Promise<ExtendedPost | null> {
 	return {
 		...post,
 		image_details: await Promise.all(
@@ -105,19 +106,21 @@ export async function getImage(post: Post, fileset: Set<string>): Promise<Extend
 	};
 }
 
-export async function doPhashImage(uri: string, fileset: Set<string>): Promise<string> {
+export async function doPhashImage(uri: string, fileset: Fileset): Promise<string> {
 	const id = imageId(uri);
-	if (!fileset.has(id)) {
-		await downloadAndWrite(id, uri);
+	if (id in fileset) {
+		return fileset[id];
 	}
+
 	let hash: string;
 	try {
 		hash = await phashImage(id);
 	} catch (e) {
-		fileset.delete(id); // Try to self-heal
-		throw e;
+		console.log('Failed to hash image ' + id + ':', e);
+		await downloadAndWrite(id, uri);
+		hash = await phashImage(id);
 	}
-	fileset.add(id);
+	fileset[id] = hash;
 	return hash;
 }
 
