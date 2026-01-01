@@ -35,10 +35,11 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-{#if showPreview && data.previewPort}
+{#if data.previewPort}
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
+		class:hidden={!showPreview}
 		tabindex="-1"
 		role="figure"
 		class="fixed top-0 right-0 bottom-0 left-0 bg-[#777A]"
@@ -48,7 +49,7 @@
 			}
 		}}
 	>
-		<div class="fixed top-20 right-20 bottom-20 left-20 overflow-hidden rounded-4xl">
+		<div class="fixed top-20 right-20 bottom-20 left-20 overflow-hidden rounded-4xl bg-white">
 			<iframe title="preview" class="h-full w-full" src="http://localhost:{data.previewPort}"
 			></iframe>
 		</div>
