@@ -18,7 +18,7 @@ export const POST: RequestHandler = async ({ request }) => {
 };
 
 async function saveCharacters(characters: z.infer<typeof ZCharacters>) {
-	const charactersYaml = path.join($ART, 'characters', 'characters.yaml');
+	const charactersYaml = path.join($ART(), 'characters', 'characters.yaml');
 	const yaml = stringify(characters, {
 		blockQuote: true,
 		collectionStyle: 'block',

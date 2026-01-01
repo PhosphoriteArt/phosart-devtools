@@ -16,7 +16,7 @@ export const POST: RequestHandler = async ({ request }) => {
 };
 
 async function saveArtists(newArtists: ArtistCache) {
-	const galleryFullPath = path.join($ART, 'artists.yaml');
+	const galleryFullPath = path.join($ART(), 'artists.yaml');
 	const yaml = stringify(newArtists, {
 		blockQuote: true,
 		collectionStyle: 'block',

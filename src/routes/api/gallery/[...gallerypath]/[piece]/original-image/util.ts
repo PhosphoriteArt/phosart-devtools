@@ -49,5 +49,5 @@ export async function getOriginalImagePath(
 		return error(404, 'resourceUrl not found pt 2.');
 	}
 
-	return join($ART, getGalleryDir(galleryPath), resourceUrl);
+	return join($ART(), getGalleryDir(galleryPath), resourceUrl);
 }

@@ -28,7 +28,7 @@ export async function sync(cfg?: Record<string, string>): Promise<PostWithMatch[
 				},
 				async postsLastCachedAt() {
 					try {
-						return (await stat($CACHEFILE)).mtime;
+						return (await stat($CACHEFILE())).mtime;
 					} catch {
 						return new Date(0);
 					}

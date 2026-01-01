@@ -76,7 +76,7 @@ export async function getImages(posts: Post[], fileset: Set<string>): Promise<Ex
 }
 
 export async function phashImage(h: string): Promise<string> {
-	const p = path.join($IMGDIR, h + '.jpg');
+	const p = path.join($IMGDIR(), h + '.jpg');
 
 	return await phash(await readFile(p));
 }

@@ -26,7 +26,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		return error(400);
 	}
 
-	const path = join($ART, 'characters', piece.image);
+	const path = join($ART(), 'characters', piece.image);
 	const file = await open(path);
 
 	return new Response(asWebStream(file.createReadStream({ autoClose: true })), {

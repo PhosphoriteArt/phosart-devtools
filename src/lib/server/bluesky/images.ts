@@ -7,9 +7,9 @@ import path from 'node:path/posix';
 import { $IMGDIR } from './paths';
 
 export async function downloadAndWrite(h: string, uri: string) {
-	await mkdir($IMGDIR, { recursive: true });
+	await mkdir($IMGDIR(), { recursive: true });
 
-	const p = path.join($IMGDIR, h + '.jpg');
+	const p = path.join($IMGDIR(), h + '.jpg');
 	const tmp = p + '.tmp.' + Date.now();
 
 	const ws = createWriteStream(tmp);

@@ -21,7 +21,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 	if (ftype.startsWith('video')) {
 		spawn(ffmpegPath, [
 			'-i',
-			npath.join($ART, getGalleryDir(galleryPath), relpath(galleryPath, fname, ftype)),
+			npath.join($ART(), getGalleryDir(galleryPath), relpath(galleryPath, fname, ftype)),
 			'-vf',
 			'select=eq(n\\,0)',
 			'-vf',
@@ -29,7 +29,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 			'-q:v',
 			'3',
 			npath.join(
-				$ART,
+				$ART(),
 				getGalleryDir(galleryPath),
 				relpath(galleryPath, fname + '_thumb', 'image/jpeg')
 			),
@@ -45,7 +45,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 
 async function uploadImage(galleryPath: string, image: File, fname: string, ftype: string) {
 	const galleryDir = getGalleryDir(galleryPath);
-	const fp = npath.join($ART, galleryDir, relpath(galleryPath, fname, ftype));
+	const fp = npath.join($ART(), galleryDir, relpath(galleryPath, fname, ftype));
 
 	await writeFile(fp, asNodeStream(image.stream()), { encoding: 'utf-8' });
 }

@@ -9,7 +9,7 @@ export const load: PageServerLoad = async () => {
 	const galleryPaths = Object.keys(await rawGalleries());
 	const onlyPath = galleryPaths.length === 1 ? galleryPaths[0] : null;
 	return {
-		galleries: await search($ART, await rawGalleries(), await artists()),
+		galleries: await search($ART(), await rawGalleries(), await artists()),
 		redirectGallery: normalizeGalleryPath(onlyPath) || null
 	};
 };

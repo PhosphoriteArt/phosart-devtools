@@ -22,7 +22,7 @@ export const POST: RequestHandler = async ({ request, url }) => {
 };
 
 async function uploadImage(type: string, image: File, fname: string, ftype: string) {
-	const fp = npath.join($ART, 'characters', relpath(type, fname, ftype));
+	const fp = npath.join($ART(), 'characters', relpath(type, fname, ftype));
 
 	await writeFile(fp, asNodeStream(image.stream()), { encoding: 'utf-8' });
 }
