@@ -8,12 +8,8 @@ export const prerender = false;
 export const load: PageServerLoad = async () => {
 	const galleryPaths = Object.keys(await rawGalleries());
 	const onlyPath = galleryPaths.length === 1 ? galleryPaths[0] : null;
-	const x = {
+	return {
 		galleries: await search($ART(), await rawGalleries(), await artists()),
 		redirectGallery: normalizeGalleryPath(onlyPath) || null
 	};
-
-	console.log(x);
-
-	return x;
 };

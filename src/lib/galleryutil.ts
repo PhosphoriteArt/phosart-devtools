@@ -65,7 +65,6 @@ export function createNewPiece(
 	};
 
 	if (image.type.startsWith('video')) {
-		console.log({ thumbPath });
 		piece.video = { full: filePath, thumb: filePath };
 		piece.image = thumbPath ?? '';
 	} else {

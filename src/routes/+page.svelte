@@ -1,12 +1,21 @@
 <script lang="ts">
 	import FileTree from '$lib/tree/FileTree.svelte';
 	import TreeButton from '$lib/tree/TreeButton.svelte';
-	import { goto as go } from '$app/navigation';
+	import { goto as go, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import Collapsable from '$lib/Collapsable.svelte';
 	import type { File } from '$lib/structure.js';
+	import Checkbox from '$lib/form/Checkbox.svelte';
+	import Modal from '$lib/Modal.svelte';
+	import TextInput from '$lib/form/TextInput.svelte';
+	import ActionButton from '$lib/ActionButton.svelte';
+	import type { RawGallery } from 'phosart-common/util';
 
 	const { data } = $props();
+
+	let showEmpty = $state(false);
+	let newName = $state('');
+	let isExtendedGallery = $state(false);
 
 	$effect(() => {
 		if (data.redirectGallery) {
@@ -14,6 +23,10 @@
 		}
 	});
 </script>
+
+<div class="my-4">
+	<Checkbox bind:checked={showEmpty} label="Show empty folders" right />
+</div>
 
 {#snippet file(fileName: string, file: File, path: string[])}
 	{@const base = file.$type === 'gallery' ? 'gallery' : file.$type === 'artist' ? 'artists' : null}
@@ -35,9 +48,73 @@
 {/snippet}
 
 {#snippet folder(folderName: string, path: string[])}
-	<Collapsable title={folderName} class="my-1">
-		<FileTree structure={data.galleries} {folder} {file} path={[...path, folderName]} />
+	<Collapsable
+		title={folderName}
+		class="my-1"
+		openIcon="fa-folder-open"
+		closedIcon="fa-folder"
+		iconFamily="regular"
+	>
+		{@render controls([...path, folderName])}
+		<FileTree {showEmpty} structure={data.galleries} {folder} {file} path={[...path, folderName]} />
 	</Collapsable>
 {/snippet}
 
-<FileTree structure={data.galleries} {folder} {file} />
+{#snippet controls(path: string[])}
+	<div class="mb-4 flex gap-x-1">
+		<Modal title="" icon="fa-solid fa-folder-plus" onClose={() => void (newName = '')} hideHeader>
+			{#snippet children(close)}
+				<div class="m-2 border-b p-3 font-bold">New Folder</div>
+				<div>
+					<TextInput bind:value={newName} label="Folder name" />
+					<ActionButton
+						disabled={!newName}
+						action={async () => {
+							await fetch('/api/folder/' + [...path, newName].join('/'), { method: 'PATCH' });
+							await invalidateAll();
+							showEmpty = true;
+							close();
+						}}>Create</ActionButton
+					>
+				</div>
+			{/snippet}
+		</Modal>
+		<Modal
+			title="New"
+			icon="fa-regular fa-images"
+			onClose={() => {
+				newName = '';
+				isExtendedGallery = false;
+			}}
+			hideHeader
+		>
+			{#snippet children(close)}
+				<div class="m-2 border-b p-3 font-bold">New Gallery</div>
+				<div>
+					<TextInput bind:value={newName} label="Gallery Name" />
+					<ActionButton
+						disabled={!newName}
+						action={async () => {
+							await fetch('/api/gallery/' + [...path, newName + '.gallery'].join('/') + '/save', {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json' },
+								body: JSON.stringify(
+									(isExtendedGallery ? { $extends: [] } : { pieces: [] }) satisfies RawGallery
+								)
+							});
+							await invalidateAll();
+							close();
+						}}>Create</ActionButton
+					>
+
+					<Collapsable title="Advanced" class="mt-4">
+						<Checkbox label="Is extended gallery" bind:checked={isExtendedGallery} />
+					</Collapsable>
+				</div>
+			{/snippet}
+		</Modal>
+	</div>
+{/snippet}
+
+{@render controls([])}
+<FileTree structure={data.galleries} {folder} {file} {showEmpty} />

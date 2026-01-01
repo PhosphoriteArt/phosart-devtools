@@ -8,6 +8,10 @@
 		children?: Snippet;
 		class?: string;
 		collapsedRight?: Snippet;
+
+		iconFamily?: string;
+		openIcon?: string;
+		closedIcon?: string;
 	}
 
 	let {
@@ -16,7 +20,10 @@
 		initial,
 		children,
 		class: cls,
-		collapsedRight
+		collapsedRight,
+		closedIcon,
+		openIcon,
+		iconFamily
 	}: Props = $props();
 
 	// svelte-ignore state_referenced_locally
@@ -46,7 +53,10 @@
 		class:pb-0={!isCollapsed}
 	>
 		<div class="flex items-center p-2">
-			<i class="fa-solid" class:fa-chevron-right={isCollapsed} class:fa-chevron-down={!isCollapsed}
+			<i
+				class="fa-{iconFamily ?? 'solid'} {isCollapsed
+					? (closedIcon ?? 'fa-chevron-right')
+					: (openIcon ?? 'fa-chevron-down')}"
 			></i>
 			<span>{title}</span>
 		</div>

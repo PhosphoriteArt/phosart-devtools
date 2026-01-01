@@ -5,10 +5,15 @@
 		title: string;
 		subtitle?: string;
 		open?: boolean | null;
-		children?: Snippet;
+		children?: Snippet<[close: () => void]>;
 		class?: string;
+		buttonClass?: string;
 		right?: Snippet;
 		modalRight?: Snippet;
+		icon?: string;
+		hideHeader?: boolean;
+
+		onClose?: () => void;
 	}
 
 	let {
@@ -17,8 +22,12 @@
 		open = $bindable(false),
 		children,
 		class: cls,
+		buttonClass,
 		right,
-		modalRight
+		modalRight,
+		icon,
+		onClose,
+		hideHeader
 	}: Props = $props();
 
 	let dialog: HTMLDialogElement | null = $state(null);
@@ -48,6 +57,7 @@
 			if (dialog.open) {
 				childContainer?.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 				dialog.close();
+				onClose?.();
 			}
 		}
 	});
@@ -67,10 +77,15 @@
 		onclick={() => {
 			open = !open;
 		}}
-		class="hover-effect flex h-full cursor-pointer items-center justify-between overflow-hidden rounded-2xl px-3 select-none"
+		class="hover-effect flex h-full cursor-pointer items-center justify-between overflow-hidden rounded-2xl px-2 select-none"
 	>
-		<div class="flex flex-col items-start p-2">
-			<div class="font-semibold">{title}</div>
+		<div class="flex flex-col items-start {buttonClass}">
+			<div class="font-semibold">
+				{#if icon}
+					<i class={icon}></i>
+				{/if}
+				{title}
+			</div>
 			{#if subtitle}
 				<div class="text-xs text-gray-400">{subtitle}</div>
 			{/if}
@@ -97,12 +112,14 @@
 	>
 		<div class="flex h-10/12 max-h-10/12 w-9/12 max-w-10/12 flex-col rounded-3xl bg-white">
 			<div class="flex items-center justify-between border-b border-b-gray-400 p-4 py-0">
-				<div class="flex flex-col items-start">
-					<div class="font-semibold">{title}</div>
-					{#if subtitle}
-						<div class="text-xs text-gray-400">{subtitle}</div>
-					{/if}
-				</div>
+				{#if !hideHeader}
+					<div class="flex flex-col items-start">
+						<div class="font-semibold">{title}</div>
+						{#if subtitle}
+							<div class="text-xs text-gray-400">{subtitle}</div>
+						{/if}
+					</div>
+				{/if}
 				{#if modalRight}
 					<div>
 						{@render modalRight()}
@@ -110,7 +127,7 @@
 				{/if}
 			</div>
 			<div bind:this={childContainer} class="grow overflow-scroll p-4">
-				{@render children?.()}
+				{@render children?.(() => void (open = false))}
 			</div>
 		</div>
 	</div>

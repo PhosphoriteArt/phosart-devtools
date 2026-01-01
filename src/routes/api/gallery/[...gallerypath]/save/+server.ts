@@ -26,6 +26,7 @@ async function saveGallery(galleryPath: string, newGallery: RawGallery) {
 	}
 
 	const galleryFullPath = path.join($ART(), galleryPath);
+	console.log(galleryPath, galleryFullPath);
 	const yaml = stringify(newGallery, {
 		blockQuote: true,
 		collectionStyle: 'block',
