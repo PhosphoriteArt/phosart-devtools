@@ -1,5 +1,6 @@
 import { createContext } from 'svelte';
-import { createLogger, type UploadPath } from './util';
+import { createLogger } from './log';
+import type { UploadPath } from './util';
 const logger = createLogger();
 
 type Override = { image?: string; videoFull?: string; videoThumb?: string };

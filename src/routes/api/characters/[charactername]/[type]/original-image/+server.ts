@@ -4,7 +4,8 @@ import { $ART, rawCharacters } from 'phosart-common/server';
 import { error } from '@sveltejs/kit';
 import { open } from 'node:fs/promises';
 import { asWebStream } from '$lib/server/fileutil';
-import { createLogger, type BaseResource } from '$lib/util';
+import { createLogger } from '$lib/log';
+import type { BaseResource } from '$lib/util';
 const logger = createLogger();
 
 export const GET: RequestHandler = async ({ params }) => {

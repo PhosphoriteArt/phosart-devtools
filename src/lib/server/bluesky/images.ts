@@ -6,7 +6,7 @@ import https from 'node:https';
 import path from 'node:path';
 import { $IMGDIR } from './paths';
 import { RateLimit } from 'async-sema';
-import { createLogger } from '$lib/util';
+import { createLogger } from '$lib/log';
 const logger = createLogger();
 
 const sema = RateLimit(3);

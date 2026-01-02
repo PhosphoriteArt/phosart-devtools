@@ -12,7 +12,7 @@ import { json } from '@sveltejs/kit';
 import { stringify } from 'yaml';
 import { unlink, writeFile } from 'node:fs/promises';
 import { getGalleryDir, isBaseGallery, normalizeGalleryPath } from '$lib/galleryutil';
-import { createLogger } from '$lib/util';
+import { createLogger } from '$lib/log';
 import { deleteResources } from '$lib/server/fileutil';
 const logger = createLogger();
 

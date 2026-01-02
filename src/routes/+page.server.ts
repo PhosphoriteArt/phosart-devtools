@@ -2,7 +2,7 @@ import { $ART, artists, rawGalleries } from 'phosart-common/server';
 import type { PageServerLoad } from './$types';
 import { search } from '$lib/server/structure';
 import { normalizeGalleryPath } from '$lib/galleryutil';
-import { createLogger } from '$lib/util';
+import { createLogger } from '$lib/log';
 const logger = createLogger();
 
 export const prerender = false;

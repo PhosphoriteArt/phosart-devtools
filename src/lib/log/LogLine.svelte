@@ -34,7 +34,7 @@
 </script>
 
 <script lang="ts">
-	import type { LogObj } from '$lib/util';
+	import type { LogObj } from '$lib/log';
 	import { Diamonds } from 'svelte-loading-spinners';
 
 	const {

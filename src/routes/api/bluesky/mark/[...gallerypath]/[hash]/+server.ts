@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { readSkipSet, writeSkipSet } from '$lib/server/bluesky/cache';
-import { createLogger } from '$lib/util';
+import { createLogger } from '$lib/log';
 const logger = createLogger();
 
 export const DELETE: RequestHandler = async ({ params }) => {

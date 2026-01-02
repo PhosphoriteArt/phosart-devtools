@@ -1,4 +1,4 @@
-import type { LogObj } from '$lib/util';
+import { Logger, type IMeta } from 'tslog';
 
 class RingBuffer<T> {
 	#buffer: T[];
@@ -66,4 +66,41 @@ export function transport(log: LogObj) {
 
 export function getRecentLogs(): LogObj[] {
 	return buf.unwrapped;
+}
+
+export type LogObj = {
+	_meta: IMeta;
+} & Record<string, unknown>;
+
+export function createLogger(): Logger<LogObj> {
+	const l = new Logger<LogObj>({
+		minLevel: getLogLevel()
+	});
+
+	if (typeof process !== 'undefined') {
+		l.attachTransport(transport);
+	} else {
+		l.settings.stylePrettyLogs = false;
+		l.settings.overwrite = {
+			transportFormatted(_, logArgs, __, logMeta) {
+				console.log(...logArgs, { _meta: logMeta });
+			}
+		};
+	}
+
+	return l;
+}
+export function getLogLevel(defaultLevel: number = 1): number {
+	if (typeof process === 'undefined') {
+		return defaultLevel;
+	}
+	// In Node.JS
+	if (!process.env.LOG_LEVEL) {
+		return defaultLevel;
+	}
+	try {
+		return parseInt(process.env.LOG_LEVEL);
+	} catch {
+		return defaultLevel;
+	}
 }

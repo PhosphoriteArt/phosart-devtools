@@ -1,5 +1,5 @@
 import type { BaseArtPiece } from 'phosart-common/util';
-import { Logger, type IMeta } from 'tslog';
+import { createLogger } from './log';
 const logger = createLogger();
 
 export function unique<T>(arr: T[]): T[] {
@@ -65,43 +65,4 @@ export async function uploadImage(
 export interface BaseResource {
 	image: BaseArtPiece['image'];
 	video?: BaseArtPiece['video'];
-}
-
-export type LogObj = {
-	_meta: IMeta;
-} & Record<string, unknown>;
-
-export function createLogger(): Logger<LogObj> {
-	const l = new Logger<LogObj>({
-		minLevel: getLogLevel()
-	});
-
-	if (typeof process !== 'undefined') {
-		import('./server/log.ts').then((mod) => {
-			l.attachTransport(mod.transport);
-		});
-	} else {
-		l.settings.stylePrettyLogs = false;
-		l.settings.overwrite = {
-			transportFormatted(_, logArgs, __, logMeta) {
-				console.log(...logArgs, { _meta: logMeta });
-			}
-		};
-	}
-
-	return l;
-}
-export function getLogLevel(defaultLevel: number = 1): number {
-	if (typeof process === 'undefined') {
-		return defaultLevel;
-	}
-	// In Node.JS
-	if (!process.env.LOG_LEVEL) {
-		return defaultLevel;
-	}
-	try {
-		return parseInt(process.env.LOG_LEVEL);
-	} catch {
-		return defaultLevel;
-	}
 }

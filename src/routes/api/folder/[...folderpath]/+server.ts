@@ -4,7 +4,7 @@ import path from 'node:path';
 import { json } from '@sveltejs/kit';
 import { normalizeGalleryPath } from '$lib/galleryutil';
 import { mkdir } from 'node:fs/promises';
-import { createLogger } from '$lib/util';
+import { createLogger } from '$lib/log';
 const logger = createLogger();
 
 export const PATCH: RequestHandler = async ({ params }) => {

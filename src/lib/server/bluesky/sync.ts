@@ -5,7 +5,7 @@ import { findMatches, getImages, mergePosts } from './posts';
 import { stat } from 'fs/promises';
 import { $CACHEFILE } from './paths';
 import type { PostWithMatch } from './types';
-import { createLogger } from '$lib/util';
+import { createLogger } from '$lib/log';
 import { Agent } from '@atproto/api';
 const logger = createLogger();
 

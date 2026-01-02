@@ -5,7 +5,7 @@ import { json } from '@sveltejs/kit';
 import { stringify } from 'yaml';
 import { writeFile } from 'node:fs/promises';
 import z from 'zod';
-import { createLogger } from '$lib/util';
+import { createLogger } from '$lib/log';
 import { rawCharacters } from 'phosart-common/server';
 import { deleteResources } from '$lib/server/fileutil';
 const logger = createLogger();

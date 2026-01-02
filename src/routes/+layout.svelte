@@ -8,7 +8,7 @@
 	import { createSharedGalleryOverrides } from '$lib/galleryoverride.svelte';
 	import { onMount } from 'svelte';
 	import Tooltip from '$lib/Tooltip.svelte';
-	import type { LogObj } from '$lib/util.js';
+	import type { LogObj } from '$lib/log';
 	import LogLine, { logAsArray } from '$lib/log/LogLine.svelte';
 	import { isEqual } from 'es-toolkit';
 	import Circle from '$lib/ext/Circle.svelte';

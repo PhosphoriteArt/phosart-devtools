@@ -3,7 +3,7 @@ import type { ArtistCache, RawGalleryCache } from 'phosart-common/server';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { isExtendsGallery } from '$lib/galleryutil';
-import { createLogger } from '$lib/util';
+import { createLogger } from '$lib/log';
 const logger = createLogger();
 
 export async function search(

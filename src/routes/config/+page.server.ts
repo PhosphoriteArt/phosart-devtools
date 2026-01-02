@@ -1,6 +1,6 @@
 import { artists, readThemeConfig, readThemeSchema } from 'phosart-common/server';
 import type { PageServerLoad } from './$types';
-import { createLogger } from '$lib/util';
+import { createLogger } from '$lib/log';
 const logger = createLogger();
 
 export const load: PageServerLoad = async () => {
