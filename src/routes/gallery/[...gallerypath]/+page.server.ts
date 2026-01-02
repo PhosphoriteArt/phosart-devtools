@@ -5,6 +5,7 @@ import {
 	readThemeConfig,
 	readThemeSchema
 } from 'phosart-common/server';
+import { normalizeCharacter } from 'phosart-common/util';
 import type { PageServerLoad } from './$types';
 import type { CharacterRef } from 'phosart-common/util';
 import { getGalleryDir, isBaseGallery, normalizeGalleryPath } from '$lib/galleryutil';
@@ -18,10 +19,11 @@ async function getAllCharacterRefsFromGalleries(): Promise<Record<string, Charac
 	return Object.values(await rawGalleries())
 		.flatMap((g) => (isBaseGallery(g) ? g.pieces : []))
 		.flatMap((p) => p.characters)
+		.map((ch) => normalizeCharacter(ch))
 		.reduce(
 			(acc, cur) => ({
 				...acc,
-				[typeof cur === 'string' ? cur : `${cur.name} by ${cur.from}`]: cur
+				[cur.from ? `${cur.name} by ${cur.from}` : cur.name]: cur
 			}),
 			{}
 		);

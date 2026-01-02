@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { useArtists, useCharacters, type CharacterRef } from 'phosart-common/util';
+	import {
+		normalizeCharacter,
+		useArtists,
+		useCharacters,
+		type CharacterRef
+	} from 'phosart-common/util';
 	import { arrAsObject } from './search/SearchResults.svelte';
 	import ControlledChippedInput from './chipped/ControlledChippedInput.svelte';
 
@@ -48,16 +53,16 @@
 	value={pieceCharacters}
 >
 	{#snippet renderChip(ch)}
+		{@const nch = normalizeCharacter(ch, fullCharacters)}
 		<div>
-			{#if typeof ch === 'string'}
-				{@const fullCh = fullCharacters[ch]}
-				{#if fullCh}
-					{fullCh.name}
+			{#if !nch.from}
+				{#if nch.info}
+					{nch.info.name}
 				{:else}
-					{ch}
+					{nch.name}
 				{/if}
 			{:else}
-				{ch.name} by {ch.from}
+				{nch.name} by {nch.from}
 			{/if}
 		</div>
 	{/snippet}
