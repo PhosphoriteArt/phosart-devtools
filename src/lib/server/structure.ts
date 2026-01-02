@@ -3,6 +3,8 @@ import type { ArtistCache, RawGalleryCache } from 'phosart-common/server';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { isExtendsGallery } from '$lib/galleryutil';
+import { createLogger } from '$lib/util';
+const logger = createLogger()
 
 export async function search(
 	dir: string,
@@ -10,6 +12,7 @@ export async function search(
 	artists: ArtistCache,
 	relative: string = ''
 ): Promise<FileStructure> {
+	logger.silly("Reading file structure rooted at", dir)
 	const list = await fs.readdir(dir, { withFileTypes: true });
 	const structure: FileStructure = { $type: 'folder', structure: {}, items: 0 };
 

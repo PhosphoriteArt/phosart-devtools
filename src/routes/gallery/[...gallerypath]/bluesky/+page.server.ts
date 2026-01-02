@@ -2,6 +2,8 @@ import { sync } from '$lib/server/bluesky/sync';
 import type { PageServerLoad } from './$types';
 import { readSkipSet } from '$lib/server/bluesky/cache';
 import { rawGalleries, readThemeConfig, readThemeSchema } from 'phosart-common/server';
+import { createLogger } from '$lib/util';
+const logger = createLogger()
 
 export const load: PageServerLoad = async ({ params }) => {
 	const result = await sync();

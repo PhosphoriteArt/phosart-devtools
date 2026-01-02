@@ -3,6 +3,8 @@ import { open } from 'node:fs/promises';
 import { asWebStream } from '$lib/server/fileutil';
 import { $IMGDIR } from '../../../../../lib/server/bluesky/paths';
 import path from 'node:path';
+import { createLogger } from '$lib/util';
+const logger = createLogger()
 
 export const GET: RequestHandler = async ({ params }) => {
 	const file = await open(

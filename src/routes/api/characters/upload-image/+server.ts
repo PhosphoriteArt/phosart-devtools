@@ -5,6 +5,8 @@ import { $ART } from 'phosart-common/server';
 import { writeFile } from 'node:fs/promises';
 import { getImageExtension } from '$lib/fileutil';
 import { asNodeStream } from '$lib/server/fileutil';
+import { createLogger } from '$lib/util';
+const logger = createLogger()
 
 export const POST: RequestHandler = async ({ request, url }) => {
 	const data = await request.formData();

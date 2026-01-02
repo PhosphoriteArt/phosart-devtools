@@ -6,6 +6,8 @@ import https from 'node:https';
 import path from 'node:path';
 import { $IMGDIR } from './paths';
 import { RateLimit } from 'async-sema';
+import { createLogger } from '$lib/util';
+const logger = createLogger();
 
 const sema = RateLimit(3);
 
@@ -18,10 +20,11 @@ export async function downloadAndWrite(h: string, uri: string) {
 
 	const ws = createWriteStream(tmp);
 
-	console.log('Downloading image:', h, '@', uri);
+	logger.debug('Downloading image', h, '@', uri, 'to', p, '...');
 	await new Promise((resolve, reject) => {
 		https.get(uri, (res) => {
 			res.on('error', (err) => {
+				logger.warn('Download failed; error:', err);
 				reject(err);
 			});
 			const pipe = pipeline(res, ws);
@@ -29,6 +32,7 @@ export async function downloadAndWrite(h: string, uri: string) {
 			pipe
 				.then((_) => {
 					if (res.statusCode && res.statusCode > 299) {
+						logger.warn('Download failed; bluesky responded with status', res.statusCode);
 						reject(res.statusCode);
 					} else {
 						resolve(_);
@@ -37,7 +41,7 @@ export async function downloadAndWrite(h: string, uri: string) {
 				.catch(reject);
 		});
 	});
-	console.log('Finished downloading image:', h, '@', uri);
+	logger.info('Finished downloading image', h, '@', uri);
 
 	await rename(tmp, p);
 }

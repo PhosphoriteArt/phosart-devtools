@@ -2,7 +2,8 @@ import { join } from 'node:path';
 import { $ART, rawGalleries } from 'phosart-common/server';
 import { error } from '@sveltejs/kit';
 import { getGalleryDir, isBaseGallery } from '$lib/galleryutil';
-import type { BaseResource } from '$lib/util';
+import { createLogger, type BaseResource } from '$lib/util';
+const logger = createLogger()
 
 export async function getOriginalImagePath(
 	galleryPath: string,

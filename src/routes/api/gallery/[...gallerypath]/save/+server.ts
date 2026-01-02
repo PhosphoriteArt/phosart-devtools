@@ -6,6 +6,8 @@ import { json } from '@sveltejs/kit';
 import { stringify } from 'yaml';
 import { writeFile } from 'node:fs/promises';
 import { isBaseGallery, normalizeGalleryPath } from '$lib/galleryutil';
+import { createLogger } from '$lib/util';
+const logger = createLogger()
 
 export const POST: RequestHandler = async ({ request, params }) => {
 	const galleryPath = normalizeGalleryPath(params.gallerypath);
@@ -34,4 +36,9 @@ async function saveGallery(galleryPath: string, newGallery: RawGallery) {
 		indent: 2
 	});
 	await writeFile(galleryFullPath, yaml, { encoding: 'utf-8' });
+}
+
+export const DELETE: RequestHandler = async () => {
+	// TODO
+	return json({ ok: true });
 }

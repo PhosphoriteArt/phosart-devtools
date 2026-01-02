@@ -1,18 +1,23 @@
 import { PostsClient } from 'phosart-bsky/util';
-import { readCache, readSet, writeCache, writeSet } from './cache';
+import { readCache, readPerceptualHashCache, writeCache, flushPerceptualHashCache } from './cache';
 import { error } from '@sveltejs/kit';
 import { findMatches, getImages, mergePosts } from './posts';
 import { stat } from 'fs/promises';
 import { $CACHEFILE } from './paths';
 import type { PostWithMatch } from './types';
+import { createLogger } from '$lib/util';
+const logger = createLogger();
 
 export async function sync(cfg?: Record<string, string>): Promise<PostWithMatch[] | Response> {
-	const [cache, fileset] = await Promise.all([readCache(), readSet()]);
+	logger.info('Syncing bluesky posts & images...');
+	const [cache, fileset] = await Promise.all([readCache(), readPerceptualHashCache()]);
 	const bskyDid = process.env.BSKY_DID ?? cfg?.bskyDid;
 	const bskyPassword = process.env.BSKY_PASSWORD ?? cfg?.bskyPassword;
 	const bskyUsername = process.env.BSKY_LOGIN ?? cfg?.bskyUsername;
 	if (!bskyDid || !bskyPassword || !bskyUsername) {
-		return error(400, 'Failed... ' + bskyDid);
+		const errTxt = `Can't sync bluesky; missing information. Missing username? ${!bskyUsername} password? ${!bskyPassword} did? ${!bskyDid}`;
+		logger.warn(errTxt);
+		return error(400, 'Failed... ' + errTxt);
 	}
 	const client = new PostsClient({
 		bskyDid,
@@ -40,9 +45,11 @@ export async function sync(cfg?: Record<string, string>): Promise<PostWithMatch[
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const allPosts = mergePosts(cache, await client.getPosts(undefined as any));
 	const withImages = await getImages(allPosts, fileset);
-	await writeSet(fileset);
+	await flushPerceptualHashCache(fileset);
 	if (withImages.length !== allPosts.length) {
 		return error(500, `Failed to load ${allPosts.length - withImages.length} image(s); try again`);
 	}
-	return await findMatches(withImages);
+	const matches = await findMatches(withImages);
+	logger.info('Done syncing');
+	return matches;
 }

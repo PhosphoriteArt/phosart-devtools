@@ -62,7 +62,7 @@
 
 {#snippet controls(path: string[])}
 	<div class="mb-4 flex gap-x-1">
-		<Modal title="" icon="fa-solid fa-folder-plus" onClose={() => void (newName = '')} hideHeader>
+		<Modal title="" tooltip="New Folder" icon="fa-solid fa-folder-plus" onClose={() => void (newName = '')} hideHeader>
 			{#snippet children(close)}
 				<div class="m-2 border-b p-3 font-bold">New Folder</div>
 				<div>
@@ -80,7 +80,8 @@
 			{/snippet}
 		</Modal>
 		<Modal
-			title="New"
+			tooltip="New Gallery"
+			title=""
 			icon="fa-regular fa-images"
 			onClose={() => {
 				newName = '';

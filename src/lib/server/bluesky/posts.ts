@@ -10,17 +10,22 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import phash from 'sharp-phash';
 import dist from 'sharp-phash/distance';
-import type { GalleryPath } from '$lib/util';
+import { createLogger, type GalleryPath } from '$lib/util';
 import { downloadAndWrite } from './images';
 import { $IMGDIR } from './paths';
 import { isExtendsGallery } from '$lib/galleryutil';
 import type { ExtendedPost, PostWithMatch } from './types';
-import type { Fileset } from './cache';
+import type { PerceptualHashCache } from './cache';
+const logger = createLogger();
 
 export async function findMatches(posts: ExtendedPost[]): Promise<PostWithMatch[]> {
+	logger.debug('Finding matches for', posts.length, 'posts...');
 	const gcache = await galleries();
 	const rgcache = await rawGalleries();
-	return posts.map((p) => findMatch(p, gcache, rgcache));
+	const matches = posts.map((p) => findMatch(p, gcache, rgcache));
+	const numMatches = matches.flatMap((p) => p.image_details).flatMap((d) => d.matches).length;
+	logger.silly('Found', numMatches, 'matches');
+	return matches;
 }
 
 function matchesForPhash(
@@ -70,8 +75,12 @@ export function findMatch(
 	};
 }
 
-export async function getImages(posts: Post[], fileset: Fileset): Promise<ExtendedPost[]> {
-	return (
+export async function getImages(
+	posts: Post[],
+	fileset: PerceptualHashCache
+): Promise<ExtendedPost[]> {
+	logger.debug('Getting images for', posts.length, 'posts...');
+	const withImages = (
 		await Promise.all(
 			posts.map(async (post) => {
 				try {
@@ -83,6 +92,9 @@ export async function getImages(posts: Post[], fileset: Fileset): Promise<Extend
 			})
 		)
 	).filter((p): p is ExtendedPost => !!p);
+
+	logger.debug('Finished getting images');
+	return withImages;
 }
 
 export async function phashImage(h: string): Promise<string> {
@@ -91,7 +103,10 @@ export async function phashImage(h: string): Promise<string> {
 	return await phash(await readFile(p));
 }
 
-export async function getImage(post: Post, fileset: Fileset): Promise<ExtendedPost | null> {
+export async function getImage(
+	post: Post,
+	fileset: PerceptualHashCache
+): Promise<ExtendedPost | null> {
 	return {
 		...post,
 		image_details: await Promise.all(
@@ -106,7 +121,7 @@ export async function getImage(post: Post, fileset: Fileset): Promise<ExtendedPo
 	};
 }
 
-export async function doPhashImage(uri: string, fileset: Fileset): Promise<string> {
+export async function doPhashImage(uri: string, fileset: PerceptualHashCache): Promise<string> {
 	const id = imageId(uri);
 	if (id in fileset) {
 		return fileset[id];
@@ -116,7 +131,7 @@ export async function doPhashImage(uri: string, fileset: Fileset): Promise<strin
 	try {
 		hash = await phashImage(id);
 	} catch (e) {
-		console.log('Failed to hash image ' + id + ':', e);
+		logger.debug('Failed to hash image', id, 'trying to download the image then will hash again. Error:', e);
 		await downloadAndWrite(id, uri);
 		hash = await phashImage(id);
 	}

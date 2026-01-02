@@ -109,9 +109,11 @@
 				<AddImageButton
 					class="m-2"
 					defaultArtist={data.config?.defaultArtist ?? null}
-					existingIdentifiers={g?.pieces?.map((p) => p.slug) ?? []}
+					existingIdentifiers={isBaseGallery(g) ? g?.pieces?.map((p) => p.slug) ?? [] : []}
 					galleryPath={{ gallery: data.galleryPath, piece: '' }}
 					onUpload={(additionalPieces) => {
+						if (!isBaseGallery(g)) return;
+						
 						for (const piece of additionalPieces) {
 							overrides.setFromNew(
 								{ gallery: data.galleryPath, piece: piece.piece.slug },
@@ -158,7 +160,7 @@
 						<div>
 							<button
 								onclick={(ev) => {
-									if (!ev.shiftKey) return;
+									if (!ev.shiftKey || !isBaseGallery(g)) return;
 
 									g.pieces = [...g.pieces.slice(0, i), ...g.pieces.slice(i + 1)];
 

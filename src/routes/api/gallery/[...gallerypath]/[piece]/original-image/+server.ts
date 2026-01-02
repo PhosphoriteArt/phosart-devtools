@@ -3,6 +3,8 @@ import { open } from 'node:fs/promises';
 import { asWebStream } from '$lib/server/fileutil';
 import { normalizeGalleryPath } from '$lib/galleryutil';
 import { getOriginalImagePath } from './util';
+import { createLogger } from '$lib/util';
+const logger = createLogger()
 
 export const GET: RequestHandler = async ({ params, url }) => {
 	const galleryPath = normalizeGalleryPath(params.gallerypath);

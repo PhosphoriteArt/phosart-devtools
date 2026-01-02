@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import Tooltip, { type TooltipOptions } from './Tooltip.svelte';
 
-	interface Props {
+	interface Props extends TooltipOptions {
 		title: string;
 		subtitle?: string;
 		open?: boolean | null;
@@ -27,7 +28,8 @@
 		modalRight,
 		icon,
 		onClose,
-		hideHeader
+		hideHeader,
+		...tooltipOptions
 	}: Props = $props();
 
 	let dialog: HTMLDialogElement | null = $state(null);
@@ -67,42 +69,47 @@
 	}
 </script>
 
-<div class="rounded-2xl border {cls}">
-	<div
-		role="button"
-		tabindex="0"
-		onkeypress={() => {
-			open = !open;
-		}}
-		onclick={() => {
-			open = !open;
-		}}
-		class="hover-effect flex h-full cursor-pointer items-center justify-between overflow-hidden rounded-2xl px-2 select-none"
-	>
-		<div class="flex flex-col items-start {buttonClass}">
-			<div class="font-semibold">
-				{#if icon}
-					<i class={icon}></i>
+<Tooltip {...tooltipOptions}>
+	{#snippet children(attach)}
+		<div class="rounded-2xl border {cls}" {@attach attach}>
+			<div
+				role="button"
+				tabindex="0"
+				onkeypress={() => {
+					open = !open;
+				}}
+				onclick={() => {
+					open = !open;
+				}}
+				class="hover-effect flex h-full cursor-pointer items-center justify-between overflow-hidden rounded-2xl px-2 select-none"
+			>
+				<div class="flex flex-col items-start {buttonClass}">
+					<div class="font-semibold">
+						{#if icon}
+							<i class={icon}></i>
+						{/if}
+						{title}
+					</div>
+					{#if subtitle}
+						<div class="text-xs text-gray-400">{subtitle}</div>
+					{/if}
+				</div>
+				{#if right}
+					<div>
+						{@render right()}
+					</div>
 				{/if}
-				{title}
 			</div>
-			{#if subtitle}
-				<div class="text-xs text-gray-400">{subtitle}</div>
-			{/if}
 		</div>
-		{#if right}
-			<div>
-				{@render right()}
-			</div>
-		{/if}
-	</div>
-</div>
+	{/snippet}
+</Tooltip>
 
 <dialog bind:this={dialog}>
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_interactive_supports_focus -->
 	<div
-		class="fixed flex h-screen w-screen items-center justify-center bg-[#0004]"
+		class="fixed flex w-screen items-center justify-center bg-[#0004]"
+		style="height: calc(100vh - 1.25rem)"
 		role="button"
 		onclick={(e) => {
 			if (e.target === e.currentTarget) {

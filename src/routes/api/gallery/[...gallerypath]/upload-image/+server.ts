@@ -8,6 +8,8 @@ import { getImageExtension } from '$lib/fileutil';
 import { asNodeStream } from '$lib/server/fileutil';
 import { spawn } from 'node:child_process';
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
+import { createLogger } from '$lib/util';
+const logger = createLogger()
 
 export const POST: RequestHandler = async ({ request, params }) => {
 	const galleryPath = normalizeGalleryPath(params.gallerypath);

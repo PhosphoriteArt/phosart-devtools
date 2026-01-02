@@ -4,6 +4,8 @@ import path from 'node:path';
 import { json } from '@sveltejs/kit';
 import { normalizeGalleryPath } from '$lib/galleryutil';
 import { mkdir } from 'node:fs/promises';
+import { createLogger } from '$lib/util';
+const logger = createLogger()
 
 export const PATCH: RequestHandler = async ({ params }) => {
 	const folderPath = normalizeGalleryPath(params.folderpath);

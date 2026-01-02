@@ -2,6 +2,8 @@ import { $ART, artists, rawGalleries } from 'phosart-common/server';
 import type { PageServerLoad } from './$types';
 import { search } from '$lib/server/structure';
 import { normalizeGalleryPath } from '$lib/galleryutil';
+import { createLogger } from '$lib/util';
+const logger = createLogger()
 
 export const prerender = false;
 

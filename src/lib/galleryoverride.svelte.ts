@@ -1,5 +1,6 @@
 import { createContext } from 'svelte';
-import type { UploadPath } from './util';
+import { createLogger, type UploadPath } from './util';
+const logger = createLogger()
 
 type Override = { image?: string; videoFull?: string; videoThumb?: string };
 type PieceOverride = { main: Override; alts: Record<string | number, Override> };

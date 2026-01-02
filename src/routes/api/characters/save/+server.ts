@@ -5,6 +5,8 @@ import { json } from '@sveltejs/kit';
 import { stringify } from 'yaml';
 import { writeFile } from 'node:fs/promises';
 import z from 'zod';
+import { createLogger } from '$lib/util';
+const logger = createLogger()
 
 const ZCharacters = z.array(RawCharacter);
 
