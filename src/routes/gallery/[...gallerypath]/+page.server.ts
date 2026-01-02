@@ -9,7 +9,7 @@ import type { PageServerLoad } from './$types';
 import type { CharacterRef } from 'phosart-common/util';
 import { getGalleryDir, isBaseGallery, normalizeGalleryPath } from '$lib/galleryutil';
 import { createLogger, unique as uniq } from '$lib/util';
-const logger = createLogger()
+const logger = createLogger();
 
 export const prerender = false;
 
@@ -35,6 +35,7 @@ async function getAllDefinedCharacterRefs(): Promise<Record<string, CharacterRef
 
 export const load: PageServerLoad = async ({ params }) => {
 	const galleryPath = normalizeGalleryPath(params.gallerypath);
+	logger.silly('Loading gallery page data @', galleryPath);
 
 	const allCharacterRefs: Record<string, CharacterRef> = {
 		...(await getAllCharacterRefsFromGalleries()),
@@ -42,20 +43,29 @@ export const load: PageServerLoad = async ({ params }) => {
 	};
 
 	const galleryDir = getGalleryDir(galleryPath);
+	const galleryValues = Object.values(await rawGalleries());
+	const allTags = uniq(
+		galleryValues.flatMap((g) => (isBaseGallery(g) ? g.pieces : [])).flatMap((p) => p.tags)
+	);
+	const allGalleryRelpaths = Object.keys(await rawGalleries())
+		.filter((k) => k.startsWith(galleryDir))
+		.map((p) => './' + p.replace(galleryDir, ''));
+	logger.silly(
+		'Loaded gallery page data @',
+		galleryPath,
+		'tags',
+		allTags.length,
+		'relpaths',
+		allGalleryRelpaths.length
+	);
 
 	return {
 		rawGallery: (await rawGalleries())[galleryPath],
 		allArtists: await artists(),
 		allCharacterRefs,
 		allCharacters: await characters(),
-		allTags: uniq(
-			Object.values(await rawGalleries())
-				.flatMap((g) => (isBaseGallery(g) ? g.pieces : []))
-				.flatMap((p) => p.tags)
-		),
-		allGalleryRelpaths: Object.keys(await rawGalleries())
-			.filter((k) => k.startsWith(galleryDir))
-			.map((p) => './' + p.replace(galleryDir, '')),
+		allTags,
+		allGalleryRelpaths,
 		galleryPath,
 		config: await readThemeConfig(await readThemeSchema())
 	};

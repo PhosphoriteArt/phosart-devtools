@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	function colorForLevel(level: string) {
+	function colorForLevel(level: string | null | undefined) {
 		switch (level) {
 			case 'SILLY':
 				return 'text-gray-400';
@@ -49,7 +49,7 @@
 		disableScroll?: boolean;
 	} = $props();
 
-	const level: string = $derived(log?._meta.logLevelName);
+	const level: string | null = $derived(log?._meta.logLevelName ?? null);
 	const obj = $derived(logAsArray(log) ?? log);
 	let lineEl: HTMLDivElement | null = $state(null);
 
