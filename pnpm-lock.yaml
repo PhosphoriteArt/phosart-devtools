@@ -58,7 +58,7 @@ importers:
         version: 1.5.2
       phosart-bsky:
         specifier: github:phosphoriteart/phosart-bsky#stable
-        version: https://codeload.github.com/phosphoriteart/phosart-bsky/tar.gz/3f4bb3b1f876dc78afba1934e12a1526e116ab58(svelte@5.46.0)
+        version: https://codeload.github.com/phosphoriteart/phosart-bsky/tar.gz/33e1697e1bf7045ba28e9fec9e3b31260843d84d(svelte@5.46.0)
       phosart-common:
         specifier: github:phosphoriteart/phosart-common#stable
         version: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/a232da8b5a31efe539f11b2993fabcb4f3fdac77(svelte@5.46.0)
@@ -2089,8 +2089,8 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
-  phosart-bsky@https://codeload.github.com/phosphoriteart/phosart-bsky/tar.gz/3f4bb3b1f876dc78afba1934e12a1526e116ab58:
-    resolution: {tarball: https://codeload.github.com/phosphoriteart/phosart-bsky/tar.gz/3f4bb3b1f876dc78afba1934e12a1526e116ab58}
+  phosart-bsky@https://codeload.github.com/phosphoriteart/phosart-bsky/tar.gz/33e1697e1bf7045ba28e9fec9e3b31260843d84d:
+    resolution: {tarball: https://codeload.github.com/phosphoriteart/phosart-bsky/tar.gz/33e1697e1bf7045ba28e9fec9e3b31260843d84d}
     version: 0.2.1
     peerDependencies:
       svelte: ^5.0.0
@@ -4637,7 +4637,7 @@ snapshots:
 
   pathe@2.0.3: {}
 
-  phosart-bsky@https://codeload.github.com/phosphoriteart/phosart-bsky/tar.gz/3f4bb3b1f876dc78afba1934e12a1526e116ab58(svelte@5.46.0):
+  phosart-bsky@https://codeload.github.com/phosphoriteart/phosart-bsky/tar.gz/33e1697e1bf7045ba28e9fec9e3b31260843d84d(svelte@5.46.0):
     dependencies:
       '@atproto/api': 0.18.9
       mongodb: 7.0.0

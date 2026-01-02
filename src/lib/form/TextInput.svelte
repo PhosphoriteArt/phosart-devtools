@@ -14,6 +14,7 @@
 		validationError?: string;
 		options?: string[];
 		icon?: string;
+		password?: boolean;
 	}
 
 	const id = $props.id();
@@ -28,7 +29,8 @@
 		onclick,
 		validationError,
 		options,
-		icon
+		icon,
+		password
 	}: Props = $props();
 
 	let inputRef: HTMLInputElement | null = $state(null);
@@ -66,7 +68,7 @@
 		{/if}
 		<input
 			id="form-{id}"
-			type="text"
+			type={password ? 'password' : 'text'}
 			bind:value
 			bind:this={inputRef}
 			{placeholder}

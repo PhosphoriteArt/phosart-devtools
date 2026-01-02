@@ -258,7 +258,7 @@
 		{/each}
 	</div>
 	<ScreenSentinel onObservable={extendLimit} tickMs={150} />
-	{#if g.pieces.length > 0}
+	{#if g?.pieces.length > 0}
 		{@render addButton()}
 	{/if}
 	<div class="flex justify-stretch pl-2">

@@ -17,11 +17,12 @@
 		children,
 		loadingContent,
 		class: userClass,
-		disabled,
+		disabled: userDisabled,
 		unstyled
 	}: Props = $props();
 
 	let loading = $state(false);
+	const disabled = $derived(userDisabled || loading);
 
 	const defaultCls = $derived(
 		`rounded-xl border transition p-1 px-2 ${disabled ? 'bg-gray-200 text-gray-600 cursor-not-allowed' : 'bg-white hover:bg-gray-300 active:bg-gray-500 cursor-pointer shadow-sm shadow-gray-400  active:shadow-none'}`

@@ -13,7 +13,8 @@ export const load: LayoutServerLoad = async () => {
 	logger.silly('Loaded layout data');
 	return {
 		redirectGallery: normalizeGalleryPath(onlyPath) || null,
-		previewPort: getPreviewPort()
+		previewPort: getPreviewPort(),
+		bskyAvailable: isBlueskyAvailable()
 	};
 };
 
@@ -26,4 +27,16 @@ function getPreviewPort() {
 	} catch {
 		return null;
 	}
+}
+
+function isBlueskyAvailable() {
+	const bskyDid = process.env.BSKY_DID;
+	const bskyPassword = process.env.BSKY_PASSWORD;
+	const bskyUsername = process.env.BSKY_LOGIN;
+	if (!bskyDid || !bskyPassword || !bskyUsername) {
+		logger.silly('Bluesky not available; missing credentials');
+		return false;
+	}
+	logger.silly('Bluesky available');
+	return true;
 }
