@@ -3,7 +3,7 @@ import { $ART, rawGalleries } from 'phosart-common/server';
 import { error } from '@sveltejs/kit';
 import { getGalleryDir, isBaseGallery } from '$lib/galleryutil';
 import { createLogger, type BaseResource } from '$lib/util';
-const logger = createLogger()
+const logger = createLogger();
 
 export async function getOriginalImagePath(
 	galleryPath: string,
@@ -17,11 +17,13 @@ export async function getOriginalImagePath(
 ): Promise<string | Response> {
 	const gallery = (await rawGalleries())[galleryPath];
 	if (!isBaseGallery(gallery)) {
+		logger.warn('Gallery not found for original image @', galleryPath);
 		return error(404, 'gallery not found');
 	}
 
 	const piece = gallery.pieces.find((p) => p.slug === pieceSlug);
 	if (!piece) {
+		logger.warn('Piece not found for original image @', galleryPath, 'piece', pieceSlug);
 		return error(404, 'piece not found');
 	}
 
@@ -35,20 +37,25 @@ export async function getOriginalImagePath(
 
 	let resourceUrl = getResource(piece);
 	if (!resourceUrl) {
+		logger.warn('Resource not found for original image @', galleryPath, 'piece', pieceSlug);
 		return error(404, 'resource not found pt. 1');
 	}
 
 	if (alt || (altIndex ?? -1) >= 0) {
 		const altPei = piece?.alts?.find((a) => a.name === alt) ?? piece?.alts?.[altIndex ?? -1];
 		if (!altPei) {
+			logger.warn('Alt not found for original image @', galleryPath, 'piece', pieceSlug);
 			return error(404, 'alt not found');
 		}
 		resourceUrl = getResource(altPei);
 	}
 
 	if (!resourceUrl) {
+		logger.warn('Resource not found for original image @', galleryPath, 'piece', pieceSlug);
 		return error(404, 'resourceUrl not found pt 2.');
 	}
 
-	return join($ART(), getGalleryDir(galleryPath), resourceUrl);
+	const fullPath = join($ART(), getGalleryDir(galleryPath), resourceUrl);
+	logger.silly('Resolved original image @', fullPath);
+	return fullPath;
 }

@@ -4,7 +4,7 @@ import { asWebStream } from '$lib/server/fileutil';
 import { normalizeGalleryPath } from '$lib/galleryutil';
 import { getOriginalImagePath } from './util';
 import { createLogger } from '$lib/util';
-const logger = createLogger()
+const logger = createLogger();
 
 export const GET: RequestHandler = async ({ params, url }) => {
 	const galleryPath = normalizeGalleryPath(params.gallerypath);
@@ -21,11 +21,27 @@ export const GET: RequestHandler = async ({ params, url }) => {
 			// ignore
 		}
 	}
+	logger.silly(
+		'Fetching original image',
+		'gallery',
+		galleryPath,
+		'piece',
+		pieceSlug,
+		'video?',
+		video,
+		'thumb?',
+		thumb,
+		'alt?',
+		alt ?? 'none',
+		'altIndex',
+		altIndex
+	);
 	const path = await getOriginalImagePath(galleryPath, pieceSlug, { video, thumb, alt, altIndex });
 	if (typeof path !== 'string') {
 		return path;
 	}
 
+	logger.silly('Serving original image @', path);
 	const file = await open(path);
 
 	return new Response(asWebStream(file.createReadStream({ autoClose: true })), {

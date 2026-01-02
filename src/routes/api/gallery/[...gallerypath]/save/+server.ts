@@ -7,14 +7,16 @@ import { stringify } from 'yaml';
 import { writeFile } from 'node:fs/promises';
 import { isBaseGallery, normalizeGalleryPath } from '$lib/galleryutil';
 import { createLogger } from '$lib/util';
-const logger = createLogger()
+const logger = createLogger();
 
 export const POST: RequestHandler = async ({ request, params }) => {
 	const galleryPath = normalizeGalleryPath(params.gallerypath);
 	const gallery = await ZRawGallery.parseAsync(await request.json());
 
+	logger.info('Saving gallery @', galleryPath, '...');
 	await saveGallery(galleryPath, gallery);
 	clearCache();
+	logger.info('Saved gallery @', galleryPath);
 
 	return json({ ok: true });
 };
@@ -28,6 +30,7 @@ async function saveGallery(galleryPath: string, newGallery: RawGallery) {
 	}
 
 	const galleryFullPath = path.join($ART(), galleryPath);
+	logger.silly('Writing gallery yaml @', galleryFullPath, '...');
 	const yaml = stringify(newGallery, {
 		blockQuote: true,
 		collectionStyle: 'block',
@@ -36,9 +39,10 @@ async function saveGallery(galleryPath: string, newGallery: RawGallery) {
 		indent: 2
 	});
 	await writeFile(galleryFullPath, yaml, { encoding: 'utf-8' });
+	logger.debug('Wrote gallery yaml @', galleryFullPath);
 }
 
 export const DELETE: RequestHandler = async () => {
 	// TODO
 	return json({ ok: true });
-}
+};

@@ -6,7 +6,7 @@ import { writeFile } from 'node:fs/promises';
 import { getImageExtension } from '$lib/fileutil';
 import { asNodeStream } from '$lib/server/fileutil';
 import { createLogger } from '$lib/util';
-const logger = createLogger()
+const logger = createLogger();
 
 export const POST: RequestHandler = async ({ request, url }) => {
 	const data = await request.formData();
@@ -16,7 +16,9 @@ export const POST: RequestHandler = async ({ request, url }) => {
 
 	const type = url.searchParams.get('for') === 'thumb' ? 'thumb' : 'full';
 
+	logger.info('Uploading character image', fname, 'as', type, 'with type', ftype, '...');
 	await uploadImage(type, f, fname, ftype);
+	logger.info('Uploaded character image', fname, 'as', type);
 
 	return json({
 		fname: './' + relpath(type, fname, ftype)
@@ -25,8 +27,10 @@ export const POST: RequestHandler = async ({ request, url }) => {
 
 async function uploadImage(type: string, image: File, fname: string, ftype: string) {
 	const fp = npath.join($ART(), 'characters', relpath(type, fname, ftype));
+	logger.debug('Writing character image @', fp, 'for', fname, '...');
 
 	await writeFile(fp, asNodeStream(image.stream()), { encoding: 'utf-8' });
+	logger.debug('Wrote character image @', fp);
 }
 
 function relpath(type: string, fname: string, ftype: string) {

@@ -9,7 +9,7 @@ import { asNodeStream } from '$lib/server/fileutil';
 import { spawn } from 'node:child_process';
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 import { createLogger } from '$lib/util';
-const logger = createLogger()
+const logger = createLogger();
 
 export const POST: RequestHandler = async ({ request, params }) => {
 	const galleryPath = normalizeGalleryPath(params.gallerypath);
@@ -18,10 +18,12 @@ export const POST: RequestHandler = async ({ request, params }) => {
 	const fname = data.get('filename') as string;
 	const ftype = data.get('filetype') as string;
 
+	logger.info('Uploading gallery image', fname, 'to', galleryPath, 'with type', ftype);
 	await uploadImage(galleryPath, f, fname, ftype);
 
 	if (ftype.startsWith('video')) {
-		spawn(ffmpegPath, [
+		logger.info('Generating thumbnail for video', fname, '@', galleryPath, '...');
+		const ffmpeg = spawn(ffmpegPath, [
 			'-i',
 			npath.join($ART(), getGalleryDir(galleryPath), relpath(galleryPath, fname, ftype)),
 			'-vf',
@@ -37,7 +39,18 @@ export const POST: RequestHandler = async ({ request, params }) => {
 			),
 			'-y'
 		]);
+		try {
+			await new Promise((resolve, reject) => {
+				ffmpeg.once('close', resolve);
+				ffmpeg.on('error', (err) => {
+					reject(err);
+				});
+			});
+		} catch (e) {
+			logger.warn('Failed to generate video thumbnail:', e);
+		}
 	}
+	logger.info('Uploaded gallery image', fname, 'to', galleryPath);
 
 	return json({
 		fname: './' + relpath(galleryPath, fname, ftype),
@@ -48,8 +61,10 @@ export const POST: RequestHandler = async ({ request, params }) => {
 async function uploadImage(galleryPath: string, image: File, fname: string, ftype: string) {
 	const galleryDir = getGalleryDir(galleryPath);
 	const fp = npath.join($ART(), galleryDir, relpath(galleryPath, fname, ftype));
+	logger.silly('Writing gallery image @', fp, 'for', fname, '...');
 
 	await writeFile(fp, asNodeStream(image.stream()), { encoding: 'utf-8' });
+	logger.debug('Wrote gallery image @', fp);
 }
 
 function relpath(galleryPath: string, fname: string, ftype: string) {
