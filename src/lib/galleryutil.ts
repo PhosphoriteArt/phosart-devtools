@@ -1,7 +1,5 @@
 import type { BaseArtPiece, BaseGallery, ExtendedGallery, RawGallery } from 'phosart-common/util';
 import npath from 'node:path';
-import { createLogger } from './util';
-const logger = createLogger()
 
 export function normalizeGalleryPath(path: string | null | undefined): string {
 	return (path ?? '').replaceAll(npath.sep, '/').replaceAll(/^\/*/g, '');

@@ -152,9 +152,7 @@
 		/>
 	{/each}
 	{#if numFetchesInFlight > 0 || isServerDoingWork}
-		<div
-			class="fixed right-0 bottom-0 flex h-4.75 items-end justify-center pb-0.5"
-		>
+		<div class="fixed right-0 bottom-0 flex h-4.75 items-end justify-center pb-0.5">
 			<Circle size={16} color="#04F" duration="0.4s" />
 		</div>
 	{/if}

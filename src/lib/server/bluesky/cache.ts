@@ -74,7 +74,7 @@ export async function readSkipSet(): Promise<SkipSet> {
 		logger.silly('Reading skipset @', $SKIPSET(), '...');
 		const res = await readPack<Record<string, string[]>>($SKIPSET());
 		const value = Object.fromEntries(Object.entries(res).map(([k, v]) => [k, new Set(v)]));
-		logger.silly('Read skipset @', $SKIPSET())
+		logger.silly('Read skipset @', $SKIPSET());
 		return value;
 	} catch (err) {
 		logger.info("Couldn't read skipset @", $SKIPSET(), '- will create it. Error:', err);

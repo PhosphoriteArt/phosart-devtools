@@ -1,6 +1,6 @@
 import { createContext } from 'svelte';
 import { createLogger, type UploadPath } from './util';
-const logger = createLogger()
+const logger = createLogger();
 
 type Override = { image?: string; videoFull?: string; videoThumb?: string };
 type PieceOverride = { main: Override; alts: Record<string | number, Override> };
@@ -10,6 +10,7 @@ export class GalleryOverrides {
 	#overrides: { overrides: GalleryOverrideStore } = $state({ overrides: {} });
 
 	reset() {
+		logger.debug('Resetting overrides');
 		this.#overrides.overrides = {};
 	}
 
@@ -49,6 +50,7 @@ export class GalleryOverrides {
 	}
 
 	#set(path: UploadPath, key: keyof Override, override: string | null) {
+		logger.debug('Setting override for', path, '@', key);
 		const gpath = JSON.stringify(path);
 		const obj = this.#ensure(gpath, path.piece ?? 'character', path.alt);
 		if (obj[key]) {

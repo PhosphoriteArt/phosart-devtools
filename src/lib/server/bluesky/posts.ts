@@ -131,7 +131,12 @@ export async function doPhashImage(uri: string, fileset: PerceptualHashCache): P
 	try {
 		hash = await phashImage(id);
 	} catch (e) {
-		logger.debug('Failed to hash image', id, 'trying to download the image then will hash again. Error:', e);
+		logger.debug(
+			'Failed to hash image',
+			id,
+			'trying to download the image then will hash again. Error:',
+			e
+		);
 		await downloadAndWrite(id, uri);
 		hash = await phashImage(id);
 	}
