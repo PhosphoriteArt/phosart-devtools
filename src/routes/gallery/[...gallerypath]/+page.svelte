@@ -44,8 +44,9 @@
 	} from 'phosart-common/util';
 	import { DateTime } from 'luxon';
 	import { onMount } from 'svelte';
-	import { invalidateAll } from '$app/navigation';
+	import { goto as go, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import ActionButton from '$lib/ActionButton.svelte';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -253,4 +254,28 @@
 	{#if g.pieces.length > 0}
 		{@render addButton()}
 	{/if}
+	<div class="flex justify-stretch pl-2">
+		<Collapsable title="Advanced" class="w-full">
+			<ActionButton
+				disabled={!shiftDown}
+				class="{shiftDown
+					? 'border-red-500 text-red-800 hover:bg-red-200'
+					: 'cursor-not-allowed font-bold'} w-full text-center "
+				action={async () => {
+					await fetch(`/api/gallery/${data.galleryPath}/save`, { method: 'DELETE' });
+					await go(resolve('/'));
+					await invalidateAll();
+				}}
+			>
+				<div class="font-normal">
+					<i class="fa-solid fa-trash"></i>
+					Delete Gallery
+				</div>
+				<div class="text-[8pt]">(requires shift-click)</div>
+			</ActionButton>
+			<Collapsable title="JSON" class="mt-2 overflow-scroll border-t border-gray-300 text-gray-400">
+				<pre class="text-gray-900">{JSON.stringify(g, null, 4)}</pre>
+			</Collapsable>
+		</Collapsable>
+	</div>
 {/if}

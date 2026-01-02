@@ -167,7 +167,7 @@
 	</div>
 {/if}
 
-<div class="flex w-full justify-center pt-4">
+<div class="flex w-full justify-center pt-4 pb-8">
 	<div class="container">
 		<div
 			class="flex min-h-10 w-full items-center justify-center rounded-xl bg-gray-100 py-2 select-none"

@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types';
 import path from 'node:path';
 import { json } from '@sveltejs/kit';
 import { stringify } from 'yaml';
-import { writeFile } from 'node:fs/promises';
+import { unlink, writeFile } from 'node:fs/promises';
 import { isBaseGallery, normalizeGalleryPath } from '$lib/galleryutil';
 import { createLogger } from '$lib/util';
 const logger = createLogger();
@@ -42,7 +42,13 @@ async function saveGallery(galleryPath: string, newGallery: RawGallery) {
 	logger.debug('Wrote gallery yaml @', galleryFullPath);
 }
 
-export const DELETE: RequestHandler = async () => {
-	// TODO
+export const DELETE: RequestHandler = async ({ params }) => {
+	const galleryPath = normalizeGalleryPath(params.gallerypath);
+	const gpath = path.join($ART(), galleryPath);
+	logger.info('Deleting gallery @', gpath, '...');
+	await unlink(gpath);
+	clearCache();
+	logger.info('Deleted gallery @', gpath);
+
 	return json({ ok: true });
 };
