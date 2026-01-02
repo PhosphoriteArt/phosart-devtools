@@ -239,4 +239,6 @@
 		</Modal>
 	{/each}
 </div>
-{@render addButton()}
+{#if characters.length > 0}
+	{@render addButton()}
+{/if}

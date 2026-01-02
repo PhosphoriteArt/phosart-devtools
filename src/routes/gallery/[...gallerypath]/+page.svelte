@@ -250,5 +250,7 @@
 			</Modal>
 		{/each}
 	</div>
-	{@render addButton()}
+	{#if g.pieces.length > 0}
+		{@render addButton()}
+	{/if}
 {/if}
