@@ -47,6 +47,7 @@
 	import { goto as go, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import ActionButton from '$lib/ActionButton.svelte';
+	import ScreenSentinel from '$lib/ScreenSentinel.svelte';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -74,6 +75,11 @@
 	let epoch = getEpoch();
 
 	let shiftDown = $state(false);
+	let limit = $state(9);
+
+	function extendLimit() {
+		limit += 9;
+	}
 
 	onMount(() => {
 		const f = (ev: KeyboardEvent) => {
@@ -142,7 +148,7 @@
 	{@render addButton()}
 
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-		{#each sorted as [piece, i] (piece.slug)}
+		{#each sorted.slice(0, limit) as [piece, i] (piece.slug)}
 			<Modal
 				title={piece.name}
 				subtitle={DateTime.fromJSDate(piece.date).toFormat('f')}
@@ -251,6 +257,7 @@
 			</Modal>
 		{/each}
 	</div>
+	<ScreenSentinel onObservable={extendLimit} tickMs={150} />
 	{#if g.pieces.length > 0}
 		{@render addButton()}
 	{/if}
@@ -278,4 +285,8 @@
 			</Collapsable>
 		</Collapsable>
 	</div>
+{/if}
+
+{#if isBaseGallery(g) && limit < g?.pieces.length}
+	<div class="h-screen"></div>
 {/if}

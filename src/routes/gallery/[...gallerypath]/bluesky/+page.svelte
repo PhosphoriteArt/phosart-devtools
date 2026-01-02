@@ -39,13 +39,19 @@
 	import { persistGallery } from '../+page.svelte';
 	import { DateTime } from 'luxon';
 	import { invalidateAll } from '$app/navigation';
+	import ScreenSentinel from '$lib/ScreenSentinel.svelte';
 
 	const { data } = $props();
 
 	let showMatched = $state(true);
 	let showMatchedElsewhere = $state(false);
 	let loading = $state(false);
+	let limit = $state(4);
 	const skipset = $derived(data.ss[data.galleryPath] ?? new Set());
+
+	function extendLimit() {
+		limit += 2;
+	}
 
 	const posts = $derived.by(() => {
 		const posts = data.posts
@@ -354,7 +360,7 @@
 	</div>
 {/snippet}
 
-{#each posts as post (post.uri)}
+{#each posts.slice(0, limit) as post (post.uri)}
 	<div class="my-4 rounded-2xl border p-3">
 		<div class="border-l-2 border-l-gray-400 pl-2 text-gray-600 italic">
 			<pre class="font-serif whitespace-pre-wrap">{post.text}</pre>
@@ -364,3 +370,9 @@
 		{/each}
 	</div>
 {/each}
+
+<ScreenSentinel tickMs={150} onObservable={extendLimit} />
+
+{#if limit < posts.length}
+	<div class="h-screen"></div>
+{/if}
