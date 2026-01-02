@@ -127,7 +127,7 @@
 {#if data.previewPort}
 	<Tooltip tooltip="Preview Website">
 		{#snippet children(attach)}
-			<div class="fixed right-4 bottom-4 z-50" {@attach attach}>
+			<div class="fixed right-4 bottom-8 z-50" {@attach attach}>
 				<button
 					onclick={() => void (showPreview = !showPreview)}
 					title="Open/close Preview"

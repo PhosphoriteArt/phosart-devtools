@@ -362,9 +362,9 @@
 				</div>
 			</div>
 		</div>
-		<div class="flex items-center">
-			<span style="writing-mode: tb-rl" class=" inline-block text-center">
-				<ActionButton action={makeMarkDone(details.id)}>Hide</ActionButton>
+		<div class="flex items-stretch">
+			<span style="writing-mode: tb-rl" class="inline-block px-8 text-center">
+				<ActionButton class="h-full" action={makeMarkDone(details.id)}>Hide</ActionButton>
 			</span>
 		</div>
 	</div>

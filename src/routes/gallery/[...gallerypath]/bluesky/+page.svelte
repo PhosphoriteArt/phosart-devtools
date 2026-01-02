@@ -91,10 +91,12 @@
 {/snippet}
 
 {#if !posts}
-	{#if !data.bskyAvailable}
-		{@render login()}
-	{:else if err}
-		<div>Unknown error occurred: {err}</div>
+	{#if err}
+		{#if data.bskyAvailable}
+			{@render login()}
+		{:else}
+			<div>Unknown error occurred: {err}</div>
+		{/if}
 	{:else}
 		{@render spinner()}
 	{/if}
