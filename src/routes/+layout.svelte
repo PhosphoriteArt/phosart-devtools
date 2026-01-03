@@ -104,41 +104,6 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-{#if data.previewPort}
-	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<div
-		class:hidden={!showPreview}
-		tabindex="-1"
-		role="figure"
-		class="fixed top-0 right-0 bottom-0 left-0 bg-[#777A]"
-		onclick={(e) => {
-			if (e.target === e.currentTarget) {
-				showPreview = false;
-			}
-		}}
-	>
-		<div class="fixed top-20 right-20 bottom-20 left-20 overflow-hidden rounded-4xl bg-white">
-			<iframe title="preview" class="h-full w-full" src="http://localhost:{data.previewPort}"
-			></iframe>
-		</div>
-	</div>
-{/if}
-{#if data.previewPort}
-	<Tooltip tooltip="Preview Website">
-		{#snippet children(attach)}
-			<div class="fixed right-4 bottom-8 z-50" {@attach attach}>
-				<button
-					onclick={() => void (showPreview = !showPreview)}
-					title="Open/close Preview"
-					class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border bg-white hover:bg-gray-300 active:bg-gray-600"
-				>
-					<i class="fa-regular fa-eye"></i>
-				</button>
-			</div>
-		{/snippet}
-	</Tooltip>
-{/if}
 <div
 	bind:this={statusBar}
 	class="fixed bottom-0 z-50 h-5 w-screen overflow-scroll border-t bg-white text-[8pt] hover:h-32"
@@ -183,3 +148,55 @@
 		{@render children()}
 	</div>
 </div>
+
+{#if data.previewPort}
+	<Tooltip tooltip="Preview Website">
+		{#snippet children(attach)}
+			<div class="fixed right-4 bottom-8 z-110" {@attach attach}>
+				<button
+					onclick={() => void (showPreview = !showPreview)}
+					title="Open/close Preview"
+					class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border bg-white hover:bg-gray-300 active:bg-gray-600"
+				>
+					<i class="fa-regular fa-eye"></i>
+				</button>
+			</div>
+		{/snippet}
+	</Tooltip>
+
+	{#if showPreview}
+		<Tooltip tooltip="Open Website">
+			{#snippet children(attach)}
+				<div class="fixed right-16 bottom-8 z-110" {@attach attach}>
+					<a
+						href="http://localhost:{data.previewPort}"
+						target="_blank"
+						title="Open website"
+						class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border bg-white hover:bg-gray-300 active:bg-gray-600"
+					>
+						<i class="fa-solid fa-arrow-up-right-from-square"></i>
+					</a>
+				</div>
+			{/snippet}
+		</Tooltip>
+
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<div
+			class:hidden={!showPreview}
+			tabindex="-1"
+			role="figure"
+			class="fixed top-0 right-0 bottom-0 left-0 z-100 bg-[#777A]"
+			onclick={(e) => {
+				if (e.target === e.currentTarget) {
+					showPreview = false;
+				}
+			}}
+		>
+			<div class="fixed top-20 right-20 bottom-20 left-20 overflow-hidden rounded-4xl bg-white">
+				<iframe title="preview" class="h-full w-full" src="http://localhost:{data.previewPort}"
+				></iframe>
+			</div>
+		</div>
+	{/if}
+{/if}

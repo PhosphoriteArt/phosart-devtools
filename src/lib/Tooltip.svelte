@@ -102,7 +102,7 @@
 
 {#if tooltip}
 	<div
-		class="pointer-events-none rounded-sm bg-[#222] p-0.5 px-1 text-sm text-white opacity-0 transition-opacity select-none"
+		class="pointer-events-none z-1000 rounded-sm bg-[#222] p-0.5 px-1 text-sm text-white opacity-0 transition-opacity select-none"
 		{@attach portalTooltip}
 	>
 		{#if typeof tooltip === 'string'}
