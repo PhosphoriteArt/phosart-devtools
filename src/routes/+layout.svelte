@@ -137,9 +137,7 @@
 		<div
 			class="flex min-h-10 w-full items-center justify-center rounded-xl bg-gray-100 py-2 select-none"
 		>
-			<NavLink href={data.redirectGallery ? `/gallery/${data.redirectGallery}` : `/`}
-				>Galleries</NavLink
-			>
+			<NavLink href="/#stay">Galleries</NavLink>
 			<NavLink href="/characters">Characters</NavLink>
 			<NavLink href="/artists">Artists</NavLink>
 			<NavLink href="/config">Config</NavLink>

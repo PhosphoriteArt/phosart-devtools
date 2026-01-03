@@ -20,8 +20,8 @@
 	let search = $state('');
 	let manualArtistOptions = $derived(
 		arrAsObject(
-			Object.values(allArtists)
-				.map((a) => ({ name: search.split(' by')[0], from: a.name }))
+			Object.keys(allArtists)
+				.map((a) => ({ name: search.split(' by')[0], from: a }))
 				.filter((ch) => !(`${ch.name} by ${ch.from}` in allCharacters)),
 			(a) => `[new] ${a.name} by ${a.from}`
 		)

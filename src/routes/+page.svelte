@@ -10,6 +10,7 @@
 	import TextInput from '$lib/form/TextInput.svelte';
 	import ActionButton from '$lib/ActionButton.svelte';
 	import type { RawGallery } from 'phosart-common/util';
+	import { browser } from '$app/environment';
 
 	const { data } = $props();
 
@@ -18,7 +19,7 @@
 	let isExtendedGallery = $state(false);
 
 	$effect(() => {
-		if (data.redirectGallery) {
+		if (data.redirectGallery && browser && window.location.hash !== '#stay') {
 			go(resolve(`/gallery/${data.redirectGallery}`));
 		}
 	});
