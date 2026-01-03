@@ -57,10 +57,10 @@ importers:
         specifier: ^1.5.2
         version: 1.5.2
       phosart-bsky:
-        specifier: github:phosphoriteart/phosart-bsky#stable
+        specifier: git+https://github.com/phosphoriteart/phosart-bsky.git#stable
         version: https://codeload.github.com/phosphoriteart/phosart-bsky/tar.gz/33e1697e1bf7045ba28e9fec9e3b31260843d84d(svelte@5.46.0)
       phosart-common:
-        specifier: github:phosphoriteart/phosart-common#stable
+        specifier: git+https://github.com/phosphoriteart/phosart-common.git#stable
         version: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b963f542f7ba6951369079aae8eb01d5f88a6d6d(svelte@5.46.0)
       sharp:
         specifier: ^0.34.5
