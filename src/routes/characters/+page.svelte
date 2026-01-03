@@ -78,6 +78,8 @@
 						}) satisfies (typeof characters)[number]
 				)
 			];
+
+			save();
 		}}
 	/>
 {/snippet}
