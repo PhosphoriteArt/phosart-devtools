@@ -106,7 +106,7 @@
 
 <div
 	bind:this={statusBar}
-	class="fixed bottom-0 z-50 h-5 w-screen overflow-scroll border-t bg-white text-[8pt] hover:h-32"
+	class="fixed bottom-0 z-50 no-scrollbar h-5 w-screen overflow-scroll border-t bg-white text-[8pt] hover:h-32"
 >
 	{#each logs as log, i (log)}
 		<LogLine

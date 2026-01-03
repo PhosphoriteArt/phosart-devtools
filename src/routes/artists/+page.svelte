@@ -228,7 +228,7 @@
 						<Collapsable
 							title="JSON"
 							initial={false}
-							class="mt-2 overflow-scroll border-t border-gray-300 text-gray-400"
+							class="mt-2 no-scrollbar overflow-scroll border-t border-gray-300 text-gray-400"
 						>
 							<pre class="text-gray-900">{JSON.stringify(artist, null, 4)}</pre>
 						</Collapsable>

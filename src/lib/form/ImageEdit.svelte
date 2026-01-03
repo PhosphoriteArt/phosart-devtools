@@ -62,9 +62,9 @@
 <div class="flex items-center">
 	<span><pre class="w-40">{label ?? 'Image'}</pre></span>
 	<div
-		class="flex gap-x-2 rounded-2xl {resource.video ? 'overflow-scroll border p-2' : ''} {disabled
-			? 'cursor-not-allowed grayscale'
-			: ''}"
+		class="flex gap-x-2 rounded-2xl {resource.video
+			? 'no-scrollbar overflow-scroll border p-2'
+			: ''} {disabled ? 'cursor-not-allowed grayscale' : ''}"
 	>
 		{#if resource.video}
 			<div class="flex flex-col items-center">

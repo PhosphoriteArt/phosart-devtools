@@ -133,7 +133,7 @@
 					</div>
 				{/if}
 			</div>
-			<div bind:this={childContainer} class="grow overflow-scroll p-4">
+			<div bind:this={childContainer} class="no-scrollbar grow overflow-scroll p-4">
 				{@render children?.(() => void (open = false))}
 			</div>
 		</div>

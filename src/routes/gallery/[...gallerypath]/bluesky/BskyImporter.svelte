@@ -247,7 +247,7 @@
 					alt={details.alt_text}
 				/>
 				<div
-					class="max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
+					class="no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
 				>
 					<pre class="font-serif whitespace-pre-wrap">{details.alt_text}</pre>
 				</div>
@@ -281,7 +281,7 @@
 							<div class="flex flex-col items-stretch">
 								<OriginalImage class="max-h-64 max-w-64" galleryPath={match}></OriginalImage>
 								<div
-									class="max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
+									class="no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
 								>
 									<pre class="font-serif whitespace-pre-wrap">{piece?.alt || '(no alt text)'}</pre>
 								</div>
@@ -292,13 +292,13 @@
 									{piece?.name ?? match.piece}
 								</div>
 								<div
-									class="max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
+									class="no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
 								>
 									<pre class="font-serif whitespace-pre-wrap">{piece?.description ||
 											'(no description)'}</pre>
 								</div>
 								<div
-									class="mb-2 max-h-16 max-w-64 overflow-scroll border-l-2 border-l-green-800 pl-2 text-xs text-green-800 italic"
+									class="mb-2 no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-l-green-800 pl-2 text-xs text-green-800 italic"
 								>
 									<pre class="font-serif whitespace-pre-wrap">{piece?.tags
 											.map((t) => `#${t}`)

@@ -280,7 +280,10 @@
 				</div>
 				<div class="text-[8pt]">(requires shift-click)</div>
 			</ActionButton>
-			<Collapsable title="JSON" class="mt-2 overflow-scroll border-t border-gray-300 text-gray-400">
+			<Collapsable
+				title="JSON"
+				class="mt-2 no-scrollbar overflow-scroll border-t border-gray-300 text-gray-400"
+			>
 				<pre class="text-gray-900">{JSON.stringify(g, null, 4)}</pre>
 			</Collapsable>
 		</Collapsable>
