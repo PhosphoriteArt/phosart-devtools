@@ -92,7 +92,7 @@
 
 {#if !posts}
 	{#if err}
-		{#if data.bskyAvailable}
+		{#if !data.bskyAvailable}
 			{@render login()}
 		{:else}
 			<div>Unknown error occurred: {err}</div>
