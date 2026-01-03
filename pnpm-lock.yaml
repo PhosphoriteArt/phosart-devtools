@@ -61,7 +61,7 @@ importers:
         version: https://codeload.github.com/phosphoriteart/phosart-bsky/tar.gz/33e1697e1bf7045ba28e9fec9e3b31260843d84d(svelte@5.46.0)
       phosart-common:
         specifier: github:phosphoriteart/phosart-common#stable
-        version: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b2ae22e14674acee3ce0e8f8a04ff5907b3b521e(svelte@5.46.0)
+        version: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b963f542f7ba6951369079aae8eb01d5f88a6d6d(svelte@5.46.0)
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
@@ -2095,9 +2095,9 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b2ae22e14674acee3ce0e8f8a04ff5907b3b521e:
-    resolution: {tarball: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b2ae22e14674acee3ce0e8f8a04ff5907b3b521e}
-    version: 0.4.10
+  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b963f542f7ba6951369079aae8eb01d5f88a6d6d:
+    resolution: {tarball: https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b963f542f7ba6951369079aae8eb01d5f88a6d6d}
+    version: 0.4.11
     peerDependencies:
       svelte: ^5.0.0
 
@@ -4651,7 +4651,7 @@ snapshots:
       - snappy
       - socks
 
-  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b2ae22e14674acee3ce0e8f8a04ff5907b3b521e(svelte@5.46.0):
+  phosart-common@https://codeload.github.com/phosphoriteart/phosart-common/tar.gz/b963f542f7ba6951369079aae8eb01d5f88a6d6d(svelte@5.46.0):
     dependencies:
       '@fortawesome/fontawesome-free': 7.1.0
       async-sema: 3.1.1
