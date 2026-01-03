@@ -14,6 +14,8 @@
 		icon?: string;
 		hideHeader?: boolean;
 
+		headless?: boolean;
+		overrideOnClick?: (ev: MouseEvent | KeyboardEvent) => void;
 		onClose?: () => void;
 	}
 
@@ -29,6 +31,8 @@
 		icon,
 		onClose,
 		hideHeader,
+		overrideOnClick,
+		headless,
 		...tooltipOptions
 	}: Props = $props();
 
@@ -69,40 +73,50 @@
 	}
 </script>
 
-<Tooltip {...tooltipOptions}>
-	{#snippet children(attach)}
-		<div class="rounded-2xl border {cls}" {@attach attach}>
-			<div
-				role="button"
-				tabindex="0"
-				onkeypress={() => {
-					open = !open;
-				}}
-				onclick={() => {
-					open = !open;
-				}}
-				class="hover-effect flex h-full cursor-pointer items-center justify-between overflow-hidden rounded-2xl px-2 select-none"
-			>
-				<div class="flex flex-col items-start {buttonClass}">
-					<div class="font-semibold">
-						{#if icon}
-							<i class={icon}></i>
+{#if !headless}
+	<Tooltip {...tooltipOptions}>
+		{#snippet children(attach)}
+			<div class="rounded-2xl border {cls}" {@attach attach}>
+				<div
+					role="button"
+					tabindex="0"
+					onkeypress={(ev) => {
+						if (overrideOnClick) {
+							overrideOnClick(ev);
+						} else {
+							open = !open;
+						}
+					}}
+					onclick={(ev) => {
+						if (overrideOnClick) {
+							overrideOnClick(ev);
+						} else {
+							open = !open;
+						}
+					}}
+					class="hover-effect flex h-full cursor-pointer items-center justify-between overflow-hidden rounded-2xl px-2 select-none"
+				>
+					<div class="flex flex-col items-start {buttonClass}">
+						<div class="font-semibold">
+							{#if icon}
+								<i class={icon}></i>
+							{/if}
+							{title}
+						</div>
+						{#if subtitle}
+							<div class="text-xs text-gray-400">{subtitle}</div>
 						{/if}
-						{title}
 					</div>
-					{#if subtitle}
-						<div class="text-xs text-gray-400">{subtitle}</div>
+					{#if right}
+						<div>
+							{@render right()}
+						</div>
 					{/if}
 				</div>
-				{#if right}
-					<div>
-						{@render right()}
-					</div>
-				{/if}
 			</div>
-		</div>
-	{/snippet}
-</Tooltip>
+		{/snippet}
+	</Tooltip>
+{/if}
 
 <dialog bind:this={dialog}>
 	<!-- svelte-ignore a11y_click_events_have_key_events -->

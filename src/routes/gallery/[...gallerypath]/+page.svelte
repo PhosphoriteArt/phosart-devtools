@@ -37,9 +37,13 @@
 	import { isBaseGallery, isExtendsGallery } from '$lib/galleryutil.js';
 	import Modal from '$lib/Modal.svelte';
 	import {
+		normalizeArtist,
+		normalizeCharacter,
 		useArtistsContext,
 		useCharacterContext,
+		type BaseArtist,
 		type BaseArtPiece,
+		type CharacterRef,
 		type RawGallery
 	} from 'phosart-common/util';
 	import { DateTime } from 'luxon';
@@ -48,6 +52,7 @@
 	import { resolve } from '$app/paths';
 	import ActionButton from '$lib/ActionButton.svelte';
 	import ScreenSentinel from '$lib/ScreenSentinel.svelte';
+	import Checkbox from '$lib/form/Checkbox.svelte';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -76,6 +81,115 @@
 
 	let shiftDown = $state(false);
 	let limit = $state(9);
+
+	let bulkEnabled = $state(false);
+	let bulkSelected: string[] = $state([]);
+	let lastTouched: string | null = $state(null);
+	let completingBulk = $state(false);
+
+	interface BulkModsEls {
+		artists: BaseArtist | BaseArtist[];
+		characters: CharacterRef[];
+		tags: string[];
+	}
+	interface BulkMods {
+		add: BulkModsEls;
+		remove: BulkModsEls;
+	}
+	let bulkModifications: BulkMods = $state({
+		add: { artists: [], characters: [], tags: [] },
+		remove: { artists: [], characters: [], tags: [] }
+	});
+
+	function toggleBulkPiece(slug: string, set?: boolean) {
+		if (set === undefined) {
+			set = !bulkSelected.includes(slug);
+		}
+		if (set) {
+			bulkSelected.push(slug);
+		} else {
+			bulkSelected = bulkSelected.filter((p) => p !== slug);
+		}
+		lastTouched = slug;
+	}
+
+	function enterBulk() {
+		exitBulk();
+		bulkEnabled = true;
+	}
+
+	function exitBulk() {
+		bulkEnabled = false;
+		bulkSelected = [];
+		lastTouched = null;
+		completingBulk = false;
+	}
+
+	function startCompleteBulk() {
+		completingBulk = true;
+	}
+	function completeBulk() {
+		const gallery = g;
+		if (!isBaseGallery(gallery)) {
+			exitBulk();
+			return;
+		}
+		const affectedPieces = bulkSelected
+			.map((p) => gallery.pieces.find((gp) => gp.slug === p))
+			.filter((v): v is BaseArtPiece => !!v);
+
+		for (const piece of affectedPieces) {
+			if (!piece.artist) {
+				piece.artist = [];
+			}
+			if (!Array.isArray(piece.artist)) {
+				piece.artist = [piece.artist];
+			}
+			const curra = normalizeArtist(piece.artist);
+			for (const aa of normalizeArtist(bulkModifications.add.artists)) {
+				if (!curra.find((ca) => ca.name === aa.name)) {
+					piece.artist.push(aa.name);
+				}
+			}
+
+			const currc = normalizeCharacter(piece.characters);
+			for (const ac of bulkModifications.add.characters) {
+				const nac = normalizeCharacter(ac);
+				if (
+					!currc.find(
+						(cc) => cc.name === nac.name && (cc.from === nac.from || (!cc.from && nac.from))
+					)
+				) {
+					piece.characters.push(ac);
+				}
+			}
+			for (const at of bulkModifications.add.tags) {
+				if (!piece.tags.includes(at)) {
+					piece.tags.push(at);
+				}
+			}
+
+			for (const ra of normalizeArtist(bulkModifications.remove.artists)) {
+				piece.artist = (piece.artist as BaseArtist[]).filter(
+					(ca) => normalizeArtist(ca)[0].name !== ra.name
+				);
+			}
+			for (const rc of bulkModifications.remove.characters) {
+				const nrc = normalizeCharacter(rc);
+				piece.characters = piece.characters.filter(
+					(cc) =>
+						normalizeCharacter(cc).name !== nrc.name || normalizeCharacter(cc).from !== nrc.from
+				);
+			}
+			for (const rt of bulkModifications.remove.tags) {
+				piece.tags = piece.tags.filter((ct) => ct !== rt);
+			}
+		}
+
+		save().then(() => {
+			exitBulk();
+		});
+	}
 
 	function extendLimit() {
 		limit += 9;
@@ -111,27 +225,59 @@
 	<ExtendsEdit bind:value={g.$extends} allGalleries={data.allGalleryRelpaths} />
 {:else}
 	{#snippet addButton()}
-		<div class="flex items-center">
-			<div class="grow">
-				<AddImageButton
-					class="m-2"
-					defaultArtist={data.config?.defaultArtist ?? null}
-					existingIdentifiers={isBaseGallery(g) ? (g?.pieces?.map((p) => p.slug) ?? []) : []}
-					galleryPath={{ gallery: data.galleryPath, piece: '' }}
-					onUpload={(additionalPieces) => {
-						if (!isBaseGallery(g)) return;
+		<div class="m-2 flex items-center gap-x-2">
+			<div class="flex grow">
+				{#if bulkEnabled}
+					<button
+						onclick={() => {
+							startCompleteBulk();
+						}}
+						class="block grow cursor-pointer rounded-2xl border border-black p-4 text-left select-none hover:bg-gray-100 active:bg-gray-200"
+					>
+						<i class="fa-solid fa-circle-chevron-right"></i>
+						Complete Bulk
+					</button>
+				{:else}
+					<AddImageButton
+						defaultArtist={data.config?.defaultArtist ?? null}
+						existingIdentifiers={isBaseGallery(g) ? (g?.pieces?.map((p) => p.slug) ?? []) : []}
+						galleryPath={{ gallery: data.galleryPath, piece: '' }}
+						onUpload={(additionalPieces) => {
+							if (!isBaseGallery(g)) return;
 
-						for (const piece of additionalPieces) {
-							overrides.setFromNew(
-								{ gallery: data.galleryPath, piece: piece.piece.slug },
-								piece.file
-							);
+							for (const piece of additionalPieces) {
+								overrides.setFromNew(
+									{ gallery: data.galleryPath, piece: piece.piece.slug },
+									piece.file
+								);
+							}
+							g.pieces = [...g.pieces, ...additionalPieces.map((p) => p.piece)];
+
+							save();
+						}}
+					/>
+				{/if}
+			</div>
+			<div>
+				<button
+					onclick={() => {
+						if (bulkEnabled) {
+							exitBulk();
+						} else {
+							enterBulk();
 						}
-						g.pieces = [...g.pieces, ...additionalPieces.map((p) => p.piece)];
-
-						save();
 					}}
-				/>
+					class="block grow cursor-pointer rounded-2xl border {bulkEnabled
+						? 'border-red-400'
+						: 'border-gray-400'} p-4 text-left text-gray-600 select-none hover:bg-gray-100 active:bg-gray-200"
+				>
+					<i class={bulkEnabled ? 'fa-solid fa-circle-xmark' : 'fa-regular fa-square-check'}></i>
+					{#if bulkEnabled}
+						Cancel Bulk
+					{:else}
+						Bulk Edit
+					{/if}
+				</button>
 			</div>
 			<div>
 				<a
@@ -148,113 +294,144 @@
 	{@render addButton()}
 
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-		{#each sorted.slice(0, limit) as [piece, i] (piece.slug)}
-			<Modal
-				title={piece.name}
-				subtitle={DateTime.fromJSDate(piece.date).toFormat('f')}
-				class="m-2 rounded-2xl border"
-			>
-				{#snippet right()}
-					<div class="h-16 max-h-16 w-16 max-w-16">
-						<OriginalImage
-							galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
-							isVideo={!!piece.video}
-						/>
-					</div>
-				{/snippet}
-				{#snippet modalRight()}
-					<div class="flex items-stretch gap-x-3 py-1">
-						<div>
-							<button
-								onclick={(ev) => {
-									if (!ev.shiftKey || !isBaseGallery(g)) return;
-
-									g.pieces = [...g.pieces.slice(0, i), ...g.pieces.slice(i + 1)];
-
-									save();
-								}}
-								class="w-40 rounded-2xl border p-3 text-center"
-								class:hover:bg-gray-300={shiftDown}
-								class:active:bg-gray-500={shiftDown}
-								class:cursor-pointer={shiftDown}
-								class:hover:font-bold={!shiftDown}
-								class:cursor-not-allowed={!shiftDown}
-								style="line-height: 1;"
-							>
-								<div>
-									<i class="fa-solid fa-trash"></i>
-									<span class="font-normal">Delete</span>
-								</div>
-								<div class="text-[8pt]">(requires shift-click)</div>
-							</button>
-						</div>
-						<div>
-							{#if !loading}
-								<button
-									onclick={() => void save()}
-									class="h-full cursor-pointer rounded-2xl border p-3 hover:bg-gray-300 active:bg-gray-500"
-								>
-									<i class="fa-regular fa-save"></i>
-									<span>Save</span>
-								</button>
-							{:else}
-								<div class="h-full cursor-pointer rounded-2xl border p-3">Saving...</div>
-							{/if}
-							{#if error}
-								<div class="h-full">ERROR: {error}</div>
-							{/if}
-						</div>
-					</div>
-				{/snippet}
-				<div>
-					<TextInput label="Name" bind:value={piece.name} />
-					<ArtistEdit bind:artists={piece.artist} />
-					<DateEdit bind:date={piece.date} />
-					<TagEdit bind:value={piece.tags} possibleTags={data.allTags} prefix="#" />
-					<CharactersEdit
-						bind:characters={piece.characters}
-						allCharacters={data.allCharacterRefs}
+		{#each sorted.slice(0, limit) as [piece, i], sortedIndex (piece.slug)}
+			<div class="flex items-center">
+				{#if bulkEnabled}
+					<Checkbox
+						label=""
+						bind:checked={
+							() => bulkSelected.includes(piece.slug),
+							(v) => {
+								toggleBulkPiece(piece.slug, v);
+							}
+						}
 					/>
-					<TextBox
-						label="Description"
-						bind:value={() => piece.description ?? '', (v) => void (piece.description = v)}
-					/>
-					<TextBox label="Alt Text" bind:value={piece.alt} />
-					<ImageEdit
-						bind:resource={g.pieces[i]}
-						galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
-					/>
-					<div>
-						<Collapsable title="Advanced" class="my-3">
-							<OptionalInput bind:value={piece.id} empty="">
-								{#snippet control(enabled, value)}
-									<TextInput
-										label="id"
-										bind:this={refs[piece.slug]}
-										bind:value={() => value, (v) => void (piece.id = v)}
-										disabled={!enabled}
-										onclick={() => {
-											piece.id = value;
-											refs[piece.slug]?.focus();
-										}}
-									/>
-								{/snippet}
-							</OptionalInput>
+				{/if}
+				<Modal
+					overrideOnClick={bulkEnabled
+						? (ev) => {
+								if (ev.shiftKey) {
+									const lastIndex = sorted.findIndex(([p]) => p.slug === lastTouched);
+									const i1 = Math.min(lastIndex, sortedIndex);
+									const i2 = Math.max(lastIndex, sortedIndex);
 
-							<PieceAltEdit
-								bind:value={piece.alts}
+									if (i1 >= 0 && i2 >= 0) {
+										let isSet = bulkSelected.includes(piece.slug);
+										for (let setIndex = i1; setIndex <= i2; setIndex++) {
+											toggleBulkPiece(sorted[setIndex][0].slug, !isSet);
+										}
+									}
+								} else {
+									toggleBulkPiece(piece.slug);
+								}
+							}
+						: undefined}
+					title={piece.name}
+					subtitle={DateTime.fromJSDate(piece.date).toFormat('f')}
+					class="m-2 grow rounded-2xl border"
+				>
+					{#snippet right()}
+						<div class="h-16 max-h-16 w-16 max-w-16">
+							<OriginalImage
 								galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
+								isVideo={!!piece.video}
 							/>
-							<Collapsable
-								title="JSON"
-								class="mt-2 overflow-scroll border-t border-gray-300 text-gray-400"
-							>
-								<pre class="text-gray-900">{JSON.stringify(piece, null, 4)}</pre>
+						</div>
+					{/snippet}
+					{#snippet modalRight()}
+						<div class="flex items-stretch gap-x-3 py-1">
+							<div>
+								<button
+									onclick={(ev) => {
+										if (!ev.shiftKey || !isBaseGallery(g)) return;
+
+										g.pieces = [...g.pieces.slice(0, i), ...g.pieces.slice(i + 1)];
+
+										save();
+									}}
+									class="w-40 rounded-2xl border p-3 text-center"
+									class:hover:bg-gray-300={shiftDown}
+									class:active:bg-gray-500={shiftDown}
+									class:cursor-pointer={shiftDown}
+									class:hover:font-bold={!shiftDown}
+									class:cursor-not-allowed={!shiftDown}
+									style="line-height: 1;"
+								>
+									<div>
+										<i class="fa-solid fa-trash"></i>
+										<span class="font-normal">Delete</span>
+									</div>
+									<div class="text-[8pt]">(requires shift-click)</div>
+								</button>
+							</div>
+							<div>
+								{#if !loading}
+									<button
+										onclick={() => void save()}
+										class="h-full cursor-pointer rounded-2xl border p-3 hover:bg-gray-300 active:bg-gray-500"
+									>
+										<i class="fa-regular fa-save"></i>
+										<span>Save</span>
+									</button>
+								{:else}
+									<div class="h-full cursor-pointer rounded-2xl border p-3">Saving...</div>
+								{/if}
+								{#if error}
+									<div class="h-full">ERROR: {error}</div>
+								{/if}
+							</div>
+						</div>
+					{/snippet}
+					<div>
+						<TextInput label="Name" bind:value={piece.name} />
+						<ArtistEdit bind:artists={piece.artist} />
+						<DateEdit bind:date={piece.date} />
+						<TagEdit bind:value={piece.tags} possibleTags={data.allTags} prefix="#" />
+						<CharactersEdit
+							bind:characters={piece.characters}
+							allCharacters={data.allCharacterRefs}
+						/>
+						<TextBox
+							label="Description"
+							bind:value={() => piece.description ?? '', (v) => void (piece.description = v)}
+						/>
+						<TextBox label="Alt Text" bind:value={piece.alt} />
+						<ImageEdit
+							bind:resource={g.pieces[i]}
+							galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
+						/>
+						<div>
+							<Collapsable title="Advanced" class="my-3">
+								<OptionalInput bind:value={piece.id} empty="">
+									{#snippet control(enabled, value)}
+										<TextInput
+											label="id"
+											bind:this={refs[piece.slug]}
+											bind:value={() => value, (v) => void (piece.id = v)}
+											disabled={!enabled}
+											onclick={() => {
+												piece.id = value;
+												refs[piece.slug]?.focus();
+											}}
+										/>
+									{/snippet}
+								</OptionalInput>
+
+								<PieceAltEdit
+									bind:value={piece.alts}
+									galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
+								/>
+								<Collapsable
+									title="JSON"
+									class="mt-2 overflow-scroll border-t border-gray-300 text-gray-400"
+								>
+									<pre class="text-gray-900">{JSON.stringify(piece, null, 4)}</pre>
+								</Collapsable>
 							</Collapsable>
-						</Collapsable>
+						</div>
 					</div>
-				</div>
-			</Modal>
+				</Modal>
+			</div>
 		{/each}
 	</div>
 	<ScreenSentinel onObservable={extendLimit} tickMs={150} />
@@ -293,3 +470,58 @@
 {#if isBaseGallery(g) && limit < g?.pieces.length}
 	<div class="h-screen"></div>
 {/if}
+
+<Modal headless title="Complete Bulk" bind:open={completingBulk}>
+	<div>
+		Editing {bulkSelected.length} entries:
+	</div>
+
+	<div class="flex items-stretch">
+		<div class="flex w-20 items-center">Add:</div>
+		<div class="m-4 w-2 border border-r-0"></div>
+		<div class="flex flex-col">
+			<ArtistEdit bind:artists={bulkModifications.add.artists} />
+			<TagEdit bind:value={bulkModifications.add.tags} possibleTags={data.allTags} prefix="#" />
+			<CharactersEdit
+				bind:characters={bulkModifications.add.characters}
+				allCharacters={data.allCharacterRefs}
+			/>
+		</div>
+	</div>
+
+	<div class="m-2 w-full border-t border-dashed border-gray-300"></div>
+
+	<div class="flex items-stretch">
+		<div class="flex w-20 items-center">Remove:</div>
+		<div class="m-4 w-2 border border-r-0"></div>
+		<div class="flex flex-col">
+			<ArtistEdit bind:artists={bulkModifications.remove.artists} />
+			<TagEdit bind:value={bulkModifications.remove.tags} possibleTags={data.allTags} prefix="#" />
+			<CharactersEdit
+				bind:characters={bulkModifications.remove.characters}
+				allCharacters={data.allCharacterRefs}
+			/>
+		</div>
+	</div>
+
+	{#snippet modalRight()}
+		<div class="flex items-stretch gap-x-3 py-1">
+			<div>
+				{#if !loading}
+					<button
+						onclick={completeBulk}
+						class="h-full cursor-pointer rounded-2xl border p-3 hover:bg-gray-300 active:bg-gray-500"
+					>
+						<i class="fa-regular fa-save"></i>
+						<span>Save</span>
+					</button>
+				{:else}
+					<div class="h-full cursor-pointer rounded-2xl border p-3">Saving...</div>
+				{/if}
+				{#if error}
+					<div class="h-full">ERROR: {error}</div>
+				{/if}
+			</div>
+		</div>
+	{/snippet}
+</Modal>
