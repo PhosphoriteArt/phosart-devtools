@@ -15,6 +15,7 @@
 		options?: string[];
 		icon?: string;
 		password?: boolean;
+		labelClass?: string;
 	}
 
 	const id = $props.id();
@@ -30,7 +31,8 @@
 		validationError,
 		options,
 		icon,
-		password
+		password,
+		labelClass
 	}: Props = $props();
 
 	let inputRef: HTMLInputElement | null = $state(null);
@@ -54,7 +56,7 @@
 
 <div class="flex flex-row items-center gap-x-2">
 	{#if label}
-		<label for="form-{id}"><pre class="w-36">{label}</pre></label>
+		<label for="form-{id}"><pre class={labelClass ?? 'w-36'}>{label}</pre></label>
 	{/if}
 	<div class="relative m-2 flex min-w-sm items-center rounded-xl border border-gray-500">
 		{#if icon}

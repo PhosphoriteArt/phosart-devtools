@@ -10,9 +10,18 @@
 		onAddUnknown?: (s: string) => T;
 
 		renderChip?: Snippet<[obj: T]>;
+		labelClass?: string;
 	}
 
-	let { label, value = $bindable(), options, prefix, renderChip, onAddUnknown }: Props = $props();
+	let {
+		label,
+		labelClass,
+		value = $bindable(),
+		options,
+		prefix,
+		renderChip,
+		onAddUnknown
+	}: Props = $props();
 
 	let search = $state('');
 	let lastSelected: T | null = $state(null);
@@ -26,6 +35,7 @@
 
 <ControlledChippedInput
 	{label}
+	{labelClass}
 	bind:search
 	{renderChip}
 	{prefix}
@@ -39,8 +49,8 @@
 	onSelect={(k, v) => {
 		const obj = v ?? onAddUnknown?.(k) ?? null;
 		if (obj) {
-			if (!value.includes(obj)) {
-				value = [...value, obj];
+			if (!(value ?? []).includes(obj)) {
+				value = [...(value ?? []), obj];
 			}
 			search = '';
 			lastSelected = null;

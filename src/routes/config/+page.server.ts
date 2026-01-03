@@ -1,4 +1,4 @@
-import { artists, readThemeConfig, readThemeSchema } from 'phosart-common/server';
+import { allPieces, artists, readThemeConfig, readThemeSchema } from 'phosart-common/server';
 import type { PageServerLoad } from './$types';
 import { createLogger } from '$lib/log';
 const logger = createLogger();
@@ -10,5 +10,10 @@ export const load: PageServerLoad = async () => {
 	const allArtists = await artists();
 	logger.silly('Loaded config page data');
 
-	return { themeSchema, themeConfig, artists: Object.keys(allArtists) };
+	return {
+		themeSchema,
+		themeConfig,
+		artists: Object.keys(allArtists),
+		allTags: Object.values(await allPieces()).flatMap((p) => p.tags)
+	};
 };
