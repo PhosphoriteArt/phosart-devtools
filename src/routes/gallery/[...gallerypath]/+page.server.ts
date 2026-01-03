@@ -51,8 +51,8 @@ export const load: PageServerLoad = async ({ params }) => {
 		galleryValues.flatMap((g) => (isBaseGallery(g) ? g.pieces : [])).flatMap((p) => p.tags)
 	);
 	const allGalleryRelpaths = Object.keys(await rawGalleries())
-		.filter((k) => k.startsWith(galleryDir))
-		.map((p) => './' + p.replace(galleryDir, ''));
+		.filter((k) => k.startsWith(galleryDir) && k !== galleryPath)
+		.map((p) => './' + normalizeGalleryPath(p.replace(galleryDir, '')));
 	logger.silly(
 		'Loaded gallery page data @',
 		galleryPath,

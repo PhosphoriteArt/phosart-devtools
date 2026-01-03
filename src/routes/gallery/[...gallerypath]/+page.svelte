@@ -222,7 +222,10 @@
 </script>
 
 {#if isExtendsGallery(g)}
-	<ExtendsEdit bind:value={g.$extends} allGalleries={data.allGalleryRelpaths} />
+	<div class="flex flex-col">
+		<ExtendsEdit bind:value={g.$extends} allGalleries={data.allGalleryRelpaths} />
+		<ActionButton action={save}>Save</ActionButton>
+	</div>
 {:else}
 	{#snippet addButton()}
 		<div class="m-2 flex items-center gap-x-2">
