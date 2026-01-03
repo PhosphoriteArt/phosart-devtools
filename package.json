@@ -1,7 +1,7 @@
 {
 	"name": "phosart-devtool",
 	"private": true,
-	"version": "0.2.15",
+	"version": "0.2.16",
 	"type": "module",
 	"scripts": {
 		"dev": "dotenvx run -- vite dev",
@@ -69,8 +69,8 @@
 		"monaco-editor": "^0.55.1",
 		"msgpackr": "^1.11.8",
 		"opener": "^1.5.2",
-		"phosart-bsky": "git+https://github.com/phosphoriteart/phosart-bsky.git#stable",
-		"phosart-common": "git+https://github.com/phosphoriteart/phosart-common.git#stable",
+		"phosart-bsky": "github:phosphoriteart/phosart-bsky#stable",
+		"phosart-common": "github:phosphoriteart/phosart-common#stable",
 		"sharp": "^0.34.5",
 		"sharp-phash": "^2.2.0",
 		"svelte-loading-spinners": "^0.3.6",
