@@ -8,12 +8,12 @@ import {
 } from 'phosart-common/server';
 import type { RequestHandler } from './$types';
 import path from 'node:path';
-import { json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import { stringify } from 'yaml';
 import { unlink, writeFile } from 'node:fs/promises';
 import { getGalleryDir, isBaseGallery, normalizeGalleryPath } from '$lib/galleryutil';
 import { createLogger } from '$lib/log';
-import { deleteResources } from '$lib/server/fileutil';
+import { deleteResources, resolveWithinArt } from '$lib/server/fileutil';
 const logger = createLogger();
 
 export const POST: RequestHandler = async ({ request, params }) => {
@@ -94,7 +94,11 @@ async function saveGallery(galleryPath: string, newGallery: RawGallery) {
 		}
 	}
 
-	const galleryFullPath = path.join($ART(), galleryPath);
+	const galleryFullPath = resolveWithinArt(path.join($ART(), galleryPath));
+	if (!galleryFullPath) {
+		logger.warn('Refusing to write gallery outside art root @', galleryPath);
+		throw error(400, 'invalid gallery path');
+	}
 	logger.silly('Writing gallery yaml @', galleryFullPath, '...');
 	const yaml = stringify(newGallery, {
 		blockQuote: true,
@@ -109,7 +113,11 @@ async function saveGallery(galleryPath: string, newGallery: RawGallery) {
 
 export const DELETE: RequestHandler = async ({ params }) => {
 	const galleryPath = normalizeGalleryPath(params.gallerypath);
-	const gpath = path.join($ART(), galleryPath);
+	const gpath = resolveWithinArt(path.join($ART(), galleryPath));
+	if (!gpath) {
+		logger.warn('Refusing to delete gallery outside art root @', galleryPath);
+		throw error(400, 'invalid gallery path');
+	}
 	const oldGalleries = await rawGalleries();
 	logger.info('Deleting gallery @', gpath, '...');
 	await unlink(gpath);

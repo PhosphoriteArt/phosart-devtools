@@ -1,10 +1,10 @@
-import { json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import npath from 'node:path';
 import { $ART } from 'phosart-common/server';
 import { writeFile } from 'node:fs/promises';
 import { getImageExtension } from '$lib/fileutil';
-import { asNodeStream } from '$lib/server/fileutil';
+import { asNodeStream, resolveWithinArt } from '$lib/server/fileutil';
 import { createLogger } from '$lib/log';
 import { randomInt } from 'node:crypto';
 const logger = createLogger();
@@ -29,7 +29,11 @@ export const POST: RequestHandler = async ({ request, url }) => {
 };
 
 async function uploadImage(type: string, image: File, fname: string, ftype: string, rand: string) {
-	const fp = npath.join($ART(), 'characters', relpath(type, fname, ftype, rand));
+	const fp = resolveWithinArt(npath.join($ART(), 'characters', relpath(type, fname, ftype, rand)));
+	if (!fp) {
+		logger.warn('Refusing to write character image outside art root @', fname);
+		throw error(400, 'invalid character image path');
+	}
 	logger.debug('Writing character image @', fp, 'for', fname, '...');
 
 	await writeFile(fp, asNodeStream(image.stream()), { encoding: 'utf-8' });

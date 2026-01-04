@@ -1,11 +1,11 @@
-import { json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import npath from 'node:path';
 import { $ART } from 'phosart-common/server';
 import { writeFile } from 'node:fs/promises';
 import { getGalleryDir, getGalleryName, normalizeGalleryPath } from '$lib/galleryutil';
 import { getImageExtension } from '$lib/fileutil';
-import { asNodeStream } from '$lib/server/fileutil';
+import { asNodeStream, resolveWithinArt } from '$lib/server/fileutil';
 import { spawn } from 'node:child_process';
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 import { createLogger } from '$lib/log';
@@ -26,20 +26,30 @@ export const POST: RequestHandler = async ({ request, params }) => {
 
 	if (ftype.startsWith('video')) {
 		logger.info('Generating thumbnail for video', fname, '@', galleryPath, '...');
+		const ffmpegInput = resolveWithinArt(
+			npath.join($ART(), getGalleryDir(galleryPath), relpath(galleryPath, fname, ftype, rand))
+		);
+		const ffmpegOutput = resolveWithinArt(
+			npath.join(
+				$ART(),
+				getGalleryDir(galleryPath),
+				relpath(galleryPath, fname + '_thumb', 'image/jpeg', rand)
+			)
+		);
+		if (!ffmpegInput || !ffmpegOutput) {
+			logger.warn('Refusing to write video thumbnail outside art root @', galleryPath);
+			throw error(400, 'invalid gallery path');
+		}
 		const ffmpeg = spawn(ffmpegPath, [
 			'-i',
-			npath.join($ART(), getGalleryDir(galleryPath), relpath(galleryPath, fname, ftype, rand)),
+			ffmpegInput,
 			'-vf',
 			'select=eq(n\\,0)',
 			'-vf',
 			'scale=320:-2',
 			'-q:v',
 			'3',
-			npath.join(
-				$ART(),
-				getGalleryDir(galleryPath),
-				relpath(galleryPath, fname + '_thumb', 'image/jpeg', rand)
-			),
+			ffmpegOutput,
 			'-y'
 		]);
 		try {
@@ -69,7 +79,13 @@ async function uploadImage(
 	rand: string
 ) {
 	const galleryDir = getGalleryDir(galleryPath);
-	const fp = npath.join($ART(), galleryDir, relpath(galleryPath, fname, ftype, rand));
+	const fp = resolveWithinArt(
+		npath.join($ART(), galleryDir, relpath(galleryPath, fname, ftype, rand))
+	);
+	if (!fp) {
+		logger.warn('Refusing to write gallery image outside art root @', galleryPath);
+		throw error(400, 'invalid gallery path');
+	}
 	logger.silly('Writing gallery image @', fp, 'for', fname, '...');
 
 	await writeFile(fp, asNodeStream(image.stream()), { encoding: 'utf-8' });
