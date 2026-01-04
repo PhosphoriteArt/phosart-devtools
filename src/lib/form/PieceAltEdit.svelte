@@ -8,6 +8,7 @@
 	import { getOverrides } from '$lib/galleryoverride.svelte';
 	import OriginalImage from './OriginalImage.svelte';
 	import type { GalleryPath } from '$lib/util';
+	import Checkbox from './Checkbox.svelte';
 
 	interface Props {
 		galleryPath: GalleryPath;
@@ -22,7 +23,10 @@
 	<div>Alternatives:</div>
 	<div class="ml-4">
 		{#each value as alt, i (`${i}-${value?.length}`)}
-			<Collapsable title={alt.name} class="my-2 border">
+			<Collapsable
+				title={alt.name}
+				class="my-2 border {alt.deindexed ? 'border-amber-800 bg-gray-200' : ''}"
+			>
 				{#snippet collapsedRight()}
 					<div class="h-16 max-h-16 w-16 max-w-16">
 						<OriginalImage
@@ -35,6 +39,12 @@
 				<TextInput label="Name" bind:value={alt.name} />
 				<TextBox label="Description" bind:value={alt.description} />
 				<TextBox label="Alt Text" bind:value={alt.alt} />
+				<div class="my-4"></div>
+				<Checkbox
+					label="Deindexed?"
+					bind:checked={() => !!alt.deindexed, (v) => void (alt.deindexed = v || undefined)}
+				/>
+				<div class="my-4"></div>
 
 				<ImageEdit
 					galleryPath={{ ...galleryPath, alt: alt.name, altIndex: i }}
