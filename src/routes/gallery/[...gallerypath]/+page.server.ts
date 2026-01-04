@@ -19,11 +19,11 @@ async function getAllCharacterRefsFromGalleries(): Promise<Record<string, Charac
 	return Object.values(await rawGalleries())
 		.flatMap((g) => (isBaseGallery(g) ? g.pieces : []))
 		.flatMap((p) => p.characters)
-		.map((ch) => normalizeCharacter(ch))
+		.map((ch) => [ch, normalizeCharacter(ch)] as const)
 		.reduce(
-			(acc, cur) => ({
+			(acc, [cur, nch]) => ({
 				...acc,
-				[cur.from ? `${cur.name} by ${cur.from}` : cur.name]: cur
+				[nch.from ? `${nch.name} by ${nch.from}` : nch.name]: cur
 			}),
 			{}
 		);
