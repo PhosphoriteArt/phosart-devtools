@@ -15,6 +15,7 @@ export const load: PageServerLoad = async () => {
 	logger.silly('Loaded home page data');
 	return {
 		galleries: gallerySearch,
-		redirectGallery: normalizeGalleryPath(onlyPath) || null
+		redirectGallery: normalizeGalleryPath(onlyPath) || null,
+		galleryPaths
 	};
 };

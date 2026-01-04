@@ -9,8 +9,9 @@
 	import Modal from '$lib/Modal.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import ActionButton from '$lib/ActionButton.svelte';
-	import type { RawGallery } from 'phosart-common/util';
+	import { asRecord, type RawGallery } from 'phosart-common/util';
 	import { browser } from '$app/environment';
+	import SearchInput from '$lib/form/search/SearchInput.svelte';
 
 	const { data } = $props();
 
@@ -23,10 +24,28 @@
 			go(resolve(`/gallery/${data.redirectGallery}`));
 		}
 	});
+
+	const id = $props.id();
 </script>
 
 <div class="my-4">
 	<Checkbox bind:checked={showEmpty} label="Show empty folders" right />
+</div>
+
+<div class="my-4 flex gap-x-2 rounded-2xl border border-dashed p-2">
+	<label for="{id}-search-box">
+		<i class="fa-solid fa-search"></i>
+	</label>
+	<div class="relative flex grow">
+		<SearchInput
+			autoFocus
+			class="grow"
+			options={asRecord(data.galleryPaths, (p) => p)}
+			onSelect={(s) => {
+				go(resolve('/gallery/[...gallerypath]', { gallerypath: s }));
+			}}
+		/>
+	</div>
 </div>
 
 {#snippet file(fileName: string, file: File, path: string[])}

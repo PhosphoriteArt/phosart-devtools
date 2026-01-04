@@ -11,6 +11,9 @@
 		noReportValidation?: true;
 		onSelect?: (selected: string, option?: T) => void;
 		onDeselect?: () => void;
+
+		class?: string;
+		autoFocus?: boolean;
 	}
 	const id = $props.id();
 
@@ -20,7 +23,9 @@
 		validationError,
 		onSelect,
 		onDeselect,
-		noReportValidation
+		noReportValidation,
+		class: cls,
+		autoFocus
 	}: Props = $props();
 
 	let uncontrolledSearch = $state('');
@@ -50,10 +55,17 @@
 </script>
 
 <input
+	{@attach (el) => {
+		if (autoFocus) {
+			console.log('FOC');
+			el.focus();
+		}
+	}}
 	id="form-{id}"
 	type="text"
 	class:outline-2={!!validationError}
 	class:outline-red-400={!!validationError}
+	class={cls}
 	bind:this={inputRef}
 	bind:value={() => search, setSearch}
 	{@attach control(searchRef)}
