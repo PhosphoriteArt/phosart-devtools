@@ -272,6 +272,9 @@
 			loading = false;
 		}
 	}
+
+	let selectedPieceData: [piece: BaseArtPiece, origIndex: number, sortedIndex: number] | null =
+		$state(null);
 </script>
 
 <svelte:head>
@@ -368,6 +371,7 @@
 						}
 					/>
 				{/if}
+
 				<Modal
 					overrideOnClick={bulkEnabled
 						? (ev) => {
@@ -386,7 +390,9 @@
 									toggleBulkPiece(piece.slug);
 								}
 							}
-						: undefined}
+						: () => {
+								selectedPieceData = [piece, i, sortedIndex];
+							}}
 					title={piece.name}
 					subtitle={DateTime.fromJSDate(piece.date).toFormat('f')}
 					class="m-2 grow rounded-2xl border {piece.deindexed ? 'bg-gray-200' : ''} {piece.nsfw
@@ -404,119 +410,6 @@
 							/>
 						</div>
 					{/snippet}
-					{#snippet modalRight()}
-						<div class="flex items-stretch gap-x-3 py-1">
-							<div>
-								<button
-									onclick={(ev) => {
-										if (!ev.shiftKey || !isBaseGallery(g)) return;
-
-										g.pieces = [...g.pieces.slice(0, i), ...g.pieces.slice(i + 1)];
-
-										save();
-									}}
-									class="w-40 rounded-2xl border p-3 text-center"
-									class:hover:bg-gray-300={shiftDown}
-									class:active:bg-gray-500={shiftDown}
-									class:cursor-pointer={shiftDown}
-									class:hover:font-bold={!shiftDown}
-									class:cursor-not-allowed={!shiftDown}
-									style="line-height: 1;"
-								>
-									<div>
-										<i class="fa-solid fa-trash"></i>
-										<span class="font-normal">Delete</span>
-									</div>
-									<div class="text-[8pt]">(requires shift-click)</div>
-								</button>
-							</div>
-							<div>
-								{#if !loading}
-									<button
-										onclick={() => void save()}
-										class="h-full cursor-pointer rounded-2xl border p-3 hover:bg-gray-300 active:bg-gray-500"
-									>
-										<i class="fa-regular fa-save"></i>
-										<span>Save</span>
-									</button>
-								{:else}
-									<div class="h-full cursor-pointer rounded-2xl border p-3">Saving...</div>
-								{/if}
-								{#if error}
-									<div class="h-full">ERROR: {error}</div>
-								{/if}
-							</div>
-						</div>
-					{/snippet}
-					<div>
-						<TextInput label="Name" bind:value={piece.name} />
-						<ArtistEdit bind:artists={piece.artist} />
-						<DateEdit bind:date={piece.date} />
-						<TagEdit bind:value={piece.tags} possibleTags={data.allTags} prefix="#" />
-						<CharactersEdit
-							bind:characters={piece.characters}
-							allCharacters={data.allCharacterRefs}
-						/>
-						<TextBox
-							label="Description"
-							bind:value={() => piece.description ?? '', (v) => void (piece.description = v)}
-						/>
-						<TextBox label="Alt Text" bind:value={piece.alt} />
-						<ImageEdit
-							bind:resource={g.pieces[i]}
-							galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
-							class={piece.nsfw
-								? 'duration-300ms blur-lg transition-[filter] hover:blur-none hover:duration-[3s]'
-								: ''}
-						/>
-						<div>
-							<Collapsable title="Advanced" class="my-3">
-								<OptionalInput bind:value={piece.id} empty="">
-									{#snippet control(enabled, value)}
-										<TextInput
-											label="id"
-											bind:this={refs[piece.slug]}
-											bind:value={() => value, (v) => void (piece.id = v)}
-											disabled={!enabled}
-											onclick={() => {
-												piece.id = value;
-												refs[piece.slug]?.focus();
-											}}
-										/>
-									{/snippet}
-								</OptionalInput>
-
-								<div class="mt-4"></div>
-
-								<Checkbox
-									label="NSFW?"
-									bind:checked={() => !!piece.nsfw, (v) => void (piece.nsfw = v || undefined)}
-								/>
-
-								<div class="mt-4"></div>
-
-								<Checkbox
-									label="Deindexed?"
-									bind:checked={
-										() => !!piece.deindexed, (v) => void (piece.deindexed = v || undefined)
-									}
-								/>
-
-								<div class="mt-4"></div>
-
-								<PieceAltEdit
-									bind:value={piece.alts}
-									galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
-								/>
-								<Collapsable
-									title="JSON"
-									class="mt-2 overflow-scroll border-t border-gray-300 text-gray-400"
-								>
-									<pre class="text-gray-900">{JSON.stringify(piece, null, 4)}</pre>
-								</Collapsable>
-							</Collapsable>
-						</div>
-					</div>
 				</Modal>
 			</div>
 		{/each}
@@ -636,3 +529,128 @@
 		</div>
 	{/snippet}
 </Modal>
+
+{#if selectedPieceData && isBaseGallery(g)}
+	{@const [piece, i] = selectedPieceData}
+	<Modal
+		headless
+		bind:open={
+			() => true,
+			(v) => {
+				if (!v) {
+					selectedPieceData = null;
+				}
+			}
+		}
+		title={piece.name}
+	>
+		{#snippet modalRight()}
+			<div class="flex items-stretch gap-x-3 py-1">
+				<div>
+					<button
+						onclick={(ev) => {
+							if (!ev.shiftKey || !isBaseGallery(g)) return;
+
+							g.pieces = [...g.pieces.slice(0, i), ...g.pieces.slice(i + 1)];
+
+							save();
+						}}
+						class="w-40 rounded-2xl border p-3 text-center"
+						class:hover:bg-gray-300={shiftDown}
+						class:active:bg-gray-500={shiftDown}
+						class:cursor-pointer={shiftDown}
+						class:hover:font-bold={!shiftDown}
+						class:cursor-not-allowed={!shiftDown}
+						style="line-height: 1;"
+					>
+						<div>
+							<i class="fa-solid fa-trash"></i>
+							<span class="font-normal">Delete</span>
+						</div>
+						<div class="text-[8pt]">(requires shift-click)</div>
+					</button>
+				</div>
+				<div>
+					{#if !loading}
+						<button
+							onclick={() => void save()}
+							class="h-full cursor-pointer rounded-2xl border p-3 hover:bg-gray-300 active:bg-gray-500"
+						>
+							<i class="fa-regular fa-save"></i>
+							<span>Save</span>
+						</button>
+					{:else}
+						<div class="h-full cursor-pointer rounded-2xl border p-3">Saving...</div>
+					{/if}
+					{#if error}
+						<div class="h-full">ERROR: {error}</div>
+					{/if}
+				</div>
+			</div>
+		{/snippet}
+		<div>
+			<TextInput label="Name" bind:value={piece.name} />
+			<ArtistEdit bind:artists={piece.artist} />
+			<DateEdit bind:date={piece.date} />
+			<TagEdit bind:value={piece.tags} possibleTags={data.allTags} prefix="#" />
+			<CharactersEdit bind:characters={piece.characters} allCharacters={data.allCharacterRefs} />
+			<TextBox
+				label="Description"
+				bind:value={() => piece.description ?? '', (v) => void (piece.description = v)}
+			/>
+			<TextBox label="Alt Text" bind:value={piece.alt} />
+			<ImageEdit
+				bind:resource={g.pieces[i]}
+				galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
+				class={piece.nsfw
+					? 'duration-300ms blur-lg transition-[filter] hover:blur-none hover:duration-[3s]'
+					: ''}
+			/>
+			<div>
+				<Collapsable title="Advanced" class="my-3">
+					<OptionalInput bind:value={piece.id} empty="">
+						{#snippet control(enabled, value)}
+							<TextInput
+								label="id"
+								bind:this={refs[piece.slug]}
+								bind:value={() => value, (v) => void (piece.id = v)}
+								disabled={!enabled}
+								onclick={() => {
+									piece.id = value;
+									refs[piece.slug]?.focus();
+								}}
+							/>
+						{/snippet}
+					</OptionalInput>
+
+					<div class="mt-4"></div>
+
+					<Checkbox
+						label="NSFW?"
+						bind:checked={() => !!piece.nsfw, (v) => void (piece.nsfw = v || undefined)}
+					/>
+
+					<div class="mt-4"></div>
+
+					<Checkbox
+						label="Deindexed?"
+						bind:checked={() => !!piece.deindexed, (v) => void (piece.deindexed = v || undefined)}
+					/>
+
+					<div class="mt-4"></div>
+
+					<PieceAltEdit
+						bind:value={piece.alts}
+						galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
+					/>
+					<Collapsable
+						title="JSON"
+						class="mt-2 overflow-scroll border-t border-gray-300 text-gray-400"
+					>
+						<pre class="text-gray-900">{JSON.stringify(piece, null, 4)}</pre>
+					</Collapsable>
+				</Collapsable>
+			</div>
+		</div>
+	</Modal>
+{/if}
