@@ -125,6 +125,11 @@
 		bulkSelected = [];
 		lastTouched = null;
 		completingBulk = false;
+		bulkModifications = {
+			add: { artists: [], characters: [], tags: [] },
+			isDeindexed: null,
+			remove: { artists: [], characters: [], tags: [] }
+		};
 	}
 
 	function startCompleteBulk() {
