@@ -14,6 +14,7 @@
 
 		class?: string;
 		autoFocus?: boolean;
+		id?: string;
 	}
 	const id = $props.id();
 
@@ -25,7 +26,8 @@
 		onDeselect,
 		noReportValidation,
 		class: cls,
-		autoFocus
+		autoFocus,
+		id: userId
 	}: Props = $props();
 
 	let uncontrolledSearch = $state('');
@@ -57,11 +59,10 @@
 <input
 	{@attach (el) => {
 		if (autoFocus) {
-			console.log('FOC');
 			el.focus();
 		}
 	}}
-	id="form-{id}"
+	id="form-{userId ?? id}"
 	type="text"
 	class:outline-2={!!validationError}
 	class:outline-red-400={!!validationError}

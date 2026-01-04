@@ -39,11 +39,14 @@
 	</label>
 	<div class="relative flex grow">
 		<SearchInput
+			id="{id}-search-box"
 			autoFocus
 			bind:search
 			class="grow"
 			noReportValidation
-			validationError={search !== '' && !data.galleryPaths.includes(search)}
+			validationError={search !== '' && !data.galleryPaths.includes(search)
+				? 'invalid path'
+				: undefined}
 			options={asRecord(data.galleryPaths, (p) => p)}
 			onSelect={(s) => {
 				if (data.galleryPaths.includes(s)) {
