@@ -44,7 +44,7 @@ export default defineConfig({
 	},
 	build: {
 		rollupOptions: {
-			external: ['sharp', 'phosart-common/server']
+			external: ['sharp', '@phosart/common/server']
 		}
 	}
 });
