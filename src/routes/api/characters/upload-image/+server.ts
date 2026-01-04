@@ -6,6 +6,7 @@ import { writeFile } from 'node:fs/promises';
 import { getImageExtension } from '$lib/fileutil';
 import { asNodeStream } from '$lib/server/fileutil';
 import { createLogger } from '$lib/log';
+import { randomInt } from 'node:crypto';
 const logger = createLogger();
 
 export const POST: RequestHandler = async ({ request, url }) => {
@@ -16,26 +17,28 @@ export const POST: RequestHandler = async ({ request, url }) => {
 
 	const type = url.searchParams.get('for') === 'thumb' ? 'thumb' : 'full';
 
+	const rand = String(Date.now()).slice(-5) + String(randomInt(4096));
+
 	logger.info('Uploading character image', fname, 'as', type, 'with type', ftype, '...');
-	await uploadImage(type, f, fname, ftype);
+	await uploadImage(type, f, fname, ftype, rand);
 	logger.info('Uploaded character image', fname, 'as', type);
 
 	return json({
-		fname: './' + relpath(type, fname, ftype)
+		fname: './' + relpath(type, fname, ftype, rand)
 	});
 };
 
-async function uploadImage(type: string, image: File, fname: string, ftype: string) {
-	const fp = npath.join($ART(), 'characters', relpath(type, fname, ftype));
+async function uploadImage(type: string, image: File, fname: string, ftype: string, rand: string) {
+	const fp = npath.join($ART(), 'characters', relpath(type, fname, ftype, rand));
 	logger.debug('Writing character image @', fp, 'for', fname, '...');
 
 	await writeFile(fp, asNodeStream(image.stream()), { encoding: 'utf-8' });
 	logger.debug('Wrote character image @', fp);
 }
 
-function relpath(type: string, fname: string, ftype: string) {
+function relpath(type: string, fname: string, ftype: string, rand: string) {
 	const safeName = fname.replaceAll(/[^A-Za-z0-9-_]|\.\./g, '');
 	const ext = getImageExtension(ftype);
 
-	return `ch_${type}_${safeName}.${ext}`;
+	return `ch_${type}_${safeName}_${rand}.${ext}`;
 }

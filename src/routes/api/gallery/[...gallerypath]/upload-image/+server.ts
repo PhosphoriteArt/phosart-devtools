@@ -9,6 +9,7 @@ import { asNodeStream } from '$lib/server/fileutil';
 import { spawn } from 'node:child_process';
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 import { createLogger } from '$lib/log';
+import { randomInt } from 'node:crypto';
 const logger = createLogger();
 
 export const POST: RequestHandler = async ({ request, params }) => {
@@ -19,13 +20,15 @@ export const POST: RequestHandler = async ({ request, params }) => {
 	const ftype = data.get('filetype') as string;
 
 	logger.info('Uploading gallery image', fname, 'to', galleryPath, 'with type', ftype);
-	await uploadImage(galleryPath, f, fname, ftype);
+	const rand = String(Date.now()).slice(-5) + String(randomInt(4096));
+
+	await uploadImage(galleryPath, f, fname, ftype, rand);
 
 	if (ftype.startsWith('video')) {
 		logger.info('Generating thumbnail for video', fname, '@', galleryPath, '...');
 		const ffmpeg = spawn(ffmpegPath, [
 			'-i',
-			npath.join($ART(), getGalleryDir(galleryPath), relpath(galleryPath, fname, ftype)),
+			npath.join($ART(), getGalleryDir(galleryPath), relpath(galleryPath, fname, ftype, rand)),
 			'-vf',
 			'select=eq(n\\,0)',
 			'-vf',
@@ -35,7 +38,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 			npath.join(
 				$ART(),
 				getGalleryDir(galleryPath),
-				relpath(galleryPath, fname + '_thumb', 'image/jpeg')
+				relpath(galleryPath, fname + '_thumb', 'image/jpeg', rand)
 			),
 			'-y'
 		]);
@@ -53,24 +56,30 @@ export const POST: RequestHandler = async ({ request, params }) => {
 	logger.info('Uploaded gallery image', fname, 'to', galleryPath);
 
 	return json({
-		fname: './' + relpath(galleryPath, fname, ftype),
-		tname: './' + relpath(galleryPath, fname + '_thumb', 'image/jpeg')
+		fname: './' + relpath(galleryPath, fname, ftype, rand),
+		tname: './' + relpath(galleryPath, fname + '_thumb', 'image/jpeg', rand)
 	});
 };
 
-async function uploadImage(galleryPath: string, image: File, fname: string, ftype: string) {
+async function uploadImage(
+	galleryPath: string,
+	image: File,
+	fname: string,
+	ftype: string,
+	rand: string
+) {
 	const galleryDir = getGalleryDir(galleryPath);
-	const fp = npath.join($ART(), galleryDir, relpath(galleryPath, fname, ftype));
+	const fp = npath.join($ART(), galleryDir, relpath(galleryPath, fname, ftype, rand));
 	logger.silly('Writing gallery image @', fp, 'for', fname, '...');
 
 	await writeFile(fp, asNodeStream(image.stream()), { encoding: 'utf-8' });
 	logger.debug('Wrote gallery image @', fp);
 }
 
-function relpath(galleryPath: string, fname: string, ftype: string) {
+function relpath(galleryPath: string, fname: string, ftype: string, rand: string) {
 	const galleryName = getGalleryName(galleryPath);
 	const safeName = fname.replaceAll(/[^A-Za-z0-9-_]|\.\./g, '');
 	const ext = getImageExtension(ftype);
 
-	return `${galleryName}_${safeName}.${ext}`;
+	return `${galleryName}_${safeName}_${rand}.${ext}`;
 }

@@ -35,13 +35,15 @@
 	import { isBaseGallery } from '$lib/galleryutil';
 	import { uploadImage, type GalleryPath } from '$lib/util.js';
 	import type { Post } from 'phosart-bsky/util';
-	import type { BaseArtPiece, RawGallery } from 'phosart-common/util';
+	import type { BaseArtPiece, BaseGallery, RawGallery } from 'phosart-common/util';
 	import { persistGallery } from '../+page.svelte';
 	import { DateTime } from 'luxon';
 	import { invalidateAll } from '$app/navigation';
 	import ScreenSentinel from '$lib/ScreenSentinel.svelte';
 	import type { SkipSet } from '$lib/server/bluesky/cache';
 	import type { BuiltinSettings, SettingsFor } from 'phosart-common/server';
+	import { getEpoch } from '$lib/epoch.svelte';
+	import { getOverrides } from '$lib/galleryoverride.svelte';
 
 	interface Props {
 		galleryPath: string;
@@ -58,6 +60,9 @@
 	let loading = $state(false);
 	let limit = $state(4);
 	const skipset = $derived(ss[galleryPath] ?? new Set());
+
+	const epoch = getEpoch();
+	const overrides = getOverrides();
 
 	function extendLimit() {
 		limit += 2;
@@ -86,6 +91,18 @@
 		loading = flag;
 	}
 
+	async function save(updatedGallery: BaseGallery) {
+		loading = true;
+		try {
+			await persistGallery(galleryPath, updatedGallery, /* invalidate = */ false);
+			epoch.epoch += 1;
+			overrides.reset();
+			await invalidateAll();
+		} finally {
+			loading = false;
+		}
+	}
+
 	function makeImport(
 		ref: GalleryPath,
 		setPiece: (p: BaseArtPiece) => BaseArtPiece
@@ -97,7 +114,7 @@
 			const updatedGallery = {
 				pieces: gallery.pieces.map((p) => (p.slug === ref.piece ? setPiece(p) : p))
 			};
-			await persistGallery(galleryPath, updatedGallery);
+			await save(updatedGallery);
 		};
 	}
 
@@ -118,7 +135,7 @@
 					p.slug === ref.piece ? { ...p, image: newImage.filename } : p
 				)
 			};
-			await persistGallery(galleryPath, updatedGallery);
+			await save(updatedGallery);
 		};
 	}
 
@@ -157,7 +174,7 @@
 			const updatedGallery = {
 				pieces: [...gallery.pieces, await newPieceFromPost(fsid, alt, post)]
 			};
-			await persistGallery(galleryPath, updatedGallery);
+			await save(updatedGallery);
 		};
 	}
 
@@ -212,8 +229,7 @@
 				const updatedGallery = {
 					pieces: [...gallery.pieces, ...pieces]
 				};
-				await persistGallery(galleryPath, updatedGallery);
-				await invalidateAll();
+				await save(updatedGallery);
 			}}
 		>
 			Add All

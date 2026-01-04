@@ -34,7 +34,7 @@
 	import TextBox from '$lib/form/TextBox.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte.js';
-	import { isBaseGallery, isExtendsGallery } from '$lib/galleryutil.js';
+	import { createNewPiece, isBaseGallery, isExtendsGallery } from '$lib/galleryutil.js';
 	import Modal from '$lib/Modal.svelte';
 	import {
 		normalizeArtist,
@@ -53,6 +53,7 @@
 	import ActionButton from '$lib/ActionButton.svelte';
 	import ScreenSentinel from '$lib/ScreenSentinel.svelte';
 	import Checkbox from '$lib/form/Checkbox.svelte';
+	import { uploadImage } from '$lib/util.js';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -215,11 +216,47 @@
 		const f = (ev: KeyboardEvent) => {
 			shiftDown = ev.shiftKey;
 		};
+		const cf = (ev: ClipboardEvent) => {
+			if (!isBaseGallery(g)) return;
+
+			for (const item of ev.clipboardData?.items ?? []) {
+				const f = item.getAsFile();
+				if (f?.type?.startsWith('image/')) {
+					(async () => {
+						const { filename: fpath } = await uploadImage(
+							{ gallery: data.galleryPath, piece: '' },
+							f,
+							f.name || ''
+						);
+						if (!fpath) {
+							return null;
+						}
+
+						const piece = createNewPiece(
+							f,
+							fpath,
+							g.pieces.length,
+							g.pieces.map((p) => p.slug)
+						);
+						if (data.config.defaultArtist) {
+							piece.artist = data.config.defaultArtist;
+						}
+
+						g.pieces.push(piece);
+						await save();
+					})();
+
+					break;
+				}
+			}
+		};
 		window.addEventListener('keydown', f);
 		window.addEventListener('keyup', f);
+		window.addEventListener('paste', cf);
 		return () => {
 			window.removeEventListener('keydown', f);
 			window.removeEventListener('keyup', f);
+			window.removeEventListener('paste', cf);
 		};
 	});
 
@@ -258,6 +295,7 @@
 					</button>
 				{:else}
 					<AddImageButton
+						title="Drag (or paste) an image to add it"
 						defaultArtist={data.config?.defaultArtist ?? null}
 						existingIdentifiers={isBaseGallery(g) ? (g?.pieces?.map((p) => p.slug) ?? []) : []}
 						galleryPath={{ gallery: data.galleryPath, piece: '' }}
