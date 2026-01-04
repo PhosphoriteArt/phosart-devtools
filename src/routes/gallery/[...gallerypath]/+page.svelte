@@ -96,11 +96,13 @@
 		add: BulkModsEls;
 		remove: BulkModsEls;
 		isDeindexed: boolean | null | undefined;
+		isNsfw: boolean | null | undefined;
 	}
 	let bulkModifications: BulkMods = $state({
 		add: { artists: [], characters: [], tags: [] },
 		remove: { artists: [], characters: [], tags: [] },
-		isDeindexed: null
+		isDeindexed: null,
+		isNsfw: null
 	});
 
 	function toggleBulkPiece(slug: string, set?: boolean) {
@@ -128,6 +130,7 @@
 		bulkModifications = {
 			add: { artists: [], characters: [], tags: [] },
 			isDeindexed: null,
+			isNsfw: null,
 			remove: { artists: [], characters: [], tags: [] }
 		};
 	}
@@ -148,6 +151,9 @@
 		for (const piece of affectedPieces) {
 			if (typeof bulkModifications.isDeindexed === 'boolean') {
 				piece.deindexed = bulkModifications.isDeindexed || undefined;
+			}
+			if (typeof bulkModifications.isNsfw === 'boolean') {
+				piece.nsfw = bulkModifications.isNsfw || undefined;
 			}
 			if (!piece.artist) {
 				piece.artist = [];
@@ -552,6 +558,18 @@
 					label="Deindexed?"
 					right
 					bind:checked={() => v, (v) => (bulkModifications.isDeindexed = v)}
+				/>
+			{/snippet}
+		</OptionalInput>
+	</Collapsable>
+
+	<Collapsable title="Advanced">
+		<OptionalInput label="Set?" bind:value={bulkModifications.isNsfw} empty={false}>
+			{#snippet control(v)}
+				<Checkbox
+					label="NSFW?"
+					right
+					bind:checked={() => v, (v) => (bulkModifications.isNsfw = v)}
 				/>
 			{/snippet}
 		</OptionalInput>
