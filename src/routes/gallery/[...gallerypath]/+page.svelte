@@ -336,7 +336,9 @@
 						: undefined}
 					title={piece.name}
 					subtitle={DateTime.fromJSDate(piece.date).toFormat('f')}
-					class="m-2 grow rounded-2xl border"
+					class="m-2 grow rounded-2xl border {piece.deindexed
+						? 'border-amber-800 bg-gray-200'
+						: ''}"
 				>
 					{#snippet right()}
 						<div class="h-16 max-h-16 w-16 max-w-16">
