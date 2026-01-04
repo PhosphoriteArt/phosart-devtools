@@ -52,6 +52,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Character Editor | Art Site Editor</title>
+</svelte:head>
+
 {#snippet addButton()}
 	<AddImageButton
 		title="Drag an image to add a character"

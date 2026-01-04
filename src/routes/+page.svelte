@@ -29,6 +29,10 @@
 	let search = $state('');
 </script>
 
+<svelte:head>
+	<title>Art Site Editor</title>
+</svelte:head>
+
 <div class="my-4">
 	<Checkbox bind:checked={showEmpty} label="Show empty folders" right />
 </div>

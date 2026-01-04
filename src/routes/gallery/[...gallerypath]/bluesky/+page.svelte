@@ -46,6 +46,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Bluesky Import | {data.galleryPath} | Art Site Editor</title>
+</svelte:head>
+
 {#snippet spinner()}
 	<div
 		class="fixed top-0 left-0 z-40 flex w-screen items-center justify-center bg-[#0005]"

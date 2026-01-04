@@ -274,6 +274,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{data.galleryPath} | Art Site Editor</title>
+</svelte:head>
+
 {#if isExtendsGallery(g)}
 	<div class="flex flex-col">
 		<ExtendsEdit bind:value={g.$extends} allGalleries={data.allGalleryRelpaths} />

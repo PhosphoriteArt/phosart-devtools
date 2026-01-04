@@ -76,6 +76,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Artist Editor | Art Site Editor</title>
+</svelte:head>
+
 <button
 	onclick={() => {
 		artists[''] = { name: '', links: {}, type: 'Artist' };

@@ -24,6 +24,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Config Editor | Art Site Editor</title>
+</svelte:head>
+
 <div>
 	<TextInput
 		labelClass="w-64"
