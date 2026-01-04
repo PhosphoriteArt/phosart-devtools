@@ -95,10 +95,12 @@
 	interface BulkMods {
 		add: BulkModsEls;
 		remove: BulkModsEls;
+		isDeindexed: boolean | null | undefined;
 	}
 	let bulkModifications: BulkMods = $state({
 		add: { artists: [], characters: [], tags: [] },
-		remove: { artists: [], characters: [], tags: [] }
+		remove: { artists: [], characters: [], tags: [] },
+		isDeindexed: null
 	});
 
 	function toggleBulkPiece(slug: string, set?: boolean) {
@@ -139,6 +141,9 @@
 			.filter((v): v is BaseArtPiece => !!v);
 
 		for (const piece of affectedPieces) {
+			if (typeof bulkModifications.isDeindexed === 'boolean') {
+				piece.deindexed = bulkModifications.isDeindexed || undefined;
+			}
 			if (!piece.artist) {
 				piece.artist = [];
 			}
@@ -420,6 +425,17 @@
 									{/snippet}
 								</OptionalInput>
 
+								<div class="mt-4"></div>
+
+								<Checkbox
+									label="Deindexed?"
+									bind:checked={
+										() => !!piece.deindexed, (v) => void (piece.deindexed = v || undefined)
+									}
+								/>
+
+								<div class="mt-4"></div>
+
 								<PieceAltEdit
 									bind:value={piece.alts}
 									galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
@@ -506,6 +522,20 @@
 			/>
 		</div>
 	</div>
+
+	<div class="m-2 w-full border-t border-dashed border-gray-300"></div>
+
+	<Collapsable title="Advanced">
+		<OptionalInput label="Set?" bind:value={bulkModifications.isDeindexed} empty={false}>
+			{#snippet control(v)}
+				<Checkbox
+					label="Deindexed?"
+					right
+					bind:checked={() => v, (v) => (bulkModifications.isDeindexed = v)}
+				/>
+			{/snippet}
+		</OptionalInput>
+	</Collapsable>
 
 	{#snippet modalRight()}
 		<div class="flex items-stretch gap-x-3 py-1">

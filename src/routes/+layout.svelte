@@ -14,6 +14,8 @@
 	import Circle from '$lib/ext/Circle.svelte';
 	import { Circle as BigCircle } from 'svelte-loading-spinners';
 	import { navigating } from '$app/state';
+	import ActionButton from '$lib/ActionButton.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	let { children, data } = $props();
 
@@ -135,12 +137,36 @@
 <div class="flex w-full justify-center pt-4 pb-8">
 	<div class="container">
 		<div
-			class="flex min-h-10 w-full items-center justify-center rounded-xl bg-gray-100 py-2 select-none"
+			class="relative flex min-h-10 w-full items-center justify-center rounded-xl bg-gray-100 py-2 select-none"
 		>
 			<NavLink href="/#stay">Galleries</NavLink>
 			<NavLink href="/characters">Characters</NavLink>
 			<NavLink href="/artists">Artists</NavLink>
 			<NavLink href="/config">Config</NavLink>
+
+			<Tooltip tooltip="Reload / Regenerate">
+				{#snippet children(attach)}
+					<div
+						{@attach attach}
+						class="absolute right-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl bg-gray-200 hover:bg-gray-300 active:bg-gray-400"
+					>
+						<ActionButton
+							action={async () => {
+								await fetch('/api/reload', { method: 'POST' });
+								await invalidateAll();
+							}}
+							class="[&&]:border-none [&&]:bg-gray-200 [&&]:shadow-none [&&]:hover:bg-gray-400"
+						>
+							{#snippet loadingContent()}
+								<i
+									class="fa-solid fa-arrow-rotate-right animate-[spin_300ms_linear_infinite] text-gray-600"
+								></i>
+							{/snippet}
+							<i class="fa-solid fa-arrow-rotate-right text-gray-600"></i>
+						</ActionButton>
+					</div>
+				{/snippet}
+			</Tooltip>
 		</div>
 
 		{@render children()}

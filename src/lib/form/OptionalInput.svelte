@@ -6,9 +6,10 @@
 		value: T | null | undefined;
 		empty: T;
 		control: Snippet<[enabled: boolean, value: T]>;
+		label?: string;
 	}
 
-	let { value = $bindable(), empty, control }: Props = $props();
+	let { value = $bindable(), empty, control, label }: Props = $props();
 
 	let oldValue: T | null = $state(null);
 	const enabled = $derived((value ?? null) != null);
@@ -19,7 +20,7 @@
 	<div class="bottom-0 flex w-2 items-center border border-l-0">
 		<div class="flex gap-x-2">
 			<Checkbox
-				label="Enabled"
+				label={label ?? 'Enabled'}
 				right
 				bind:checked={
 					() => enabled,
