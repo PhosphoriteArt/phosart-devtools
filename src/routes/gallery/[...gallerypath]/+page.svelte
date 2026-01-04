@@ -561,9 +561,7 @@
 				/>
 			{/snippet}
 		</OptionalInput>
-	</Collapsable>
-
-	<Collapsable title="Advanced">
+		<div class="my-4"></div>
 		<OptionalInput label="Set?" bind:value={bulkModifications.isNsfw} empty={false}>
 			{#snippet control(v)}
 				<Checkbox
