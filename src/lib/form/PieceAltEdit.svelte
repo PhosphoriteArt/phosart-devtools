@@ -25,13 +25,18 @@
 		{#each value as alt, i (`${i}-${value?.length}`)}
 			<Collapsable
 				title={alt.name}
-				class="my-2 border {alt.deindexed ? 'border-amber-800 bg-gray-200' : ''}"
+				class="my-2 border {alt.nsfw ? 'outline-2 outline-amber-600' : ''} {alt.deindexed
+					? ' bg-gray-200'
+					: ''}"
 			>
 				{#snippet collapsedRight()}
 					<div class="h-16 max-h-16 w-16 max-w-16">
 						<OriginalImage
 							galleryPath={{ ...galleryPath, alt: alt.name, altIndex: i }}
 							isVideo={!!alt.video}
+							class={alt.nsfw
+								? 'duration-300ms blur-sm transition-[filter] hover:blur-none hover:duration-[3s]'
+								: ''}
 						/>
 					</div>
 				{/snippet}
@@ -39,6 +44,11 @@
 				<TextInput label="Name" bind:value={alt.name} />
 				<TextBox label="Description" bind:value={alt.description} />
 				<TextBox label="Alt Text" bind:value={alt.alt} />
+				<div class="my-4"></div>
+				<Checkbox
+					label="NSFW?"
+					bind:checked={() => !!alt.nsfw, (v) => void (alt.nsfw = v || undefined)}
+				/>
 				<div class="my-4"></div>
 				<Checkbox
 					label="Deindexed?"
@@ -49,6 +59,9 @@
 				<ImageEdit
 					galleryPath={{ ...galleryPath, alt: alt.name, altIndex: i }}
 					bind:resource={value![i]}
+					class={alt.nsfw
+						? 'duration-300ms blur-lg transition-[filter] hover:blur-none hover:duration-[3s]'
+						: ''}
 				/>
 				<div>
 					<button

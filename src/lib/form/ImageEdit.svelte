@@ -10,9 +10,10 @@
 		galleryPath: UploadPath;
 		label?: string;
 		disabled?: boolean;
+		class?: string;
 	}
 
-	let { resource = $bindable(), galleryPath, label, disabled }: Props = $props();
+	let { resource = $bindable(), galleryPath, label, disabled, class: cls }: Props = $props();
 
 	const epoch = getEpoch();
 	const overrides = getOverrides();
@@ -76,7 +77,13 @@
 					)}
 					class="h-64 max-h-64 w-64 max-w-64 overflow-hidden rounded-2xl {border} p-4"
 				>
-					<video loop controls muted autoplay src={thumbSrc} class="h-full w-full object-contain"
+					<video
+						loop
+						controls
+						muted
+						autoplay
+						src={thumbSrc}
+						class="h-full w-full object-contain {cls}"
 					></video>
 				</Droppable>
 			</div>
@@ -89,7 +96,13 @@
 					)}
 					class="h-64 max-h-64 w-64 max-w-64 overflow-hidden rounded-2xl {border} p-4"
 				>
-					<video loop controls muted autoplay src={videoSrc} class="h-full w-full object-contain"
+					<video
+						loop
+						controls
+						muted
+						autoplay
+						src={videoSrc}
+						class="h-full w-full object-contain {cls}"
 					></video>
 				</Droppable>
 			</div>
@@ -105,7 +118,7 @@
 				)}
 				class="h-64 max-h-64 w-64 max-w-64 overflow-hidden rounded-2xl {border} p-4"
 			>
-				<img {src} class="h-full w-full object-contain" alt="" />
+				<img {src} class="h-full w-full object-contain {cls}" alt="" />
 			</Droppable>
 		</div>
 	</div>

@@ -341,8 +341,8 @@
 						: undefined}
 					title={piece.name}
 					subtitle={DateTime.fromJSDate(piece.date).toFormat('f')}
-					class="m-2 grow rounded-2xl border {piece.deindexed
-						? 'border-amber-800 bg-gray-200'
+					class="m-2 grow rounded-2xl border {piece.deindexed ? 'bg-gray-200' : ''} {piece.nsfw
+						? 'outline-2 outline-amber-600'
 						: ''}"
 				>
 					{#snippet right()}
@@ -350,6 +350,9 @@
 							<OriginalImage
 								galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
 								isVideo={!!piece.video}
+								class={piece.nsfw
+									? 'duration-300ms blur-sm transition-[filter] hover:blur-none hover:duration-[3s]'
+									: ''}
 							/>
 						</div>
 					{/snippet}
@@ -414,6 +417,9 @@
 						<ImageEdit
 							bind:resource={g.pieces[i]}
 							galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
+							class={piece.nsfw
+								? 'duration-300ms blur-lg transition-[filter] hover:blur-none hover:duration-[3s]'
+								: ''}
 						/>
 						<div>
 							<Collapsable title="Advanced" class="my-3">
@@ -431,6 +437,13 @@
 										/>
 									{/snippet}
 								</OptionalInput>
+
+								<div class="mt-4"></div>
+
+								<Checkbox
+									label="NSFW?"
+									bind:checked={() => !!piece.nsfw, (v) => void (piece.nsfw = v || undefined)}
+								/>
 
 								<div class="mt-4"></div>
 
