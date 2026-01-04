@@ -26,6 +26,7 @@
 	});
 
 	const id = $props.id();
+	let search = $state('');
 </script>
 
 <div class="my-4">
@@ -39,10 +40,15 @@
 	<div class="relative flex grow">
 		<SearchInput
 			autoFocus
+			bind:search
 			class="grow"
+			noReportValidation
+			validationError={search !== '' && !data.galleryPaths.includes(search)}
 			options={asRecord(data.galleryPaths, (p) => p)}
 			onSelect={(s) => {
-				go(resolve('/gallery/[...gallerypath]', { gallerypath: s }));
+				if (data.galleryPaths.includes(s)) {
+					go(resolve('/gallery/[...gallerypath]', { gallerypath: s }));
+				}
 			}}
 		/>
 	</div>
