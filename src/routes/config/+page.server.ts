@@ -1,4 +1,4 @@
-import { allPieces, artists, readThemeConfig, readThemeSchema } from 'phosart-common/server';
+import { allPieces, artists, readThemeConfig, readThemeSchema } from '@phosart/common/server';
 import type { PageServerLoad } from './$types';
 import { createLogger } from '$lib/log';
 const logger = createLogger();

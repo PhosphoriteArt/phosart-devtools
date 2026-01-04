@@ -45,7 +45,7 @@
 		type BaseArtPiece,
 		type CharacterRef,
 		type RawGallery
-	} from 'phosart-common/util';
+	} from '@phosart/common/util';
 	import { DateTime } from 'luxon';
 	import { onMount } from 'svelte';
 	import { goto as go, invalidateAll } from '$app/navigation';

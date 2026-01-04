@@ -1,11 +1,11 @@
-import type { BaseGallery, RawGallery } from 'phosart-common/util';
+import type { BaseGallery, RawGallery } from '@phosart/common/util';
 import {
 	$ART,
 	clearCache,
 	rawGalleries,
 	RawGallery as ZRawGallery,
 	type RawGalleryCache
-} from 'phosart-common/server';
+} from '@phosart/common/server';
 import type { RequestHandler } from './$types';
 import path from 'node:path';
 import { error, json } from '@sveltejs/kit';

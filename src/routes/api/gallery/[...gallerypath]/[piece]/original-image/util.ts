@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { $ART, rawGalleries } from 'phosart-common/server';
+import { $ART, rawGalleries } from '@phosart/common/server';
 import { error } from '@sveltejs/kit';
 import { getGalleryDir, isBaseGallery } from '$lib/galleryutil';
 import { createLogger } from '$lib/log';

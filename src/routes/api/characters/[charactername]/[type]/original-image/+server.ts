@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import type { RequestHandler } from './$types';
-import { $ART, rawCharacters } from 'phosart-common/server';
+import { $ART, rawCharacters } from '@phosart/common/server';
 import { error } from '@sveltejs/kit';
 import { open } from 'node:fs/promises';
 import { asWebStream } from '$lib/server/fileutil';

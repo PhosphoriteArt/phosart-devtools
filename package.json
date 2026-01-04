@@ -1,6 +1,6 @@
 {
 	"name": "@phosart/devtool",
-	"version": "0.2.34",
+	"version": "0.2.35",
 	"type": "module",
 	"scripts": {
 		"dev": "dotenvx run -- vite dev",
@@ -60,6 +60,8 @@
 		"@floating-ui/dom": "^1.7.4",
 		"@fortawesome/fontawesome-free": "^7.1.0",
 		"@monaco-editor/loader": "^1.7.0",
+		"@phosart/bsky": "^0.2.1",
+		"@phosart/common": "^0.4.23",
 		"async-sema": "^3.1.1",
 		"chrono-node": "^2.9.0",
 		"es-toolkit": "^1.43.0",
@@ -68,8 +70,6 @@
 		"monaco-editor": "^0.55.1",
 		"msgpackr": "^1.11.8",
 		"opener": "^1.5.2",
-		"phosart-bsky": "github:phosphoriteart/phosart-bsky#stable",
-		"phosart-common": "github:phosphoriteart/phosart-common#stable",
 		"sharp": "^0.34.5",
 		"sharp-phash": "^2.2.0",
 		"svelte-loading-spinners": "^0.3.6",

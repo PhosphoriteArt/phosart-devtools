@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import npath from 'node:path';
-import { $ART } from 'phosart-common/server';
+import { $ART } from '@phosart/common/server';
 import { writeFile } from 'node:fs/promises';
 import { getGalleryDir, getGalleryName, normalizeGalleryPath } from '$lib/galleryutil';
 import { getImageExtension } from '$lib/fileutil';

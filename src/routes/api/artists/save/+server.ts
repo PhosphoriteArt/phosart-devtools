@@ -1,4 +1,4 @@
-import { $ART, Artist, clearCache, type ArtistCache } from 'phosart-common/server';
+import { $ART, Artist, clearCache, type ArtistCache } from '@phosart/common/server';
 import type { RequestHandler } from './$types';
 import path from 'node:path';
 import { json } from '@sveltejs/kit';

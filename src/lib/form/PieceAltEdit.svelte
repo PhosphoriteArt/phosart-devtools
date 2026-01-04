@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { BaseArtPiece } from 'phosart-common/util';
+	import type { BaseArtPiece } from '@phosart/common/util';
 	import TextInput from './TextInput.svelte';
 	import TextBox from './TextBox.svelte';
 	import ImageEdit from './ImageEdit.svelte';

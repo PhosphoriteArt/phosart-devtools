@@ -4,7 +4,7 @@
 		useArtists,
 		useCharacters,
 		type CharacterRef
-	} from 'phosart-common/util';
+	} from '@phosart/common/util';
 	import { arrAsObject } from './search/SearchResults.svelte';
 	import ControlledChippedInput from './chipped/ControlledChippedInput.svelte';
 

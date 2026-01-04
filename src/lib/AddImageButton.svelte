@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { BaseArtPiece } from 'phosart-common/util';
+	import type { BaseArtPiece } from '@phosart/common/util';
 	import { createNewPiece } from './galleryutil';
 	import { disableWindowDrag } from './dragutil.svelte';
 	import { uploadImage, type UploadPath } from './util';

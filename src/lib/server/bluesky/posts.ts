@@ -1,10 +1,10 @@
-import { type Post } from 'phosart-bsky/util';
+import { type Post } from '@phosart/bsky/util';
 import {
 	galleries,
 	rawGalleries,
 	type GalleryCache,
 	type RawGalleryCache
-} from 'phosart-common/server';
+} from '@phosart/common/server';
 import crypto from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';

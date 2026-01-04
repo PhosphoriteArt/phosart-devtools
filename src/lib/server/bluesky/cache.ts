@@ -1,5 +1,5 @@
-import { type Post } from 'phosart-bsky/util';
-import { readPack, writePack } from 'phosart-common/server';
+import { type Post } from '@phosart/bsky/util';
+import { readPack, writePack } from '@phosart/common/server';
 import { mkdir } from 'fs/promises';
 import { $CACHEDIR, $CACHEFILE, $FILESET as $PHASHCACHE, $SKIPSET } from './paths';
 import { createLogger } from '$lib/log';

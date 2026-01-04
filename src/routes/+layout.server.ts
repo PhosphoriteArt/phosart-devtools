@@ -1,4 +1,4 @@
-import { rawGalleries } from 'phosart-common/server';
+import { rawGalleries } from '@phosart/common/server';
 import type { LayoutServerLoad } from './$types';
 import { normalizeGalleryPath } from '$lib/galleryutil';
 import { createLogger } from '$lib/log';

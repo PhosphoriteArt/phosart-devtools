@@ -1,4 +1,4 @@
-import { $ART } from 'phosart-common/server';
+import { $ART } from '@phosart/common/server';
 import type { RequestHandler } from './$types';
 import path from 'node:path';
 import { error, json } from '@sveltejs/kit';

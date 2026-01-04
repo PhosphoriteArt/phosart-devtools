@@ -9,7 +9,7 @@
 	import Modal from '$lib/Modal.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import ActionButton from '$lib/ActionButton.svelte';
-	import { asRecord, type RawGallery } from 'phosart-common/util';
+	import { asRecord, type RawGallery } from '@phosart/common/util';
 	import { browser } from '$app/environment';
 	import SearchInput from '$lib/form/search/SearchInput.svelte';
 

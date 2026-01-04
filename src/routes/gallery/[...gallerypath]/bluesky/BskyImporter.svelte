@@ -34,14 +34,14 @@
 	import OriginalImage from '$lib/form/OriginalImage.svelte';
 	import { isBaseGallery } from '$lib/galleryutil';
 	import { uploadImage, type GalleryPath } from '$lib/util.js';
-	import type { Post } from 'phosart-bsky/util';
-	import type { BaseArtPiece, BaseGallery, RawGallery } from 'phosart-common/util';
+	import type { Post } from '@phosart/bsky/util';
+	import type { BaseArtPiece, BaseGallery, RawGallery } from '@phosart/common/util';
 	import { persistGallery } from '../+page.svelte';
 	import { DateTime } from 'luxon';
 	import { invalidateAll } from '$app/navigation';
 	import ScreenSentinel from '$lib/ScreenSentinel.svelte';
 	import type { SkipSet } from '$lib/server/bluesky/cache';
-	import type { BuiltinSettings, SettingsFor } from 'phosart-common/server';
+	import type { BuiltinSettings, SettingsFor } from '@phosart/common/server';
 	import { getEpoch } from '$lib/epoch.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte';
 

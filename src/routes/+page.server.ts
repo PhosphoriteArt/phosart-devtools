@@ -1,4 +1,4 @@
-import { $ART, artists, rawGalleries } from 'phosart-common/server';
+import { $ART, artists, rawGalleries } from '@phosart/common/server';
 import type { PageServerLoad } from './$types';
 import { search } from '$lib/server/structure';
 import { normalizeGalleryPath } from '$lib/galleryutil';

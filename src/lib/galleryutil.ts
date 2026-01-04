@@ -1,4 +1,4 @@
-import type { BaseArtPiece, BaseGallery, ExtendedGallery, RawGallery } from 'phosart-common/util';
+import type { BaseArtPiece, BaseGallery, ExtendedGallery, RawGallery } from '@phosart/common/util';
 import npath from 'node:path';
 
 export function normalizeGalleryPath(path: string | null | undefined): string {

@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { $ART } from 'phosart-common/server';
+import { $ART } from '@phosart/common/server';
 
 export const $CACHEDIR = () => path.join($ART(), '..', '..', '.cache', 'bluesky');
 export const $CACHEFILE = () => path.join($CACHEDIR(), '.posts.pack.gz');

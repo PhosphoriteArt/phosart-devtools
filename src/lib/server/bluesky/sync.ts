@@ -1,4 +1,4 @@
-import { PostsClient } from 'phosart-bsky/util';
+import { PostsClient } from '@phosart/bsky/util';
 import { readCache, readPerceptualHashCache, writeCache, flushPerceptualHashCache } from './cache';
 import { error } from '@sveltejs/kit';
 import { findMatches, getImages, mergePosts } from './posts';

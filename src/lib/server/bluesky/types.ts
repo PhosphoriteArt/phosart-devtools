@@ -1,4 +1,4 @@
-import type { Post, ImageDetails } from 'phosart-bsky/util';
+import type { Post, ImageDetails } from '@phosart/bsky/util';
 import type { GalleryPath } from '$lib/util';
 
 export interface ExtendedImageDetails extends ImageDetails {

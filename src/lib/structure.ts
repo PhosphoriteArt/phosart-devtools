@@ -1,4 +1,4 @@
-import type { Artist, BaseGallery, ExtendedGallery } from 'phosart-common/util';
+import type { Artist, BaseGallery, ExtendedGallery } from '@phosart/common/util';
 
 export type File =
 	| { $type: 'gallery'; isBase: true; data: BaseGallery }

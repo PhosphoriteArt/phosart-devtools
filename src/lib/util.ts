@@ -1,4 +1,4 @@
-import type { BaseArtPiece } from 'phosart-common/util';
+import type { BaseArtPiece } from '@phosart/common/util';
 import { createLogger } from './log';
 const logger = createLogger();
 

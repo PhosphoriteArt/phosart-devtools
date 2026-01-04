@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createLogger } from '$lib/log';
-import { $ART } from 'phosart-common/server';
+import { $ART } from '@phosart/common/server';
 import { unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { Readable } from 'node:stream';

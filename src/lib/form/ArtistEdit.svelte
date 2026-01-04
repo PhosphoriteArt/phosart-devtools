@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { normalizeArtist, useArtists, type BaseArtist } from 'phosart-common/util';
+	import { normalizeArtist, useArtists, type BaseArtist } from '@phosart/common/util';
 	import ChippedInput from './chipped/ChippedInput.svelte';
 	import { arrAsObject } from './search/SearchResults.svelte';
 

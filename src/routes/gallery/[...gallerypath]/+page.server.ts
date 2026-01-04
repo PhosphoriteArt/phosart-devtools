@@ -4,10 +4,10 @@ import {
 	rawGalleries,
 	readThemeConfig,
 	readThemeSchema
-} from 'phosart-common/server';
-import { normalizeCharacter } from 'phosart-common/util';
+} from '@phosart/common/server';
+import { normalizeCharacter } from '@phosart/common/util';
 import type { PageServerLoad } from './$types';
-import type { CharacterRef } from 'phosart-common/util';
+import type { CharacterRef } from '@phosart/common/util';
 import { getGalleryDir, isBaseGallery, normalizeGalleryPath } from '$lib/galleryutil';
 import { createLogger } from '$lib/log';
 import { unique as uniq } from '$lib/util';

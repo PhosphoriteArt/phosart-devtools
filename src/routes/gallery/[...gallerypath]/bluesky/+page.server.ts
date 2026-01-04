@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { readSkipSet } from '$lib/server/bluesky/cache';
-import { rawGalleries, readThemeConfig, readThemeSchema } from 'phosart-common/server';
+import { rawGalleries, readThemeConfig, readThemeSchema } from '@phosart/common/server';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const ss = await readSkipSet();

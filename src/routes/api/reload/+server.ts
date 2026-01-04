@@ -5,7 +5,7 @@ import {
 	clearCache,
 	clearProcessedHashes,
 	galleries
-} from 'phosart-common/server';
+} from '@phosart/common/server';
 import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
 

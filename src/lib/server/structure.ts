@@ -1,5 +1,5 @@
 import type { FileStructure } from '$lib/structure';
-import type { ArtistCache, RawGalleryCache } from 'phosart-common/server';
+import type { ArtistCache, RawGalleryCache } from '@phosart/common/server';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { isExtendsGallery } from '$lib/galleryutil';
