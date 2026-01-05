@@ -1,6 +1,6 @@
 {
 	"name": "@phosart/devtool",
-	"version": "0.2.36",
+	"version": "0.2.37",
 	"type": "module",
 	"scripts": {
 		"dev": "dotenvx run -- vite dev",
@@ -70,6 +70,7 @@
 		"monaco-editor": "^0.55.1",
 		"msgpackr": "^1.11.8",
 		"opener": "^1.5.2",
+		"polka": "^0.5.2",
 		"sharp": "^0.34.5",
 		"sharp-phash": "^2.2.0",
 		"svelte-loading-spinners": "^0.3.6",
@@ -81,5 +82,11 @@
 		"build"
 	],
 	"main": "build/index.js",
-	"bin": "build/index.js"
+	"bin": "build/index.js",
+	"exports": {
+		".": {
+			"types": "./build/handler.d.ts",
+			"svelte": "./build/handler.js"
+		}
+	}
 }

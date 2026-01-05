@@ -29,4 +29,10 @@ ${index}
 );
 chmodSync(indexPath, 0o755);
 
-console.log('Successfully updated build/index.js');
+writeFileSync(
+	path.join(rt, 'build', 'handler.d.ts'),
+	"export const handler: import('polka').Middleware\n",
+	{ encoding: 'utf-8' }
+);
+
+console.log('Successfully updated build/');
