@@ -16,6 +16,7 @@
 	import { navigating } from '$app/state';
 	import ActionButton from '$lib/ActionButton.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	let { children, data } = $props();
 
@@ -57,7 +58,7 @@
 
 		async function fetchLogs(): Promise<LogObj[] | null> {
 			try {
-				const res = await origFetch('/api/logs/recent');
+				const res = await origFetch(resolve('/api/logs/recent'));
 				return await res.json();
 			} catch {
 				return null;
@@ -152,7 +153,7 @@
 					>
 						<ActionButton
 							action={async () => {
-								await fetch('/api/reload', { method: 'POST' });
+								await fetch(resolve('/api/reload'), { method: 'POST' });
 								await invalidateAll();
 							}}
 							class="[&&]:border-none [&&]:bg-gray-200 [&&]:shadow-none [&&]:hover:bg-gray-400"

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { getEpoch } from '$lib/epoch.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte';
 	import { type UploadPath } from '$lib/util';
@@ -21,10 +22,14 @@
 			return (
 				override?.videoFull ??
 				override?.image ??
-				`/api/gallery/${galleryPath.gallery}/${galleryPath.piece}/original-image?alt=${galleryPath.alt ?? ''}&altIndex=${galleryPath.altIndex ?? ''}&epoch=${epoch.epoch}`
+				resolve(
+					`/api/gallery/${galleryPath.gallery}/${galleryPath.piece}/original-image?alt=${galleryPath.alt ?? ''}&altIndex=${galleryPath.altIndex ?? ''}&epoch=${epoch.epoch}`
+				)
 			);
 		} else {
-			return `/api/characters/${galleryPath.character}/${galleryPath.for}/original-image?epoch=${epoch.epoch}`;
+			return resolve(
+				`/api/characters/${galleryPath.character}/${galleryPath.for}/original-image?epoch=${epoch.epoch}`
+			);
 		}
 	});
 	const thumbSrc = $derived(override?.videoThumb ?? src + '&video=true&thumb=true');

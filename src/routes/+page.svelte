@@ -109,7 +109,12 @@
 					<ActionButton
 						disabled={!newName}
 						action={async () => {
-							await fetch('/api/folder/' + [...path, newName].join('/'), { method: 'PATCH' });
+							await fetch(
+								resolve('/api/folder/[...folderpath]', {
+									folderpath: [...path, newName].join('/')
+								}),
+								{ method: 'PATCH' }
+							);
 							await invalidateAll();
 							showEmpty = true;
 							close();
@@ -135,13 +140,18 @@
 					<ActionButton
 						disabled={!newName}
 						action={async () => {
-							await fetch('/api/gallery/' + [...path, newName + '.gallery'].join('/') + '/save', {
-								method: 'POST',
-								headers: { 'Content-Type': 'application/json' },
-								body: JSON.stringify(
-									(isExtendedGallery ? { $extends: [] } : { pieces: [] }) satisfies RawGallery
-								)
-							});
+							await fetch(
+								resolve('/api/gallery/[...gallerypath]/save', {
+									gallerypath: [...path, newName + '.gallery'].join('/')
+								}),
+								{
+									method: 'POST',
+									headers: { 'Content-Type': 'application/json' },
+									body: JSON.stringify(
+										(isExtendedGallery ? { $extends: [] } : { pieces: [] }) satisfies RawGallery
+									)
+								}
+							);
 							await invalidateAll();
 							close();
 						}}>Create</ActionButton

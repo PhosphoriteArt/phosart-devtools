@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { disableWindowDrag } from '$lib/dragutil.svelte';
 	import { getEpoch } from '$lib/epoch.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte';
@@ -30,10 +31,14 @@
 			return (
 				override?.videoFull ??
 				override?.image ??
-				`/api/gallery/${galleryPath.gallery}/${galleryPath.piece}/original-image?alt=${galleryPath.alt ?? ''}&altIndex=${galleryPath.altIndex ?? ''}&epoch=${epoch.epoch}`
+				resolve(
+					`/api/gallery/${galleryPath.gallery}/${galleryPath.piece}/original-image?alt=${galleryPath.alt ?? ''}&altIndex=${galleryPath.altIndex ?? ''}&epoch=${epoch.epoch}`
+				)
 			);
 		} else {
-			return `/api/characters/${galleryPath.character}/${galleryPath.for}/original-image?epoch=${epoch.epoch}`;
+			return resolve(
+				`/api/characters/${galleryPath.character}/${galleryPath.for}/original-image?epoch=${epoch.epoch}`
+			);
 		}
 	});
 	const videoSrc = $derived(override?.videoThumb ?? src + '&video=true&thumb=false');
@@ -63,11 +68,11 @@
 <div class="flex items-center">
 	<span><pre class="w-40">{label ?? 'Image'}</pre></span>
 	<div
-		class="flex gap-x-2 rounded-2xl {resource.video
+		class="flex gap-x-2 rounded-2xl {resource?.video
 			? 'no-scrollbar overflow-scroll border p-2'
 			: ''} {disabled ? 'cursor-not-allowed grayscale' : ''}"
 	>
-		{#if resource.video}
+		{#if resource?.video}
 			<div class="flex flex-col items-center">
 				<div>Thumbnail</div>
 				<Droppable
@@ -108,7 +113,7 @@
 			</div>
 		{/if}
 		<div class="flex flex-col items-center">
-			{#if resource.video}
+			{#if resource?.video}
 				<div>Still Backdrop</div>
 			{/if}
 			<Droppable

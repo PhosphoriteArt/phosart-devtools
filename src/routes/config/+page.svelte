@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import ChippedInput from '$lib/form/chipped/ChippedInput.svelte';
 	import TagEdit from '$lib/form/TagEdit.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
@@ -12,7 +13,7 @@
 	async function save() {
 		loading = true;
 		try {
-			await fetch(`/api/config/save`, {
+			await fetch(resolve('/api/config/save'), {
 				method: 'POST',
 				body: JSON.stringify(settings),
 				headers: { 'Content-Type': 'application/json' }

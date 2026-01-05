@@ -44,6 +44,7 @@
 	import type { BuiltinSettings, SettingsFor } from '@phosart/common/server';
 	import { getEpoch } from '$lib/epoch.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		galleryPath: string;
@@ -124,8 +125,7 @@
 				return;
 			}
 
-			const blobUrl = `/api/bluesky/image/${fsid}`;
-			const imageRes = await fetch(blobUrl);
+			const imageRes = await fetch(resolve('/api/bluesky/image/[hash]', { hash: fsid }));
 			const blob = await imageRes.blob();
 
 			const newImage = await uploadImage(ref, blob, fsid);
@@ -140,8 +140,7 @@
 	}
 
 	async function newPieceFromPost(fsid: string, alt: string, post: Post): Promise<BaseArtPiece> {
-		const blobUrl = `/api/bluesky/image/${fsid}`;
-		const imageRes = await fetch(blobUrl);
+		const imageRes = await fetch(resolve('/api/bluesky/image/[hash]', { hash: fsid }));
 		const blob = await imageRes.blob();
 
 		const newImage = await uploadImage({ gallery: galleryPath, piece: fsid }, blob, fsid);
@@ -181,7 +180,13 @@
 	function makeMarkDone(fsid: string): () => Promise<void> {
 		return async () => {
 			try {
-				await fetch(`/api/bluesky/mark/${galleryPath}/${fsid}`, { method: 'PUT' });
+				await fetch(
+					resolve('/api/bluesky/mark/[...gallerypath]/[hash]', {
+						gallerypath: galleryPath,
+						hash: fsid
+					}),
+					{ method: 'PUT' }
+				);
 			} finally {
 				await invalidateAll();
 			}
@@ -238,7 +243,12 @@
 	{#if skipset.size > 0}
 		<ActionButton
 			action={async () => {
-				await fetch(`/api/bluesky/mark?gallerypath=${galleryPath}`, { method: 'DELETE' });
+				await fetch(
+					resolve('/api/bluesky/mark/[...gallerypath]', {
+						gallerypath: galleryPath
+					}),
+					{ method: 'DELETE' }
+				);
 				await invalidateAll();
 			}}
 		>
@@ -258,7 +268,7 @@
 		<div class="m-4 flex w-full items-center rounded-xl border p-4">
 			<div class="flex flex-col items-center">
 				<img
-					src="/api/bluesky/image/{details.id}"
+					src={resolve('/api/bluesky/image/[hash]', { hash: details.id })}
 					class="max-h-64 max-w-64"
 					alt={details.alt_text}
 				/>

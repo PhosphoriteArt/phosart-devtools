@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import ActionButton from '$lib/ActionButton.svelte';
+	import { resolve } from '$app/paths';
 	const { data } = $props();
 
 	let posts: PostWithMatch[] | null = $state(null);
@@ -15,7 +16,7 @@
 
 	async function sync() {
 		try {
-			posts = await fetch('/api/bluesky/sync?epoch=', {
+			posts = await fetch(resolve('/api/bluesky/sync'), {
 				method: 'POST',
 				body: JSON.stringify({
 					bskyUsername: localStorage.getItem('bskyUsername'),

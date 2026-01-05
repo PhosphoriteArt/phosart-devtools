@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import Collapsable from '$lib/Collapsable.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import Modal from '$lib/Modal.svelte';
@@ -64,7 +65,7 @@
 	async function save() {
 		loading = true;
 		try {
-			await fetch(`/api/artists/save`, {
+			await fetch(resolve('/api/artists/save'), {
 				method: 'POST',
 				body: JSON.stringify(artists),
 				headers: { 'Content-Type': 'application/json' }

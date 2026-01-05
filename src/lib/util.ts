@@ -1,5 +1,6 @@
 import type { BaseArtPiece } from '@phosart/common/util';
 import { createLogger } from './log';
+import { resolve } from '$app/paths';
 const logger = createLogger();
 
 export function unique<T>(arr: T[]): T[] {
@@ -37,9 +38,9 @@ export async function uploadImage(
 
 	let reqpath: string;
 	if (path.character !== undefined) {
-		reqpath = `/api/characters/upload-image?for=${path.for}`;
+		reqpath = resolve(`/api/characters/upload-image?for=${path.for}`);
 	} else {
-		reqpath = `/api/gallery/${path.gallery}/upload-image`;
+		reqpath = resolve('/api/gallery/[...gallerypath]/upload-image', { gallerypath: path.gallery });
 	}
 
 	const res = await fetch(reqpath, {

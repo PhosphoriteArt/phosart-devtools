@@ -20,7 +20,7 @@ import opener from "opener";
 
 setTimeout(() => {
   const p = typeof port === "undefined" ? 3000 : port;
-  opener("http://127.0.0.1:" + port);
+  opener("http://127.0.0.1:" + port + "/editor");
 }, 200);
 
 ${index}
@@ -31,7 +31,7 @@ chmodSync(indexPath, 0o755);
 
 writeFileSync(
 	path.join(rt, 'build', 'handler.d.ts'),
-	"export const handler: import('polka').Middleware\n",
+	"export const handler: (req: import('http').IncomingMessage, res: import('http').ServerResponse, next: (err?: string) => void) => void\n",
 	{ encoding: 'utf-8' }
 );
 

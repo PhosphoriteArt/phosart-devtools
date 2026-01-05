@@ -5,7 +5,7 @@
 		invalidate = true
 	) {
 		try {
-			await fetch(`/api/gallery/${galleryPath}/save`, {
+			await fetch(resolve('/api/gallery/[...gallerypath]/save', { gallerypath: galleryPath }), {
 				method: 'POST',
 				body: JSON.stringify(gallery),
 				headers: { 'Content-Type': 'application/json' }
@@ -426,7 +426,10 @@
 					? 'border-red-500 text-red-800 hover:bg-red-200'
 					: 'cursor-not-allowed font-bold'} w-full text-center "
 				action={async () => {
-					await fetch(`/api/gallery/${data.galleryPath}/save`, { method: 'DELETE' });
+					await fetch(
+						resolve('/api/gallery/[...gallerypath]/save', { gallerypath: data.galleryPath }),
+						{ method: 'DELETE' }
+					);
 					await go(resolve('/'));
 					await invalidateAll();
 				}}
@@ -554,6 +557,8 @@
 							g.pieces = [...g.pieces.slice(0, i), ...g.pieces.slice(i + 1)];
 
 							save();
+
+							selectedPieceData = null;
 						}}
 						class="w-40 rounded-2xl border p-3 text-center"
 						class:hover:bg-gray-300={shiftDown}

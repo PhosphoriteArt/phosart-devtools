@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import AddImageButton from '$lib/AddImageButton.svelte';
 	import Collapsable from '$lib/Collapsable.svelte';
 	import { getEpoch } from '$lib/epoch.svelte.js';
@@ -38,7 +39,7 @@
 	async function save() {
 		loading = true;
 		try {
-			await fetch(`/api/characters/save`, {
+			await fetch(resolve('/api/characters/save'), {
 				method: 'POST',
 				body: JSON.stringify(characters),
 				headers: { 'Content-Type': 'application/json' }
