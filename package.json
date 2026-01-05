@@ -1,6 +1,6 @@
 {
 	"name": "@phosart/devtool",
-	"version": "0.2.37",
+	"version": "0.2.38",
 	"type": "module",
 	"scripts": {
 		"dev": "dotenvx run -- vite dev",
@@ -86,7 +86,7 @@
 	"exports": {
 		".": {
 			"types": "./build/handler.d.ts",
-			"svelte": "./build/handler.js"
+			"default": "./build/handler.js"
 		}
 	}
 }
