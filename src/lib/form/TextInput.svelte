@@ -16,6 +16,7 @@
 		icon?: string;
 		password?: boolean;
 		labelClass?: string;
+		noReportValidation?: true;
 	}
 
 	const id = $props.id();
@@ -32,19 +33,22 @@
 		options,
 		icon,
 		password,
-		labelClass
+		labelClass,
+		noReportValidation
 	}: Props = $props();
 
 	let inputRef: HTMLInputElement | null = $state(null);
 
 	$effect(() => {
-		if (validationError) {
-			inputRef?.setCustomValidity(validationError);
+		if (!noReportValidation) {
+			if (validationError) {
+				inputRef?.setCustomValidity(validationError);
+				inputRef?.reportValidity();
+			} else {
+				inputRef?.setCustomValidity('');
+			}
 			inputRef?.reportValidity();
-		} else {
-			inputRef?.setCustomValidity('');
 		}
-		inputRef?.reportValidity();
 	});
 
 	export function focus() {
@@ -77,7 +81,7 @@
 			{onkeydown}
 			{disabled}
 			class:text-gray-400={disabled}
-			class=" grow rounded-xl p-2 focus:border-blue-300 {cls}"
+			class="grow rounded-xl p-2 focus:border-blue-300 {cls}"
 			class:bg-white={!disabled}
 			class:bg-gray-100={disabled}
 			onpointerdown={onclick}

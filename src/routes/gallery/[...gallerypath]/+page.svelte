@@ -34,7 +34,7 @@
 	import TextBox from '$lib/form/TextBox.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte.js';
-	import { createNewPiece, isBaseGallery, isExtendsGallery } from '$lib/galleryutil.js';
+	import { copyPieces, createNewPiece, isBaseGallery, isExtendsGallery } from '$lib/galleryutil.js';
 	import Modal from '$lib/Modal.svelte';
 	import {
 		normalizeArtist,
@@ -53,11 +53,13 @@
 	import ActionButton from '$lib/ActionButton.svelte';
 	import ScreenSentinel from '$lib/ScreenSentinel.svelte';
 	import Checkbox from '$lib/form/Checkbox.svelte';
-	import { uploadImage } from '$lib/util.js';
+	import { truthy, uploadImage } from '$lib/util.js';
+	import { cloneDeep } from 'es-toolkit';
 
 	const { data } = $props();
+	const rawGallery = $derived(data.galleries[data.galleryPath]);
 	// svelte-ignore state_referenced_locally
-	let g: RawGallery = $state(data.rawGallery);
+	let g: RawGallery = $state(cloneDeep(rawGallery));
 
 	const sorted: (readonly [BaseArtPiece, number])[] = $derived(
 		g && isBaseGallery(g)
@@ -128,6 +130,7 @@
 		bulkSelected = [];
 		lastTouched = null;
 		completingBulk = false;
+		copyPath = '';
 		bulkModifications = {
 			add: { artists: [], characters: [], tags: [] },
 			isDeindexed: null,
@@ -267,7 +270,7 @@
 			epoch.epoch += 1;
 			overrides.reset();
 			await invalidateAll();
-			g = data.rawGallery;
+			g = rawGallery;
 		} finally {
 			loading = false;
 		}
@@ -275,6 +278,8 @@
 
 	let selectedPieceData: [piece: BaseArtPiece, origIndex: number, sortedIndex: number] | null =
 		$state(null);
+
+	let copyPath = $state('');
 </script>
 
 <svelte:head>
@@ -509,6 +514,51 @@
 				/>
 			{/snippet}
 		</OptionalInput>
+		<div class="my-4"></div>
+
+		<div class="flex gap-x-3">
+			<TextInput
+				label="Copy To..."
+				bind:value={copyPath}
+				options={Object.keys(data.galleries).filter((k) => isBaseGallery(data.galleries[k]))}
+				noReportValidation
+				validationError={copyPath !== '' && !data.galleries[copyPath]
+					? 'Select a valid path'
+					: undefined}
+			/>
+
+			<ActionButton
+				disabled={!data.galleries[copyPath] || !isBaseGallery(g)}
+				action={async () => {
+					const target = data.galleries[copyPath];
+					const src = g;
+					if (!isBaseGallery(src) || !target || !isBaseGallery(target)) return;
+
+					const newPieces = await copyPieces(
+						bulkSelected
+							.map((k) => {
+								return src.pieces.find((g) => g.slug === k);
+							})
+							.filter(truthy),
+						data.galleryPath,
+						copyPath
+					);
+					target.pieces = [...target.pieces, ...newPieces];
+					await fetch(resolve('/api/gallery/[...gallerypath]/save', { gallerypath: copyPath }), {
+						method: 'POST',
+						body: JSON.stringify(target),
+						headers: { 'Content-Type': 'application/json' }
+					});
+
+					copyPath = '';
+				}}
+			>
+				{#snippet loadingContent()}
+					Copying...
+				{/snippet}
+				Copy
+			</ActionButton>
+		</div>
 	</Collapsable>
 
 	{#snippet modalRight()}
@@ -542,6 +592,7 @@
 			(v) => {
 				if (!v) {
 					selectedPieceData = null;
+					copyPath = '';
 				}
 			}
 		}
@@ -641,6 +692,46 @@
 						label="Deindexed?"
 						bind:checked={() => !!piece.deindexed, (v) => void (piece.deindexed = v || undefined)}
 					/>
+
+					<div class="mt-4"></div>
+
+					<div class="flex gap-x-3">
+						<TextInput
+							label="Copy To..."
+							bind:value={copyPath}
+							options={Object.keys(data.galleries).filter((k) => isBaseGallery(data.galleries[k]))}
+							noReportValidation
+							validationError={copyPath !== '' && !data.galleries[copyPath]
+								? 'Select a valid path'
+								: undefined}
+						/>
+
+						<ActionButton
+							disabled={!data.galleries[copyPath] || !isBaseGallery(g)}
+							action={async () => {
+								const target = data.galleries[copyPath];
+								if (!target || !isBaseGallery(target)) return;
+
+								const newPieces = await copyPieces([piece], data.galleryPath, copyPath);
+								target.pieces = [...target.pieces, ...newPieces];
+								await fetch(
+									resolve('/api/gallery/[...gallerypath]/save', { gallerypath: copyPath }),
+									{
+										method: 'POST',
+										body: JSON.stringify(target),
+										headers: { 'Content-Type': 'application/json' }
+									}
+								);
+
+								copyPath = '';
+							}}
+						>
+							{#snippet loadingContent()}
+								Copying...
+							{/snippet}
+							Copy
+						</ActionButton>
+					</div>
 
 					<div class="mt-4"></div>
 

@@ -4,6 +4,7 @@ import { asWebStream } from '$lib/server/fileutil';
 import { normalizeGalleryPath } from '$lib/galleryutil';
 import { getOriginalImagePath } from './util';
 import { createLogger } from '$lib/log';
+import mime from 'mime';
 const logger = createLogger();
 
 export const GET: RequestHandler = async ({ params, url }) => {
@@ -46,6 +47,8 @@ export const GET: RequestHandler = async ({ params, url }) => {
 
 	return new Response(asWebStream(file.createReadStream({ autoClose: true })), {
 		status: 200,
-		headers: {}
+		headers: {
+			'Content-Type': mime.getType(path) ?? 'application/octet-stream'
+		}
 	});
 };

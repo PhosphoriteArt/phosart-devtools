@@ -9,9 +9,10 @@
 	import Modal from '$lib/Modal.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import ActionButton from '$lib/ActionButton.svelte';
-	import { asRecord, type RawGallery } from '@phosart/common/util';
+	import { asRecord, type BaseArtPiece, type RawGallery } from '@phosart/common/util';
 	import { browser } from '$app/environment';
 	import SearchInput from '$lib/form/search/SearchInput.svelte';
+	import { copyPieces, isBaseGallery } from '$lib/galleryutil.js';
 
 	const { data } = $props();
 
@@ -27,6 +28,7 @@
 
 	const id = $props.id();
 	let search = $state('');
+	let copyPath = $state('');
 </script>
 
 <svelte:head>
@@ -90,7 +92,7 @@
 		iconFamily="regular"
 	>
 		{@render controls([...path, folderName])}
-		<FileTree {showEmpty} structure={data.galleries} {folder} {file} path={[...path, folderName]} />
+		<FileTree {showEmpty} structure={data.tree} {folder} {file} path={[...path, folderName]} />
 	</Collapsable>
 {/snippet}
 
@@ -141,15 +143,22 @@
 					<ActionButton
 						disabled={!newName}
 						action={async () => {
+							const target = [...path, newName + '.gallery'].join('/');
+							let pieces: BaseArtPiece[] = [];
+							const copied = data.galleries[copyPath];
+							if (!isExtendedGallery && copied && isBaseGallery(copied)) {
+								pieces = await copyPieces(copied.pieces, copyPath, target);
+							}
+
 							await fetch(
 								resolve('/api/gallery/[...gallerypath]/save', {
-									gallerypath: [...path, newName + '.gallery'].join('/')
+									gallerypath: target
 								}),
 								{
 									method: 'POST',
 									headers: { 'Content-Type': 'application/json' },
 									body: JSON.stringify(
-										(isExtendedGallery ? { $extends: [] } : { pieces: [] }) satisfies RawGallery
+										(isExtendedGallery ? { $extends: [] } : { pieces: pieces }) satisfies RawGallery
 									)
 								}
 							);
@@ -160,6 +169,23 @@
 
 					<Collapsable title="Advanced" class="mt-4">
 						<Checkbox label="Is extended gallery" bind:checked={isExtendedGallery} />
+						<div class="my-4"></div>
+						<div class="flex items-center gap-x-3">
+							<TextInput
+								label="Copy From..."
+								disabled={isExtendedGallery}
+								bind:value={copyPath}
+								options={Object.keys(data.galleries).filter((k) =>
+									isBaseGallery(data.galleries[k])
+								)}
+								noReportValidation
+								validationError={copyPath !== '' && !data.galleries[copyPath]
+									? 'Select a valid path'
+									: undefined}
+							/>
+
+							{data.galleries[copyPath] ? '✅' : '❌'}
+						</div>
 					</Collapsable>
 				</div>
 			{/snippet}
@@ -168,4 +194,4 @@
 {/snippet}
 
 {@render controls([])}
-<FileTree structure={data.galleries} {folder} {file} {showEmpty} />
+<FileTree structure={data.tree} {folder} {file} {showEmpty} />

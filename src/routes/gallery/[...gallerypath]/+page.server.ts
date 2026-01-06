@@ -63,7 +63,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	);
 
 	return {
-		rawGallery: (await rawGalleries())[galleryPath],
+		galleries: await rawGalleries(),
 		allArtists: await artists(),
 		allCharacterRefs,
 		allCharacters: await characters(),

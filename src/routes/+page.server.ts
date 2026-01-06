@@ -14,8 +14,9 @@ export const load: PageServerLoad = async () => {
 	const gallerySearch = await search($ART(), await rawGalleries(), await artists());
 	logger.silly('Loaded home page data');
 	return {
-		galleries: gallerySearch,
+		tree: gallerySearch,
 		redirectGallery: normalizeGalleryPath(onlyPath) || null,
-		galleryPaths
+		galleryPaths,
+		galleries: await rawGalleries()
 	};
 };

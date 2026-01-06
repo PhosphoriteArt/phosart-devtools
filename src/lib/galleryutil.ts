@@ -1,5 +1,7 @@
+import { resolve } from '$app/paths';
 import type { BaseArtPiece, BaseGallery, ExtendedGallery, RawGallery } from '@phosart/common/util';
 import npath from 'node:path';
+import { truthy, uploadImage } from './util';
 
 export function normalizeGalleryPath(path: string | null | undefined): string {
 	return (path ?? '').replaceAll(npath.sep, '/').replaceAll(/^\/*/g, '');
@@ -72,4 +74,122 @@ export function createNewPiece(
 	}
 
 	return piece;
+}
+
+interface ImageUrls {
+	image: string;
+	alts: Record<
+		string,
+		{
+			image: string;
+			video: {
+				full?: string;
+				thumb?: string;
+			};
+		}
+	>;
+	video: {
+		full?: string;
+		thumb?: string;
+	};
+}
+
+export function getImageUrls(galleryPath: string, piece: BaseArtPiece, epoch?: number): ImageUrls {
+	return {
+		image: resolve(`/api/gallery/${galleryPath}/${piece.slug}/original-image?epoch=${epoch ?? ''}`),
+		alts: Object.fromEntries(
+			piece.alts?.map((alt, i) => {
+				return [
+					alt.name,
+					{
+						image: resolve(
+							`/api/gallery/${galleryPath}/${piece.slug}/original-image?epoch=${epoch ?? ''}&alt=${alt.name}&altIndex=${i}`
+						),
+						video: {
+							full: alt.video?.full
+								? resolve(
+										`/api/gallery/${galleryPath}/${piece.slug}/original-image?epoch=${epoch ?? ''}&alt=${alt.name}&altIndex=${i}&video=true`
+									)
+								: undefined,
+							thumb: alt.video?.thumb
+								? resolve(
+										`/api/gallery/${galleryPath}/${piece.slug}/original-image?epoch=${epoch ?? ''}&alt=${alt.name}&altIndex=${i}&video=true&thumb=true`
+									)
+								: undefined
+						}
+					}
+				] as const;
+			}) ?? []
+		),
+		video: {
+			full: piece.video?.full
+				? resolve(
+						`/api/gallery/${galleryPath}/${piece.slug}/original-image?video=true&epoch=${epoch ?? ''}`
+					)
+				: undefined,
+			thumb: piece.video?.thumb
+				? resolve(
+						`/api/gallery/${galleryPath}/${piece.slug}/original-image?video=true&thumb=true&epoch=${epoch ?? ''}`
+					)
+				: undefined
+		}
+	};
+}
+
+async function copyPiece(
+	piece: BaseArtPiece,
+	srcGalleryPath: string,
+	targetGalleryPath: string
+): Promise<BaseArtPiece> {
+	const urls = getImageUrls(srcGalleryPath, piece);
+	const newPiece: BaseArtPiece = {
+		...piece,
+		id: 'copy-' + (piece.id ?? piece.slug) + Date.now() + '' + Math.floor(Math.random() * 4096)
+	};
+
+	async function upload(path: string) {
+		return (
+			await uploadImage(
+				{ gallery: targetGalleryPath, piece: '' },
+				await fetch(path).then((r) => r.blob()),
+				piece.name
+			)
+		).filename;
+	}
+
+	newPiece.image = await upload(urls.image);
+
+	newPiece.alts = newPiece.alts
+		? await Promise.all(
+				newPiece.alts.map(async (alt) => {
+					const aurls = urls.alts[alt.name];
+					if (!aurls) return null;
+					return {
+						...alt,
+						image: await upload(aurls.image),
+						video:
+							aurls.video.full && aurls.video.thumb
+								? {
+										full: await upload(aurls.video.full),
+										thumb: await upload(aurls.video.thumb)
+									}
+								: undefined
+					};
+				})
+			).then((p) => p.filter(truthy))
+		: undefined;
+
+	if (urls.video.full && urls.video.thumb) {
+		newPiece.video = { full: await upload(urls.video.full), thumb: await upload(urls.video.thumb) };
+	}
+
+	return newPiece;
+}
+
+export async function copyPieces(
+	pieces: BaseArtPiece[],
+	srcGalleryPath: string,
+	targetGalleryPath: string
+): Promise<BaseArtPiece[]> {
+	return await Promise.all(pieces.map((p) => copyPiece(p, srcGalleryPath, targetGalleryPath)));
 }
