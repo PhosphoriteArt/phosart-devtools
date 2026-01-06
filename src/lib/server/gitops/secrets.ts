@@ -6,10 +6,15 @@ import winscript from '../assets/scripts/secret-win.ps1?raw';
 import macscript from '../assets/scripts/secret-mac.sh?raw';
 import linuxscript from '../assets/scripts/secret-linux.sh?raw';
 
+let cachedpath: string | null = null;
+
 async function scriptpath(): Promise<string> {
+	if (cachedpath) {
+		return cachedpath;
+	}
 	const platform = os.platform();
 	const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'phosart-devtool'));
-	const scriptpath = path.resolve(path.join(tmp, `script.${platform === 'win32' ? 'ps1' : 'sh'}`));
+	const toCache = path.resolve(path.join(tmp, `script.${platform === 'win32' ? 'ps1' : 'sh'}`));
 
 	let script = linuxscript;
 	if (platform === 'darwin') {
@@ -19,16 +24,17 @@ async function scriptpath(): Promise<string> {
 	}
 
 	try {
-		await fs.stat(scriptpath);
-		return scriptpath;
+		await fs.stat(toCache);
+		return toCache;
 	} catch {
 		// Must create
 	}
 
-	await fs.writeFile(scriptpath, script, { encoding: 'utf-8' });
-	await fs.chmod(scriptpath, 0o755);
+	await fs.writeFile(toCache, script, { encoding: 'utf-8' });
+	await fs.chmod(toCache, 0o755);
 
-	return scriptpath;
+	cachedpath = toCache;
+	return cachedpath;
 }
 
 type Status = 'OK' | 'MISSING' | 'NOT_SUPPORTED' | 'ERROR';
