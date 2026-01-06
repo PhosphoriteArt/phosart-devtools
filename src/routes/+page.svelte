@@ -48,6 +48,7 @@
 			bind:search
 			class="grow"
 			noReportValidation
+			acceptSuggestionOnEnter
 			validationError={search !== '' && !data.galleryPaths.includes(search)
 				? 'invalid path'
 				: undefined}

@@ -67,3 +67,7 @@ export interface BaseResource {
 	image: BaseArtPiece['image'];
 	video?: BaseArtPiece['video'];
 }
+
+export function truthy<T>(t: T | null | undefined): t is T {
+	return !!t;
+}

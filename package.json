@@ -61,7 +61,7 @@
 		"@fortawesome/fontawesome-free": "^7.1.0",
 		"@monaco-editor/loader": "^1.7.0",
 		"@phosart/bsky": "^0.2.1",
-		"@phosart/common": "^0.4.23",
+		"@phosart/common": "^0.4.24",
 		"async-sema": "^3.1.1",
 		"chrono-node": "^2.9.0",
 		"es-toolkit": "^1.43.0",

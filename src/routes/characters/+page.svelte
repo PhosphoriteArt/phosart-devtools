@@ -7,11 +7,14 @@
 	import ImageEdit from '$lib/form/ImageEdit.svelte';
 	import OptionalInput from '$lib/form/OptionalInput.svelte';
 	import OriginalImage from '$lib/form/OriginalImage.svelte';
+	import SearchInput from '$lib/form/search/SearchInput.svelte';
 	import TextBox from '$lib/form/TextBox.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte.js';
 	import Modal from '$lib/Modal.svelte';
+	import type { BaseCharacter } from '@phosart/common/util';
 	import { onMount } from 'svelte';
+	import fz from 'fuzzysort';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -51,11 +54,52 @@
 			invalidateAll();
 		}
 	}
+
+	const id = $props.id();
+	let search = $state('');
+	let selectedCharacter: [BaseCharacter, number] | null = $state(null);
+
+	const filteredCharacters = $derived.by(() => {
+		if (!search) {
+			return characters.map((ch, i) => [ch, i] as const);
+		}
+		return fz
+			.go(search, characters, {
+				keys: ['name', 'short_description', 'description']
+			})
+			.map((character) => {
+				const i = characters.findIndex((v) => v.name === character.obj.name);
+				return [character.obj, i] as const;
+			});
+	});
 </script>
 
 <svelte:head>
 	<title>Character Editor | Art Site Editor</title>
 </svelte:head>
+
+<div class="my-4 flex gap-x-2 rounded-2xl border border-dashed p-2">
+	<label for="{id}-search-box">
+		<i class="fa-solid fa-search"></i>
+	</label>
+	<div class="relative flex grow">
+		<SearchInput
+			id="{id}-search-box"
+			autoFocus
+			bind:search
+			class="grow"
+			noReportValidation
+			acceptSuggestionOnEnter
+			options={data.characters}
+			onSelect={(_s, ch) => {
+				if (ch) {
+					const i = characters.findIndex((v) => v.name === ch.name);
+					selectedCharacter = [ch, i];
+				}
+			}}
+		/>
+	</div>
+</div>
 
 {#snippet addButton()}
 	<AddImageButton
@@ -92,8 +136,14 @@
 {@render addButton()}
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-	{#each characters as character, i (`${i}-${characters.length}`)}
-		<Modal title={character.name} class="m-2 rounded-2xl border">
+	{#each filteredCharacters as [character, i] (`${i}-${characters.length}`)}
+		<Modal
+			overrideOnClick={() => {
+				selectedCharacter = [character, i];
+			}}
+			title={character.name}
+			class="m-2 rounded-2xl border"
+		>
 			{#snippet right()}
 				<div class="flex items-center">
 					<div class="h-16 max-h-16 w-16 max-w-16">
@@ -142,110 +192,128 @@
 					</div>
 				</div>
 			{/snippet}
-			{#snippet modalRight()}
-				<div class="flex items-stretch gap-x-3 py-1">
-					<div>
-						<button
-							onclick={(ev) => {
-								if (!ev.shiftKey) return;
-								characters = [...characters.slice(0, i), ...characters.slice(i + 1)];
-
-								save();
-							}}
-							class="w-40 rounded-2xl border p-3 text-center"
-							class:hover:bg-gray-300={shiftDown}
-							class:active:bg-gray-500={shiftDown}
-							class:cursor-pointer={shiftDown}
-							class:hover:font-bold={!shiftDown}
-							class:cursor-not-allowed={!shiftDown}
-							style="line-height: 1;"
-						>
-							<div>
-								<i class="fa-solid fa-trash"></i>
-								<span class="font-normal">Delete</span>
-							</div>
-							<div class="text-[8pt]">(requires shift-click)</div>
-						</button>
-					</div>
-					<div>
-						{#if !loading}
-							<button
-								onclick={() => void save()}
-								class="h-full cursor-pointer rounded-2xl border p-3 hover:bg-gray-300 active:bg-gray-500"
-							>
-								<i class="fa-regular fa-save"></i>
-								<span>Save</span>
-							</button>
-						{:else}
-							<div class="h-full cursor-pointer rounded-2xl border p-3">Saving...</div>
-						{/if}
-						{#if error}
-							<div class="h-full">ERROR: {error}</div>
-						{/if}
-					</div>
-				</div>
-			{/snippet}
-			<div>
-				<TextInput label="Name" bind:value={character.name} />
-				<TextInput label="Pronouns" bind:value={character.pronouns} />
-				<TextBox label="Description" big bind:value={character.description} />
-				<OptionalInput bind:value={character.short_description} empty="">
-					{#snippet control(enabled, value)}
-						<TextInput
-							label="Short Desc"
-							disabled={!enabled}
-							bind:value={() => value, (v) => (character.short_description = v)}
-						/>
-					{/snippet}
-				</OptionalInput>
-				<ImageEdit
-					galleryPath={{ character: character.name, for: 'full' }}
-					bind:resource={character.picture}
-				/>
-				<TextBox label="Alt Text" bind:value={character.picture.alt} />
-				<OptionalInput bind:value={character.thumbnail} empty={character.picture}>
-					{#snippet control(enabled, value)}
-						<div>
-							<div>
-								<ImageEdit
-									disabled={!enabled}
-									label="Thumbnail"
-									galleryPath={{ character: character.name, for: enabled ? 'thumb' : 'full' }}
-									bind:resource={() => value, (v) => (character.thumbnail = v)}
-								/>
-							</div>
-							<div>
-								<TextBox
-									label="Thumb Alt Text"
-									disabled={!enabled}
-									bind:value={
-										() => value.alt,
-										(v) => {
-											if (character.thumbnail) {
-												character.thumbnail.alt = v;
-											}
-										}
-									}
-								/>
-							</div>
-						</div>
-					{/snippet}
-				</OptionalInput>
-				<div>
-					<Collapsable title="Advanced" class="my-3">
-						<Collapsable
-							title="JSON"
-							initial={false}
-							class="mt-2 no-scrollbar overflow-scroll border-t border-gray-300 text-gray-400"
-						>
-							<pre class="text-gray-900">{JSON.stringify(character, null, 4)}</pre>
-						</Collapsable>
-					</Collapsable>
-				</div>
-			</div>
 		</Modal>
 	{/each}
 </div>
 {#if characters.length > 0}
 	{@render addButton()}
+{/if}
+
+{#if selectedCharacter}
+	{@const [character, i] = selectedCharacter}
+	<Modal
+		headless
+		title="Edit {character.name}"
+		bind:open={
+			() => true,
+			(v) => {
+				if (!v) {
+					selectedCharacter = null;
+					search = '';
+				}
+			}
+		}
+	>
+		{#snippet modalRight()}
+			<div class="flex items-stretch gap-x-3 py-1">
+				<div>
+					<button
+						onclick={(ev) => {
+							if (!ev.shiftKey) return;
+							characters = [...characters.slice(0, i), ...characters.slice(i + 1)];
+
+							save();
+						}}
+						class="w-40 rounded-2xl border p-3 text-center"
+						class:hover:bg-gray-300={shiftDown}
+						class:active:bg-gray-500={shiftDown}
+						class:cursor-pointer={shiftDown}
+						class:hover:font-bold={!shiftDown}
+						class:cursor-not-allowed={!shiftDown}
+						style="line-height: 1;"
+					>
+						<div>
+							<i class="fa-solid fa-trash"></i>
+							<span class="font-normal">Delete</span>
+						</div>
+						<div class="text-[8pt]">(requires shift-click)</div>
+					</button>
+				</div>
+				<div>
+					{#if !loading}
+						<button
+							onclick={() => void save()}
+							class="h-full cursor-pointer rounded-2xl border p-3 hover:bg-gray-300 active:bg-gray-500"
+						>
+							<i class="fa-regular fa-save"></i>
+							<span>Save</span>
+						</button>
+					{:else}
+						<div class="h-full cursor-pointer rounded-2xl border p-3">Saving...</div>
+					{/if}
+					{#if error}
+						<div class="h-full">ERROR: {error}</div>
+					{/if}
+				</div>
+			</div>
+		{/snippet}
+		<div>
+			<TextInput label="Name" bind:value={character.name} />
+			<TextInput label="Pronouns" bind:value={character.pronouns} />
+			<TextBox label="Description" big bind:value={character.description} />
+			<OptionalInput bind:value={character.short_description} empty="">
+				{#snippet control(enabled, value)}
+					<TextInput
+						label="Short Desc"
+						disabled={!enabled}
+						bind:value={() => value, (v) => (character.short_description = v)}
+					/>
+				{/snippet}
+			</OptionalInput>
+			<ImageEdit
+				galleryPath={{ character: character.name, for: 'full' }}
+				bind:resource={character.picture}
+			/>
+			<TextBox label="Alt Text" bind:value={character.picture.alt} />
+			<OptionalInput bind:value={character.thumbnail} empty={character.picture}>
+				{#snippet control(enabled, value)}
+					<div>
+						<div>
+							<ImageEdit
+								disabled={!enabled}
+								label="Thumbnail"
+								galleryPath={{ character: character.name, for: enabled ? 'thumb' : 'full' }}
+								bind:resource={() => value, (v) => (character.thumbnail = v)}
+							/>
+						</div>
+						<div>
+							<TextBox
+								label="Thumb Alt Text"
+								disabled={!enabled}
+								bind:value={
+									() => value.alt,
+									(v) => {
+										if (character.thumbnail) {
+											character.thumbnail.alt = v;
+										}
+									}
+								}
+							/>
+						</div>
+					</div>
+				{/snippet}
+			</OptionalInput>
+			<div>
+				<Collapsable title="Advanced" class="my-3">
+					<Collapsable
+						title="JSON"
+						initial={false}
+						class="mt-2 no-scrollbar overflow-scroll border-t border-gray-300 text-gray-400"
+					>
+						<pre class="text-gray-900">{JSON.stringify(character, null, 4)}</pre>
+					</Collapsable>
+				</Collapsable>
+			</div>
+		</div>
+	</Modal>
 {/if}

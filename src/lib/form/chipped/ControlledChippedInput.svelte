@@ -92,6 +92,7 @@
 			<SearchInput
 				options={dedupedOptions}
 				bind:search
+				acceptSuggestionOnEnter
 				{validationError}
 				{onSelect}
 				{onDeselect}

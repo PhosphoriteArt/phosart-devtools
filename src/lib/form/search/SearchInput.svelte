@@ -11,9 +11,11 @@
 		noReportValidation?: true;
 		onSelect?: (selected: string, option?: T) => void;
 		onDeselect?: () => void;
+		onComplete?: (completion: string) => void;
 
 		class?: string;
 		autoFocus?: boolean;
+		acceptSuggestionOnEnter?: boolean;
 		id?: string;
 	}
 	const id = $props.id();
@@ -27,7 +29,9 @@
 		noReportValidation,
 		class: cls,
 		autoFocus,
-		id: userId
+		id: userId,
+		onComplete,
+		acceptSuggestionOnEnter
 	}: Props = $props();
 
 	let uncontrolledSearch = $state('');
@@ -54,6 +58,10 @@
 		}
 		uncontrolledSearch = val;
 	}
+
+	export function getSearchRef(): SearchResultsImperativeHandle | null {
+		return searchRef;
+	}
 </script>
 
 <input
@@ -69,7 +77,7 @@
 	class={cls}
 	bind:this={inputRef}
 	bind:value={() => search, setSearch}
-	{@attach control(searchRef)}
+	{@attach control(searchRef, acceptSuggestionOnEnter)}
 	onkeydown={(kev) => {
 		if (kev.code === 'Enter') {
 			onSelect?.(search, options?.[search] ?? undefined);
@@ -85,5 +93,6 @@
 	onconfirm={(key) => {
 		setSearch(key);
 		inputRef?.focus();
+		onComplete?.(key);
 	}}
 />

@@ -1,10 +1,10 @@
 <script lang="ts" module>
-	export interface SearchResultsImperativeHandle {
+	export interface SearchResultsImperativeHandle<T = unknown> {
 		increment(): void;
 		decrement(): void;
 		reset(): void;
 		select(): boolean;
-		getResults(): ReadonlyArray<unknown>;
+		getResults(): ReadonlyArray<Fuzzysort.KeysResult<[string, T]>>;
 		getSelected(): number;
 	}
 
@@ -14,8 +14,9 @@
 		return arr.reduce((acc, cur) => ({ ...acc, [asString?.(cur) ?? (cur as string)]: cur }), {});
 	}
 
-	export function control(
-		ctl: SearchResultsImperativeHandle | undefined | null
+	export function control<T>(
+		ctl: SearchResultsImperativeHandle<T> | undefined | null,
+		acceptSuggestionOnEnter?: boolean
 	): Attachment<HTMLElement> {
 		return (el) => {
 			if (!ctl) {
@@ -39,7 +40,7 @@
 					kev.preventDefault();
 				} else {
 					if (!kev.shiftKey && !kev.metaKey && !kev.ctrlKey && !kev.altKey) {
-						if (kev.code === 'Tab') {
+						if (kev.code === 'Tab' || (acceptSuggestionOnEnter && kev.code === 'Enter')) {
 							if (ctl.select()) {
 								kev.preventDefault();
 							}
