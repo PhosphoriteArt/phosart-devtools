@@ -14,6 +14,7 @@ import { unlink, writeFile } from 'node:fs/promises';
 import { getGalleryDir, isBaseGallery, normalizeGalleryPath } from '$lib/galleryutil';
 import { createLogger } from '$lib/log';
 import { deleteResources, resolveWithinArt } from '$lib/server/fileutil';
+import { signalWork } from '$lib/server/worker';
 const logger = createLogger();
 
 export const POST: RequestHandler = async ({ request, params }) => {
@@ -38,6 +39,8 @@ export const POST: RequestHandler = async ({ request, params }) => {
 		);
 		await deleteResources([...deletedReferences]);
 	}
+
+	signalWork();
 
 	return json({ ok: true });
 };
@@ -135,6 +138,8 @@ export const DELETE: RequestHandler = async ({ params }) => {
 		);
 		await deleteResources([...deletedReferences]);
 	}
+
+	signalWork();
 
 	return json({ ok: true });
 };

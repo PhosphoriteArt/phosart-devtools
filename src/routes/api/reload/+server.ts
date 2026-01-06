@@ -1,21 +1,8 @@
-import {
-	artists,
-	characters,
-	cleanUnusedHashes,
-	clearCache,
-	clearProcessedHashes,
-	galleries
-} from '@phosart/common/server';
 import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
+import { reload } from '$lib/server/fileutil';
 
 export const POST: RequestHandler = async () => {
-	clearProcessedHashes();
-	clearCache();
-	await galleries();
-	await characters();
-	await artists();
-	await cleanUnusedHashes();
-
+	await reload();
 	return json({ ok: true });
 };

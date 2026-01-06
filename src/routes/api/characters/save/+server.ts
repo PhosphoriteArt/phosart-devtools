@@ -8,6 +8,7 @@ import z from 'zod';
 import { createLogger } from '$lib/log';
 import { rawCharacters } from '@phosart/common/server';
 import { deleteResources } from '$lib/server/fileutil';
+import { signalWork } from '$lib/server/worker';
 const logger = createLogger();
 
 const ZCharacters = z.array(RawCharacter);
@@ -24,6 +25,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 	clearCache();
 	logger.info('Saved characters');
+
+	signalWork();
 
 	return json({ ok: true });
 };

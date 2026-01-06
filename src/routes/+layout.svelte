@@ -26,6 +26,7 @@
 	let statusBar: HTMLDivElement | null = $state(null);
 	let isHoveringStatusBar = $state(false);
 	let numFetchesInFlight = $state(0);
+	let isServerImageProcessing = $state(false);
 
 	const isServerDoingWork = $derived.by(() => {
 		const lastLog = logs[logs.length - 1] ?? null;
@@ -56,6 +57,29 @@
 			}
 		};
 
+		async function fetchIsWorking(): Promise<boolean> {
+			try {
+				const res = await origFetch(resolve('/api/reload/working'));
+				return (await res.json()).working;
+			} catch {
+				return false;
+			}
+		}
+
+		let isWorkingHandle: ReturnType<typeof setTimeout> | null = null;
+
+		function periodicallyFetchIsWorking(timeout: number) {
+			isWorkingHandle = setTimeout(async () => {
+				isServerImageProcessing = await fetchIsWorking();
+
+				if (isWorkingHandle != null) {
+					periodicallyFetchIsWorking(timeout);
+				}
+			}, timeout);
+		}
+
+		periodicallyFetchIsWorking(250);
+
 		async function fetchLogs(): Promise<LogObj[] | null> {
 			try {
 				const res = await origFetch(resolve('/api/logs/recent'));
@@ -65,21 +89,21 @@
 			}
 		}
 
-		let handle: ReturnType<typeof setTimeout> | null = null;
+		let logsHandle: ReturnType<typeof setTimeout> | null = null;
 
-		function periodicallyFetch(timeout: number) {
-			handle = setTimeout(async () => {
+		function periodicallyFetchLogs(timeout: number) {
+			logsHandle = setTimeout(async () => {
 				const next = await fetchLogs();
 				if (next && !isEqual(next, logs)) {
 					logs = next;
 				}
-				if (handle != null) {
-					periodicallyFetch(timeout);
+				if (logsHandle != null) {
+					periodicallyFetchLogs(timeout);
 				}
 			}, timeout);
 		}
 
-		periodicallyFetch(250);
+		periodicallyFetchLogs(250);
 
 		const hf = (ev: Event) => {
 			if (statusBar?.contains(ev.target as Node)) {
@@ -94,9 +118,14 @@
 		return () => {
 			window.fetch = origFetch;
 			window.removeEventListener('mousemove', hf);
-			if (handle) {
-				const clearHandle = handle;
-				handle = null;
+			if (logsHandle) {
+				const clearHandle = logsHandle;
+				logsHandle = null;
+				clearTimeout(clearHandle);
+			}
+			if (isWorkingHandle) {
+				const clearHandle = isWorkingHandle;
+				isWorkingHandle = null;
 				clearTimeout(clearHandle);
 			}
 		};
@@ -151,19 +180,24 @@
 						{@attach attach}
 						class="absolute right-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl bg-gray-200 hover:bg-gray-300 active:bg-gray-400"
 					>
+						{#snippet loadingContent()}
+							<i
+								class="fa-solid fa-arrow-rotate-right animate-[spin_300ms_linear_infinite] text-gray-600"
+							></i>
+						{/snippet}
 						<ActionButton
 							action={async () => {
 								await fetch(resolve('/api/reload'), { method: 'POST' });
 								await invalidateAll();
 							}}
+							{loadingContent}
 							class="[&&]:border-none [&&]:bg-gray-200 [&&]:shadow-none [&&]:hover:bg-gray-400"
 						>
-							{#snippet loadingContent()}
-								<i
-									class="fa-solid fa-arrow-rotate-right animate-[spin_300ms_linear_infinite] text-gray-600"
-								></i>
-							{/snippet}
-							<i class="fa-solid fa-arrow-rotate-right text-gray-600"></i>
+							{#if isServerImageProcessing}
+								{@render loadingContent()}
+							{:else}
+								<i class="fa-solid fa-arrow-rotate-right text-gray-600"></i>
+							{/if}
 						</ActionButton>
 					</div>
 				{/snippet}

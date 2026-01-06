@@ -1,6 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createLogger } from '$lib/log';
-import { $ART } from '@phosart/common/server';
+import {
+	$ART,
+	artists,
+	characters,
+	cleanUnusedHashes,
+	clearCache,
+	clearProcessedHashes,
+	galleries
+} from '@phosart/common/server';
 import { unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { Readable } from 'node:stream';
@@ -37,4 +45,13 @@ export async function deleteResources(deletions: string[]): Promise<void> {
 			logger.info('Deleted', resolved);
 		})
 	);
+}
+
+export async function reload() {
+	clearProcessedHashes();
+	clearCache();
+	await galleries();
+	await characters();
+	await artists();
+	await cleanUnusedHashes();
 }
