@@ -38,8 +38,8 @@ importers:
         specifier: ^0.2.1
         version: 0.2.1(svelte@5.46.0)
       '@phosart/common':
-        specifier: ^0.4.25
-        version: 0.4.25(svelte@5.46.0)
+        specifier: ^0.4.27
+        version: 0.4.27(svelte@5.46.0)
       async-sema:
         specifier: ^3.1.1
         version: 3.1.1
@@ -711,8 +711,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  '@phosart/common@0.4.25':
-    resolution: {integrity: sha512-i71+0Pel/qlp6u8sElaxlZhmt2q9EQo5v0XOkPRnY5EdlWE0hpTQIj545FsfxYCEt1HIT5yg0lCrxIXI8NfEZw==}
+  '@phosart/common@0.4.27':
+    resolution: {integrity: sha512-hIT34yVs1LouYRG7xE8Fhov5XqkROs1SlLMpemzfkYwa83HLFt1cvhOXS5RJCkDuC1eoejafpY9+faBtvRw53g==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -3164,7 +3164,7 @@ snapshots:
       - snappy
       - socks
 
-  '@phosart/common@0.4.25(svelte@5.46.0)':
+  '@phosart/common@0.4.27(svelte@5.46.0)':
     dependencies:
       '@fortawesome/fontawesome-free': 7.1.0
       async-sema: 3.1.1

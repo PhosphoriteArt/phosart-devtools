@@ -1,6 +1,6 @@
 {
 	"name": "@phosart/devtool",
-	"version": "0.2.43",
+	"version": "0.2.44",
 	"type": "module",
 	"scripts": {
 		"dev": "dotenvx run -- vite dev",
@@ -61,7 +61,7 @@
 		"@fortawesome/fontawesome-free": "^7.1.0",
 		"@monaco-editor/loader": "^1.7.0",
 		"@phosart/bsky": "^0.2.1",
-		"@phosart/common": "^0.4.25",
+		"@phosart/common": "^0.4.27",
 		"async-sema": "^3.1.1",
 		"chrono-node": "^2.9.0",
 		"es-toolkit": "^1.43.0",
