@@ -17,6 +17,7 @@
 	import ActionButton from '$lib/ActionButton.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import type { GitStatus } from '$lib/server/gitops/git';
 
 	let { children, data } = $props();
 
@@ -27,6 +28,7 @@
 	let isHoveringStatusBar = $state(false);
 	let numFetchesInFlight = $state(0);
 	let isServerImageProcessing = $state(false);
+	let gitStatus: GitStatus | null = $state(null);
 
 	const isServerDoingWork = $derived.by(() => {
 		const lastLog = logs[logs.length - 1] ?? null;
@@ -105,6 +107,32 @@
 
 		periodicallyFetchLogs(250);
 
+		async function fetchStatus(): Promise<GitStatus | null> {
+			try {
+				const res = await origFetch(resolve('/api/git/status'));
+				return await res.json();
+			} catch {
+				return null;
+			}
+		}
+
+		let statusHandle: ReturnType<typeof setTimeout> | null = null;
+
+		function periodicallyFetchGitStatus(timeout: number) {
+			statusHandle = setTimeout(async () => {
+				const next = await fetchStatus();
+				if (next && !isEqual(next, gitStatus)) {
+					gitStatus = next;
+				}
+				if (statusHandle != null) {
+					periodicallyFetchGitStatus(timeout);
+				}
+			}, timeout);
+		}
+
+		periodicallyFetchGitStatus(15 * 1000);
+		fetchStatus().then((s) => void (gitStatus = s));
+
 		const hf = (ev: Event) => {
 			if (statusBar?.contains(ev.target as Node)) {
 				isHoveringStatusBar = true;
@@ -126,6 +154,11 @@
 			if (isWorkingHandle) {
 				const clearHandle = isWorkingHandle;
 				isWorkingHandle = null;
+				clearTimeout(clearHandle);
+			}
+			if (statusHandle) {
+				const clearHandle = statusHandle;
+				statusHandle = null;
 				clearTimeout(clearHandle);
 			}
 		};
@@ -169,10 +202,64 @@
 		<div
 			class="relative flex min-h-10 w-full items-center justify-center rounded-xl bg-gray-100 py-2 select-none"
 		>
-			<NavLink href="/#stay">Galleries</NavLink>
-			<NavLink href="/characters">Characters</NavLink>
-			<NavLink href="/artists">Artists</NavLink>
-			<NavLink href="/config">Config</NavLink>
+			<NavLink href="/#stay"
+				><span class="visible md:hidden">Art</span><span class="hidden md:inline">Galleries</span
+				></NavLink
+			>
+			<NavLink href="/characters"
+				><span class="visible md:hidden">Chr</span><span class="hidden md:inline">Characters</span
+				></NavLink
+			>
+			<NavLink href="/artists"
+				><span class="visible md:hidden">Ppl</span><span class="hidden md:inline">Artists</span
+				></NavLink
+			>
+			<NavLink href="/config"
+				><span class="visible md:hidden">Cfg</span><span class="hidden md:inline">Config</span
+				></NavLink
+			>
+
+			<Tooltip tooltip="Git (coming soon)">
+				{#snippet children(attach)}
+					<div
+						{@attach attach}
+						class="absolute right-16 flex h-8 w-16 cursor-pointer items-center justify-center rounded-xl bg-gray-200 hover:bg-gray-300 active:bg-gray-400"
+					>
+						<ActionButton
+							action={() => {}}
+							disabled
+							class="h-full w-full [&&]:border-none [&&]:bg-gray-200 [&&]:shadow-none [&&]:hover:bg-gray-400"
+						>
+							<div class="flex items-center justify-center">
+								<i class="fa-solid fa-code-branch text-gray-600"></i>
+								<div class="flex flex-col" style="line-height: 1; font-size: 6pt;">
+									{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'M').length ?? 0) > 0}
+										<div class="text-yellow-600">
+											~{gitStatus?.changes.filter(
+												(m) => m.type === 'normal' && m.status.index === 'M'
+											).length ?? 0}
+										</div>
+									{/if}
+									{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'A').length ?? 0) > 0}
+										<div class="text-green-700">
+											+{gitStatus?.changes.filter(
+												(m) => m.type === 'normal' && m.status.index === 'A'
+											).length ?? 0}
+										</div>
+									{/if}
+									{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'D').length ?? 0) > 0}
+										<div class="text-red-700">
+											-{gitStatus?.changes.filter(
+												(m) => m.type === 'normal' && m.status.index === 'D'
+											).length ?? 0}
+										</div>
+									{/if}
+								</div>
+							</div>
+						</ActionButton>
+					</div>
+				{/snippet}
+			</Tooltip>
 
 			<Tooltip tooltip="Reload / Regenerate">
 				{#snippet children(attach)}
