@@ -54,12 +54,11 @@
 	import ScreenSentinel from '$lib/ScreenSentinel.svelte';
 	import Checkbox from '$lib/form/Checkbox.svelte';
 	import { truthy, uploadImage } from '$lib/util.js';
-	import { cloneDeep } from 'es-toolkit';
 
 	const { data } = $props();
 	const rawGallery = $derived(data.galleries[data.galleryPath]);
 	// svelte-ignore state_referenced_locally
-	let g: RawGallery = $state(cloneDeep(rawGallery));
+	let g: RawGallery = $state(rawGallery);
 
 	const sorted: (readonly [BaseArtPiece, number])[] = $derived(
 		g && isBaseGallery(g)
@@ -270,7 +269,6 @@
 			epoch.epoch += 1;
 			overrides.reset();
 			await invalidateAll();
-			g = rawGallery;
 		} finally {
 			loading = false;
 		}
