@@ -7,6 +7,8 @@
 	import Modal from '$lib/Modal.svelte';
 	import { onMount, tick } from 'svelte';
 	import fz from 'fuzzysort';
+	import { normalizeArtist } from '@phosart/common/util';
+	import { addKey, arrAsObject } from '$lib/form/search/SearchResults.svelte';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -91,6 +93,14 @@
 			})
 			.map((r) => r.obj);
 	});
+
+	const normalizedAll = $derived(normalizeArtist(Object.keys(artists), artists));
+	const options = $derived(
+		arrAsObject(
+			addKey(normalizedAll, (na) => `@${na.info!.handle} (${na.info!.name})`),
+			(s) => s.info!.handle
+		)
+	);
 </script>
 
 <svelte:head>
@@ -109,7 +119,7 @@
 			class="grow"
 			noReportValidation
 			acceptSuggestionOnEnter
-			options={artists}
+			{options}
 			onSelect={(k, artist) => {
 				if (artist) {
 					selectedHandle = k;

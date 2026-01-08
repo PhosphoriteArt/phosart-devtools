@@ -1,4 +1,29 @@
 <script lang="ts" module>
+	export interface KeyedSearch {
+		asKey(): string;
+	}
+	function hasKey<T>(t: T): t is T & KeyedSearch {
+		return t && typeof t === 'object' && 'asKey' in t && typeof t.asKey === 'function';
+	}
+	export function addKey<T extends object>(arr: T[], keyer: (t: T) => string): (T & KeyedSearch)[] {
+		return arr.map((t) => Object.assign(t, { asKey: () => keyer(t) }));
+	}
+
+	export interface Visualized {
+		asVisualized(): string;
+	}
+	function hasVisualize<T>(t: T): t is T & Visualized {
+		return (
+			t && typeof t === 'object' && 'asVisualized' in t && typeof t.asVisualized === 'function'
+		);
+	}
+	export function addVisualization<T extends object>(
+		arr: T[],
+		visualizer: (t: T) => string
+	): (T & Visualized)[] {
+		return arr.map((t) => Object.assign(t, { asVisualized: () => visualizer(t) }));
+	}
+
 	export interface SearchResultsImperativeHandle<T = unknown> {
 		increment(): void;
 		decrement(): void;
@@ -77,7 +102,7 @@
 
 		return fz.go(search, Object.entries(options), {
 			limit: 10,
-			keys: [([k]) => k],
+			keys: [([k, v]) => (hasKey(v) ? v.asKey() : k)],
 			scoreFn(kr): number {
 				if (kr.obj[0].startsWith('[new]')) {
 					return kr.score;
@@ -158,6 +183,8 @@
 		bind:this={container}
 	>
 		{#each results as result, i (result.obj[0])}
+			{@const key = result.obj[0]}
+			{@const value = result.obj[1]}
 			<button
 				onclick={() => {
 					const [k, v] = result.obj;
@@ -170,7 +197,7 @@
 				class:bg-blue-300={selected === i && enableKeyboardSelector}
 				{@attach manageRef(i)}
 			>
-				{result.obj[0]}
+				{hasVisualize(value) ? value.asVisualized() : hasKey(value) ? value.asKey() : key}
 			</button>
 		{/each}
 	</div>
