@@ -95,6 +95,28 @@ async function saveGallery(galleryPath: string, newGallery: RawGallery) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			delete (p as unknown as any).slug;
 		}
+
+		// Remove duplicate IDs/slugs
+		let counts: Record<string, number>;
+		let duplicateIndexes: number[];
+		do {
+			counts = {};
+			duplicateIndexes = [];
+			for (let i = 0; i < newGallery.pieces.length; i++) {
+				const p = newGallery.pieces[i];
+
+				if (p.id !== undefined) {
+					counts[p.id] = (counts[p.id] ?? 0) + 1;
+					if (counts[p.id] > 1) {
+						duplicateIndexes.push(i);
+					}
+				}
+			}
+
+			for (const index of duplicateIndexes) {
+				newGallery.pieces[index].id! += '_copy';
+			}
+		} while (Object.keys(duplicateIndexes).length > 0);
 	}
 
 	const galleryFullPath = resolveWithinArt(path.join($ART(), galleryPath));

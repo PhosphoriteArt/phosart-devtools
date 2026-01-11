@@ -667,7 +667,16 @@
 							<TextInput
 								label="id"
 								bind:this={refs[piece.slug]}
-								bind:value={() => value, (v) => void (piece.id = v)}
+								bind:value={
+									() => value,
+									(v) => {
+										// Prevent dual slugs/ids
+										if (g.pieces.find((p) => p.slug === v || p.id === v)) {
+											return;
+										}
+										piece.id = v;
+									}
+								}
 								disabled={!enabled}
 								onclick={() => {
 									piece.id = value;

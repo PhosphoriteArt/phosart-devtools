@@ -195,7 +195,7 @@
 
 	function tagsFromPost(post: Post): string[] {
 		const arr: string[] = [];
-		const re = /#([A-Za-z0-9_-]+)/gim;
+		const re = /#([A-Za-z0-9_:-]+)/gim;
 		let m: RegExpMatchArray | null = null;
 
 		do {
