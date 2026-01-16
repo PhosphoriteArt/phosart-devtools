@@ -2,7 +2,7 @@
 	export interface KeyedSearch {
 		asKey(): string;
 	}
-	function hasKey<T>(t: T): t is T & KeyedSearch {
+	export function hasKey<T>(t: T): t is T & KeyedSearch {
 		return t && typeof t === 'object' && 'asKey' in t && typeof t.asKey === 'function';
 	}
 	export function addKey<T extends object>(arr: T[], keyer: (t: T) => string): (T & KeyedSearch)[] {
@@ -12,7 +12,7 @@
 	export interface Visualized {
 		asVisualized(): string;
 	}
-	function hasVisualize<T>(t: T): t is T & Visualized {
+	export function hasVisualize<T>(t: T): t is T & Visualized {
 		return (
 			t && typeof t === 'object' && 'asVisualized' in t && typeof t.asVisualized === 'function'
 		);

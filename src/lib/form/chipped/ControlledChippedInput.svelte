@@ -1,6 +1,7 @@
 <script lang="ts" generics="T">
 	import type { Snippet } from 'svelte';
 	import SearchInput from '../search/SearchInput.svelte';
+	import { hasKey, hasVisualize } from '../search/SearchResults.svelte';
 
 	interface Props {
 		label: string;
@@ -19,6 +20,7 @@
 
 		renderChip?: Snippet<[obj: T]>;
 		labelClass?: string;
+		class?: string;
 	}
 
 	const id = $props.id();
@@ -35,7 +37,8 @@
 		validationError,
 		onRemove,
 		noReportValidation,
-		labelClass
+		labelClass,
+		class: cls
 	}: Props = $props();
 
 	const dedupedOptions = $derived.by(() => {
@@ -44,7 +47,7 @@
 		const optionsCopy = { ...options };
 
 		for (const [k, val] of Object.entries(options)) {
-			if ((value ?? []).includes($state.snapshot(val) as T)) {
+			if ((value ?? []).includes(val)) {
 				delete optionsCopy[k];
 			}
 		}
@@ -54,13 +57,13 @@
 </script>
 
 {#snippet defaultRenderChip(chip: T)}
-	<div>{prefix}{chip}</div>
+	<div>{prefix}{hasVisualize(chip) ? chip.asVisualized() : hasKey(chip) ? chip.asKey() : chip}</div>
 {/snippet}
 
-<div class="flex flex-row items-center gap-x-2">
+<div class="flex flex-row items-center gap-x-2 {cls}">
 	<label for="form-{id}"><pre class={labelClass ?? 'w-36'}>{label}</pre></label>
 	<div
-		class="relative m-2 flex flex-wrap items-center gap-1 rounded-xl border bg-white p-2 focus:border-blue-300"
+		class="relative m-2 {cls} flex flex-wrap items-center gap-1 rounded-xl border bg-white p-2 focus:border-blue-300"
 	>
 		{#each value ?? [] as chip, i (chip)}
 			<div class="flex w-max items-center rounded-lg border px-1 py-0.5">

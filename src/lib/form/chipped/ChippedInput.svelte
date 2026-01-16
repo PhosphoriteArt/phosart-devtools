@@ -11,6 +11,7 @@
 
 		renderChip?: Snippet<[obj: T]>;
 		labelClass?: string;
+		class?: string;
 	}
 
 	let {
@@ -20,7 +21,8 @@
 		options,
 		prefix,
 		renderChip,
-		onAddUnknown
+		onAddUnknown,
+		class: cls
 	}: Props = $props();
 
 	let search = $state('');
@@ -41,6 +43,7 @@
 	{prefix}
 	{options}
 	{value}
+	class={cls}
 	validationError={search !== '' && !onAddUnknown && !lastSelected ? 'Select an option' : ''}
 	noReportValidation
 	onDeselect={() => {

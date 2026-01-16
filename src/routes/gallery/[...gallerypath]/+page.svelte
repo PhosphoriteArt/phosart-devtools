@@ -44,7 +44,8 @@
 		type BaseArtist,
 		type BaseArtPiece,
 		type CharacterRef,
-		type RawGallery
+		type RawGallery,
+		type ResourceRef
 	} from '@phosart/common/util';
 	import { DateTime } from 'luxon';
 	import { onMount } from 'svelte';
@@ -54,17 +55,50 @@
 	import ScreenSentinel from '$lib/ScreenSentinel.svelte';
 	import Checkbox from '$lib/form/Checkbox.svelte';
 	import { truthy, uploadImage } from '$lib/util.js';
+	import { addKey, addVisualization } from '$lib/form/search/SearchResults.svelte';
+	import ChippedInput from '$lib/form/chipped/ChippedInput.svelte';
 
 	const { data } = $props();
 	const rawGallery = $derived(data.galleries[data.galleryPath]);
 	// svelte-ignore state_referenced_locally
 	let g: RawGallery = $state(rawGallery);
 
+	let filters: (ResourceRef & { negated: boolean })[] = $state([]);
+
 	const sorted: (readonly [BaseArtPiece, number])[] = $derived(
 		g && isBaseGallery(g)
 			? g.pieces
 					.map((v, i) => [v, i] as const)
 					.toSorted(([a], [b]) => b.date.getTime() - a.date.getTime())
+					.filter(([piece]) =>
+						filters.every((rr) => {
+							const doesMatch = (() => {
+								switch (rr.type) {
+									case 'piece':
+										return rr.resource.slug === piece.slug;
+									case 'artist': {
+										const as = normalizeArtist(piece.artist, data.allArtists);
+										return as.some(
+											(a) => (a.info?.handle ?? a.name) === (rr.resource.info?.handle ?? a.name)
+										);
+									}
+									case 'character': {
+										const ac = normalizeCharacter(piece.characters, data.allCharacters);
+										return ac.some((c) =>
+											c.info
+												? c.info.name === rr.resource.info?.name
+												: c.name === rr.resource.name && c.from === rr.resource.from
+										);
+									}
+									case 'tag': {
+										return piece.tags?.includes(rr.resource) ?? false;
+									}
+								}
+							})();
+
+							return rr.negated ? !doesMatch : doesMatch;
+						})
+					)
 			: []
 	);
 
@@ -278,6 +312,62 @@
 		$state(null);
 
 	let copyPath = $state('');
+
+	const filterable: Record<string, ResourceRef> = $derived.by(() => {
+		const artistRefs: ResourceRef[] = normalizeArtist(
+			Object.keys(data.allArtists),
+			data.allArtists
+		).map((a) => ({ type: 'artist', resource: a }));
+		const tags: ResourceRef[] = data.allTags.map((v) => ({ type: 'tag', resource: v }));
+		const char: ResourceRef[] = normalizeCharacter(
+			Object.keys(data.allCharacters),
+			data.allCharacters
+		).map((c) => ({ type: 'character', resource: c }));
+
+		function getKey(r: ResourceRef & { negated?: boolean }): string {
+			const base = (() => {
+				switch (r.type) {
+					case 'artist':
+						return 'artist:' + r.resource.info!.handle.toLowerCase().trim();
+					case 'character':
+						return (
+							'character:' +
+							(r.resource.name + (r.resource.from ? ':' + r.resource.from : ''))
+								.toLowerCase()
+								.trim()
+						);
+					case 'tag':
+						return 'tag:' + r.resource.toLowerCase().trim();
+					default:
+						throw Error('Unsupported');
+				}
+			})();
+
+			if (r.negated) {
+				return '-' + base;
+			}
+			return base;
+		}
+
+		const positive = Object.fromEntries(
+			addVisualization(addKey([...artistRefs, ...tags, ...char], getKey), getKey).map((v) => {
+				return [getKey(v), v];
+			})
+		);
+		const negative = Object.fromEntries(
+			addVisualization(
+				addKey(
+					[...artistRefs, ...tags, ...char].map((v) => ({ ...v, negated: true })),
+					getKey
+				),
+				getKey
+			).map((v) => {
+				return [getKey(v), v];
+			})
+		);
+
+		return { ...positive, ...negative };
+	});
 </script>
 
 <svelte:head>
@@ -359,6 +449,16 @@
 	{/snippet}
 
 	{@render addButton()}
+
+	<div class="flex w-full">
+		<ChippedInput
+			class="w-full"
+			label="🔍"
+			labelClass=""
+			options={filterable}
+			bind:value={filters}
+		/>
+	</div>
 
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
 		{#each sorted.slice(0, limit) as [piece, i], sortedIndex (piece.slug)}
