@@ -79,19 +79,25 @@
 									case 'artist': {
 										const as = normalizeArtist(piece.artist, data.allArtists);
 										return as.some(
-											(a) => (a.info?.handle ?? a.name) === (rr.resource.info?.handle ?? a.name)
+											(a) =>
+												(a.info?.handle ?? a.name)?.toLowerCase() ===
+												(rr.resource.info?.handle ?? a.name)?.toLowerCase()
 										);
 									}
 									case 'character': {
 										const ac = normalizeCharacter(piece.characters, data.allCharacters);
 										return ac.some((c) =>
 											c.info
-												? c.info.name === rr.resource.info?.name
-												: c.name === rr.resource.name && c.from === rr.resource.from
+												? c.info.name?.toLowerCase() === rr.resource.info?.name?.toLowerCase()
+												: c.name.toLowerCase() === rr.resource.name.toLowerCase() &&
+													c.from?.toLowerCase() === rr.resource.from?.toLowerCase()
 										);
 									}
 									case 'tag': {
-										return piece.tags?.includes(rr.resource) ?? false;
+										return (
+											piece.tags?.find((t) => t.toLowerCase() === rr.resource.toLowerCase()) ??
+											false
+										);
 									}
 								}
 							})();
