@@ -41,8 +41,11 @@
 		class: cls
 	}: Props = $props();
 
+	let didEscape = $state(false);
+
 	const dedupedOptions = $derived.by(() => {
 		if (!options) return undefined;
+		if (didEscape) return undefined;
 
 		const optionsCopy = { ...options };
 
@@ -60,7 +63,24 @@
 	<div>{prefix}{hasVisualize(chip) ? chip.asVisualized() : hasKey(chip) ? chip.asKey() : chip}</div>
 {/snippet}
 
-<div class="flex flex-row items-center gap-x-2 {cls}">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+	class="flex flex-row items-center gap-x-2 {cls}"
+	onkeydowncapture={(e) => {
+		if (!e.shiftKey && !e.metaKey && !e.altKey && !e.ctrlKey && e.code === 'Escape') {
+			console.log('CAPTURED');
+			didEscape = true;
+			e.preventDefault();
+			e.stopImmediatePropagation();
+			e.stopPropagation();
+		}
+	}}
+	onkeydown={(e) => {
+		if (!e.shiftKey && !e.metaKey && !e.altKey && !e.ctrlKey && e.code !== 'Escape') {
+			didEscape = false;
+		}
+	}}
+>
 	<label for="form-{id}"><pre class={labelClass ?? 'w-36'}>{label}</pre></label>
 	<div
 		class="relative m-2 {cls} flex flex-wrap items-center gap-1 rounded-xl border bg-white p-2 focus:border-blue-300"

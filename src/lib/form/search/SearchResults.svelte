@@ -91,9 +91,10 @@
 		search: string;
 		onconfirm: (key: string, value: T) => void;
 		options?: Record<string, T>;
+		hasDefaultSelected?: boolean;
 	}
 
-	let { search, onconfirm, options }: Props = $props();
+	let { search, onconfirm, options, hasDefaultSelected }: Props = $props();
 
 	let results: ReadonlyArray<Fuzzysort.KeysResult<[string, T]>> = $derived.by(() => {
 		if (!options) {
@@ -116,7 +117,7 @@
 	let justConfirmed = $state(true);
 	let enableKeyboardSelector = $state(true);
 	let showPicker = $derived(results.length > 0 && !justConfirmed);
-	let selected = $state(-1);
+	let selected = $state(hasDefaultSelected ? 0 : -1);
 	let refs: Array<HTMLButtonElement> = [];
 
 	let container: HTMLDivElement | null = $state(null);
@@ -154,7 +155,7 @@
 	}
 	export function reset(): void {
 		justConfirmed = false;
-		selected = -1;
+		selected = hasDefaultSelected ? 0 : -1;
 	}
 	export function select(): boolean {
 		if (justConfirmed || results.length == 0) {
@@ -163,7 +164,7 @@
 		if (selected < 0 || selected >= results.length) selected = 0;
 		const [k, v] = results[selected].obj;
 		onconfirm(k, v);
-		selected = -1;
+		selected = hasDefaultSelected ? 0 : -1;
 		justConfirmed = true;
 		return true;
 	}
@@ -189,7 +190,7 @@
 				onclick={() => {
 					const [k, v] = result.obj;
 					onconfirm(k, v);
-					selected = -1;
+					selected = hasDefaultSelected ? 0 : -1;
 					justConfirmed = true;
 				}}
 				class="cursor-pointer text-left hover:bg-blue-300"

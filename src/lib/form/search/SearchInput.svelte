@@ -90,6 +90,7 @@
 	bind:this={searchRef}
 	{options}
 	{search}
+	hasDefaultSelected={acceptSuggestionOnEnter}
 	onconfirm={(key) => {
 		setSearch(key);
 		inputRef?.focus();
