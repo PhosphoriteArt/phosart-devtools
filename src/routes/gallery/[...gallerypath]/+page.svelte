@@ -64,46 +64,49 @@
 	let g: RawGallery = $state(rawGallery);
 
 	let filters: (ResourceRef & { negated: boolean })[] = $state([]);
+	let searchMode: 'some' | 'every' = $state('every');
 
 	const sorted: (readonly [BaseArtPiece, number])[] = $derived(
 		g && isBaseGallery(g)
 			? g.pieces
 					.map((v, i) => [v, i] as const)
 					.toSorted(([a], [b]) => b.date.getTime() - a.date.getTime())
-					.filter(([piece]) =>
-						filters.every((rr) => {
-							const doesMatch = (() => {
-								switch (rr.type) {
-									case 'piece':
-										return rr.resource.slug === piece.slug;
-									case 'artist': {
-										const as = normalizeArtist(piece.artist, data.allArtists);
-										return as.some(
-											(a) =>
-												(a.info?.handle ?? a.name)?.toLowerCase() ===
-												(rr.resource.info?.handle ?? a.name)?.toLowerCase()
-										);
+					.filter(
+						([piece]) =>
+							filters.length === 0 ||
+							filters[searchMode]((rr) => {
+								const doesMatch = (() => {
+									switch (rr.type) {
+										case 'piece':
+											return rr.resource.slug === piece.slug;
+										case 'artist': {
+											const as = normalizeArtist(piece.artist, data.allArtists);
+											return as.some(
+												(a) =>
+													(a.info?.handle ?? a.name)?.toLowerCase() ===
+													(rr.resource.info?.handle ?? a.name)?.toLowerCase()
+											);
+										}
+										case 'character': {
+											const ac = normalizeCharacter(piece.characters, data.allCharacters);
+											return ac.some((c) =>
+												c.info
+													? c.info.name?.toLowerCase() === rr.resource.info?.name?.toLowerCase()
+													: c.name.toLowerCase() === rr.resource.name.toLowerCase() &&
+														c.from?.toLowerCase() === rr.resource.from?.toLowerCase()
+											);
+										}
+										case 'tag': {
+											return (
+												piece.tags?.find((t) => t.toLowerCase() === rr.resource.toLowerCase()) ??
+												false
+											);
+										}
 									}
-									case 'character': {
-										const ac = normalizeCharacter(piece.characters, data.allCharacters);
-										return ac.some((c) =>
-											c.info
-												? c.info.name?.toLowerCase() === rr.resource.info?.name?.toLowerCase()
-												: c.name.toLowerCase() === rr.resource.name.toLowerCase() &&
-													c.from?.toLowerCase() === rr.resource.from?.toLowerCase()
-										);
-									}
-									case 'tag': {
-										return (
-											piece.tags?.find((t) => t.toLowerCase() === rr.resource.toLowerCase()) ??
-											false
-										);
-									}
-								}
-							})();
+								})();
 
-							return rr.negated ? !doesMatch : doesMatch;
-						})
+								return rr.negated ? !doesMatch : doesMatch;
+							})
 					)
 			: []
 	);
@@ -456,7 +459,7 @@
 
 	{@render addButton()}
 
-	<div class="flex w-full">
+	<div class="flex w-full items-center">
 		<ChippedInput
 			class="w-full"
 			label="🔍"
@@ -464,6 +467,14 @@
 			options={filterable}
 			bind:value={filters}
 		/>
+		<ActionButton
+			action={() => {
+				searchMode = searchMode === 'every' ? 'some' : 'every';
+			}}
+			class="mr-1 h-fit w-12"
+		>
+			{searchMode === 'every' ? 'all' : 'any'}
+		</ActionButton>
 	</div>
 
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
