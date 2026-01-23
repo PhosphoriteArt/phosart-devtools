@@ -12,3 +12,6 @@ onlyBuiltDependencies:
   - phosart-bsky
   - phosart-common
   - sharp
+
+overrides:
+  cookie@<0.7.0: '>=0.7.0'
