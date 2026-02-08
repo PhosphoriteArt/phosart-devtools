@@ -12,13 +12,17 @@
 	import TextInput from '$lib/form/TextInput.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte.js';
 	import Modal from '$lib/Modal.svelte';
-	import type { BaseCharacter } from '@phosart/common/util';
+	import { type BaseCharacter } from '@phosart/common/util';
 	import { onMount } from 'svelte';
 	import fz from 'fuzzysort';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
 	let characters = $state(Object.values(data.characters));
+	// svelte-ignore state_referenced_locally
+	let originalNames = $state(new WeakMap(Object.values(characters).map((ch) => [ch, ch.name])));
+
+	let hideInfo = $state(false);
 
 	let shiftDown = $state(false);
 	let loading = $state(false);
@@ -27,7 +31,17 @@
 	const overrides = getOverrides();
 	const epoch = getEpoch();
 
+	$effect(() => {
+		if (hideInfo) {
+			window.localStorage.setItem('is-character-notice-hidden', 'true');
+		}
+	});
+
 	onMount(() => {
+		if (window.localStorage.getItem('is-character-notice-hidden')) {
+			hideInfo = true;
+		}
+
 		const f = (ev: KeyboardEvent) => {
 			shiftDown = ev.shiftKey;
 		};
@@ -49,6 +63,7 @@
 			});
 			epoch.epoch += 1;
 			overrides.reset();
+			originalNames = new WeakMap(Object.values(characters).map((ch) => [ch, ch.name]));
 		} finally {
 			loading = false;
 			invalidateAll();
@@ -103,7 +118,7 @@
 
 {#snippet addButton()}
 	<AddImageButton
-		title="Drag an image to add a character"
+		title="Drag a character image to add a character"
 		class="m-2"
 		galleryPath={{ character: '', for: 'full' }}
 		existingIdentifiers={[]}
@@ -132,11 +147,25 @@
 		}}
 	/>
 {/snippet}
-
+{#if !hideInfo}
+	<div class="mx-5 mb-8 flex flex-row items-center">
+		<i class="fa-solid fa-info-circle mr-2 text-blue-300"></i>
+		<div class="text-gray-600 italic">
+			Images added on this page will be used for the Character Page (to represent the character),
+			but will not appear in any gallery unless it's separately added to one.
+		</div>
+		<div class="pointer flex grow justify-end">
+			<button title="hide notice" class="cursor-pointer" onclick={() => void (hideInfo = true)}>
+				<i class="fa-solid fa-xmark mr-2 text-gray-400"></i>
+			</button>
+		</div>
+	</div>
+{/if}
 {@render addButton()}
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
 	{#each filteredCharacters as [character, i] (`${i}-${characters.length}`)}
+		{@const originalName = originalNames.get(character) ?? character.name}
 		<Modal
 			overrideOnClick={() => {
 				selectedCharacter = [character, i];
@@ -149,7 +178,7 @@
 					<div class="h-16 max-h-16 w-16 max-w-16">
 						<OriginalImage
 							galleryPath={{
-								character: character.name,
+								character: originalName,
 								for: character.thumbnail ? 'thumb' : 'full'
 							}}
 						/>
@@ -201,6 +230,7 @@
 
 {#if selectedCharacter}
 	{@const [character, i] = selectedCharacter}
+	{@const originalName = originalNames.get(character) ?? character.name}
 	<Modal
 		headless
 		title="Edit {character.name}"
@@ -271,7 +301,7 @@
 				{/snippet}
 			</OptionalInput>
 			<ImageEdit
-				galleryPath={{ character: character.name, for: 'full' }}
+				galleryPath={{ character: originalName, for: 'full' }}
 				bind:resource={character.picture}
 			/>
 			<TextBox label="Alt Text" bind:value={character.picture.alt} />
@@ -282,7 +312,7 @@
 							<ImageEdit
 								disabled={!enabled}
 								label="Thumbnail"
-								galleryPath={{ character: character.name, for: enabled ? 'thumb' : 'full' }}
+								galleryPath={{ character: originalName, for: enabled ? 'thumb' : 'full' }}
 								bind:resource={() => value, (v) => (character.thumbnail = v)}
 							/>
 						</div>
