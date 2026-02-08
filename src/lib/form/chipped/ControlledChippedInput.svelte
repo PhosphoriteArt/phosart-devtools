@@ -43,6 +43,8 @@
 
 	let didEscape = $state(false);
 
+	let searchInput: SearchInput<T> | null = $state(null);
+
 	const dedupedOptions = $derived.by(() => {
 		if (!options) return undefined;
 		if (didEscape) return undefined;
@@ -104,13 +106,21 @@
 			class:border-red-400={!!validationError}
 			title="Type and press enter to add"
 		>
-			<div class="pr-0.5">
+			<button
+				title="Confirm"
+				class="cursor-pointer pr-0.5"
+				onclick={() => {
+					onSelect?.(search, dedupedOptions?.[search]);
+				}}
+			>
 				<i
-					class="fa-regular fa-square-plus text-sm"
-					class:text-gray-400={!validationError}
-					class:text-red-600={validationError}
+					class="fa-regular fa-square-plus text-sm {validationError
+						? 'text-red-600'
+						: !search
+							? 'text-gray-300'
+							: 'text-green-700'}"
 				></i>
-			</div>
+			</button>
 			<div class="pr-0.5">{prefix}</div>
 			<SearchInput
 				options={dedupedOptions}
@@ -120,6 +130,12 @@
 				{onSelect}
 				{onDeselect}
 				{noReportValidation}
+				onComplete={(completion, by) => {
+					if (by === 'click') {
+						onSelect?.(completion, dedupedOptions?.[completion]);
+					}
+				}}
+				bind:this={searchInput}
 			/>
 		</div>
 	</div>

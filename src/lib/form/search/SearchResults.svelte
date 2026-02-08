@@ -89,7 +89,7 @@
 	import type { Attachment } from 'svelte/attachments';
 	interface Props {
 		search: string;
-		onconfirm: (key: string, value: T) => void;
+		onconfirm: (key: string, value: T, by: 'select' | 'click') => void;
 		options?: Record<string, T>;
 		hasDefaultSelected?: boolean;
 	}
@@ -163,7 +163,7 @@
 		}
 		if (selected < 0 || selected >= results.length) selected = 0;
 		const [k, v] = results[selected].obj;
-		onconfirm(k, v);
+		onconfirm(k, v, 'select');
 		selected = hasDefaultSelected ? 0 : -1;
 		justConfirmed = true;
 		return true;
@@ -189,7 +189,7 @@
 			<button
 				onclick={() => {
 					const [k, v] = result.obj;
-					onconfirm(k, v);
+					onconfirm(k, v, 'click');
 					selected = hasDefaultSelected ? 0 : -1;
 					justConfirmed = true;
 				}}

@@ -11,7 +11,7 @@
 		noReportValidation?: true;
 		onSelect?: (selected: string, option?: T) => void;
 		onDeselect?: () => void;
-		onComplete?: (completion: string) => void;
+		onComplete?: (completion: string, by: 'select' | 'click') => void;
 
 		class?: string;
 		autoFocus?: boolean;
@@ -91,9 +91,9 @@
 	{options}
 	{search}
 	hasDefaultSelected={acceptSuggestionOnEnter}
-	onconfirm={(key) => {
+	onconfirm={(key, _, by) => {
 		setSearch(key);
 		inputRef?.focus();
-		onComplete?.(key);
+		onComplete?.(key, by);
 	}}
 />
