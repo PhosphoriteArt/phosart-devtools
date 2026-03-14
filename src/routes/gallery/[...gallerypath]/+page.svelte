@@ -770,6 +770,18 @@
 				bind:value={() => piece.description ?? '', (v) => void (piece.description = v)}
 			/>
 			<TextBox label="Alt Text" bind:value={piece.alt} />
+			<div class="flex">
+				<Checkbox
+					bind:checked={
+						() => piece.alts_display == 'comic_panels',
+						(v) => void (piece.alts_display = v ? 'comic_panels' : 'alternatives')
+					}
+				>
+					{#snippet label()}
+						<pre class="my-3 w-40">Comic Mode?</pre>
+					{/snippet}
+				</Checkbox>
+			</div>
 			<ImageEdit
 				bind:resource={g.pieces[i]}
 				galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
@@ -777,6 +789,7 @@
 					? 'duration-300ms blur-lg transition-[filter] hover:blur-none hover:duration-[3s]'
 					: ''}
 			/>
+
 			<div>
 				<Collapsable title="Advanced" class="my-3">
 					<OptionalInput bind:value={piece.id} empty="">

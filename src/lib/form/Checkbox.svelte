@@ -1,7 +1,9 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+
 	interface Props {
 		checked: boolean;
-		label?: string;
+		label?: string | Snippet;
 		right?: true;
 	}
 
@@ -10,7 +12,13 @@
 </script>
 
 {#snippet lbl()}
-	<label class="cursor-pointer select-none" for={id}>{label}</label>
+	<label class="cursor-pointer select-none" for={id}>
+		{#if typeof label === 'string'}
+			{label}
+		{:else}
+			{@render label?.()}
+		{/if}
+	</label>
 {/snippet}
 
 {#if !right}
