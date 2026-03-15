@@ -13,16 +13,28 @@
 	interface Props {
 		galleryPath: GalleryPath;
 		value: BaseArtPiece['alts'];
+		label?: string;
+		shortLabel?: string;
 	}
 
-	let { value = $bindable(), galleryPath }: Props = $props();
+	let { value = $bindable(), galleryPath, label, shortLabel }: Props = $props();
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
+	const oids: Map<unknown, string> = new Map();
 	const overrides = getOverrides();
+
+	$effect.pre(() => {
+		value?.forEach((x) => {
+			if (!oids.has(x)) {
+				oids.set(x, String(Math.random()));
+			}
+		});
+	});
 </script>
 
 <div>
-	<div>Alternatives:</div>
+	<div>{label ?? 'Alternatives'}:</div>
 	<div class="ml-4">
-		{#each value as alt, i (`${i}-${value?.length}`)}
+		{#each value as alt, i (oids.get(alt) ?? `${i}-${value?.length}`)}
 			<Collapsable
 				title={alt.name}
 				class="my-2 border {alt.nsfw ? 'outline-2 outline-amber-600' : ''} {alt.deindexed
@@ -72,12 +84,32 @@
 						}}
 						class="cursor-pointer rounded-2xl border p-3">Delete</button
 					>
+					{#if i !== 0}
+						<button
+							onclick={() => {
+								if (!value) return;
+
+								value = [...value.slice(0, i - 1), value[i], value[i - 1], ...value.slice(i + 1)];
+							}}
+							class="cursor-pointer rounded-2xl border p-3">Up</button
+						>
+					{/if}
+					{#if i !== (value?.length ?? 0) - 1}
+						<button
+							onclick={() => {
+								if (!value) return;
+
+								value = [...value.slice(0, i), value[i + 1], value[i], ...value.slice(i + 2)];
+							}}
+							class="cursor-pointer rounded-2xl border p-3">Down</button
+						>
+					{/if}
 				</div>
 			</Collapsable>
 		{/each}
 		<div class="flex">
 			<AddImageButton
-				title="Drag image to add a new alt"
+				title="Drag image to add a new {shortLabel ?? 'alt'}"
 				existingIdentifiers={value?.map((p) => p.name) ?? []}
 				{galleryPath}
 				onUpload={(data) => {

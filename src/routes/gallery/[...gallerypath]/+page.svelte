@@ -790,6 +790,15 @@
 					: ''}
 			/>
 
+			{#if piece.alts_display === 'comic_panels'}
+				<PieceAltEdit
+					label="Extra Pages"
+					shortLabel="page"
+					bind:value={piece.alts}
+					galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
+				/>
+			{/if}
+
 			<div>
 				<Collapsable title="Advanced" class="my-3">
 					<OptionalInput bind:value={piece.id} empty="">
@@ -872,10 +881,14 @@
 
 					<div class="mt-4"></div>
 
-					<PieceAltEdit
-						bind:value={piece.alts}
-						galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
-					/>
+					{#if piece.alts_display !== 'comic_panels'}
+						<PieceAltEdit
+							label="Alternatives"
+							shortLabel="alt"
+							bind:value={piece.alts}
+							galleryPath={{ gallery: data.galleryPath, piece: piece.slug }}
+						/>
+					{/if}
 					<Collapsable
 						title="JSON"
 						class="mt-2 overflow-scroll border-t border-gray-300 text-gray-400"
