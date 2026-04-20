@@ -60,7 +60,7 @@
 		"@floating-ui/dom": "^1.7.4",
 		"@fortawesome/fontawesome-free": "^7.1.0",
 		"@monaco-editor/loader": "^1.7.0",
-		"@phosart/bsky": "^0.2.2",
+		"@phosart/bsky": "^0.2.4",
 		"@phosart/common": "^0.4.49",
 		"async-sema": "^3.1.1",
 		"chrono-node": "^2.9.0",
