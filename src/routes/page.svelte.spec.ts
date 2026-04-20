@@ -4,10 +4,19 @@ import { render } from 'vitest-browser-svelte';
 import Page from './+page.svelte';
 
 describe('/+page.svelte', () => {
-	it('should render h1', async () => {
-		render(Page);
+	it('should render New Folder button', async () => {
+		render(Page, {
+			data: {
+				galleryPaths: [],
+				bskyAvailable: false,
+				galleries: {},
+				previewPort: null,
+				redirectGallery: null,
+				tree: { $type: 'folder', items: 0, structure: {} }
+			}
+		});
 
-		const heading = page.getByRole('heading', { level: 1 });
-		await expect.element(heading).toBeInTheDocument();
+		const button = page.getByText('New Folder').nth(1);
+		await expect.element(button).toBeInTheDocument();
 	});
 });

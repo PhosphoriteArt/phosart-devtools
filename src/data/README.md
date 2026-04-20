@@ -1,0 +1,1 @@
+This folder is here to make sure e2e tests pass as we need a dummy data directory :)

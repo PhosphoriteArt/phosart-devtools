@@ -7,7 +7,7 @@ const config = {
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
 
-	kit: { adapter: adapter(), paths: { base: '/editor' } }
+	kit: { adapter: adapter(), paths: { base: process.env.VITEST ? '' : '/editor' } }
 };
 
 export default config;
