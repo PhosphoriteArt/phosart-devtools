@@ -259,21 +259,21 @@
 {#snippet match(post: FilteredPost, i: number)}
 	{@const details = post.image_details[i]!}
 	{@const original = post.original.image_details[i]!}
-	<div class="flex h-full">
+	<div class="h-ful flex">
 		<div class="flex items-center">
-			<span style="writing-mode: tb-rl" class=" inline-block rotate-180 text-center">
+			<span style="writing-mode: tb-rl" class=" inline-block rotate-180 text-center underline">
 				Image {i + 1}
 			</span>
 		</div>
 		<div class="m-4 flex w-full items-center rounded-xl border p-4">
-			<div class="flex flex-col items-center">
+			<div class="flex flex-col items-start">
 				<img
 					src={resolve('/api/bluesky/image/[hash]', { hash: details.id })}
 					class="max-h-64 max-w-64"
 					alt={details.alt_text}
 				/>
 				<div
-					class="no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
+					class="no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-surface-600-400 pl-2 text-xs text-surface-contrast-200-800 italic"
 				>
 					<pre class="font-serif whitespace-pre-wrap">{details.alt_text}</pre>
 				</div>
@@ -294,7 +294,7 @@
 							No matches; add as new.
 						</ActionButton>
 						{#if original.matches.length !== 0}
-							<div class="mt-2 text-xs text-gray-500 italic">
+							<div class="mt-2 text-xs text-surface-800-200 italic">
 								FYI: this image matches in other galleries
 							</div>
 						{/if}
@@ -307,7 +307,7 @@
 							<div class="flex flex-col items-stretch">
 								<OriginalImage class="max-h-64 max-w-64" galleryPath={match}></OriginalImage>
 								<div
-									class="no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
+									class="no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-surface-600-400 pl-2 text-xs text-surface-contrast-200-800 italic"
 								>
 									<pre class="font-serif whitespace-pre-wrap">{piece?.alt || '(no alt text)'}</pre>
 								</div>
@@ -318,13 +318,13 @@
 									{piece?.name ?? match.piece}
 								</div>
 								<div
-									class="no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-l-gray-400 pl-2 text-xs text-gray-600 italic"
+									class="no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-surface-600-400 pl-2 text-xs text-surface-contrast-200-800 italic"
 								>
 									<pre class="font-serif whitespace-pre-wrap">{piece?.description ||
 											'(no description)'}</pre>
 								</div>
 								<div
-									class="mb-2 no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-l-green-800 pl-2 text-xs text-green-800 italic"
+									class="mb-2 no-scrollbar max-h-16 max-w-64 overflow-scroll border-l-2 border-primary-600-400 pl-2 text-xs text-primary-900-100 italic"
 								>
 									<pre class="font-serif whitespace-pre-wrap">{piece?.tags
 											.map((t) => `#${t}`)
@@ -374,8 +374,8 @@
 					{/each}
 					{#if details.matches.length !== 0}
 						<div class="relative my-2 flex w-full justify-center">
-							<div class="absolute top-1/2 -z-10 w-full border-t border-gray-300"></div>
-							<span class="float-start bg-white px-2">or</span>
+							<div class="absolute top-1/2 -z-10 w-full border-t border-surface-600-400"></div>
+							<span class="float-start bg-surface-200-800 px-2">or</span>
 						</div>
 						<ActionButton
 							{setLoading}
@@ -397,8 +397,8 @@
 {/snippet}
 
 {#each posts.slice(0, limit) as post (post.uri)}
-	<div class="my-4 rounded-2xl border p-3">
-		<div class="border-l-2 border-l-gray-400 pl-2 text-gray-600 italic">
+	<div class="my-4 rounded-2xl border border-surface-600-400 bg-surface-200-800 p-3">
+		<div class="border-l-2 border-l-surface-600-400 pl-2 text-surface-contrast-200-800 italic">
 			<pre class="font-serif whitespace-pre-wrap">{post.text}</pre>
 		</div>
 		{#each post.image_details as url, i (url)}

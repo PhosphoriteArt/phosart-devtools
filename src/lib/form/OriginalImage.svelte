@@ -22,13 +22,31 @@
 			return (
 				override?.videoFull ??
 				override?.image ??
-				resolve(
-					`/api/gallery/${galleryPath.gallery}/${galleryPath.piece}/original-image?alt=${galleryPath.alt ?? ''}&altIndex=${galleryPath.altIndex ?? ''}&epoch=${epoch.epoch}`
-				)
+				resolve('/api/gallery/[...gallerypath]/[piece]/original-image', {
+					gallerypath: galleryPath.gallery,
+					piece: galleryPath.piece
+				}) +
+					'?' +
+					String(
+						new URLSearchParams({
+							alt: galleryPath.alt ?? '',
+							altIndex: String(galleryPath.altIndex ?? ''),
+							epoch: String(epoch.epoch)
+						})
+					)
 			);
 		} else {
-			return resolve(
-				`/api/characters/${galleryPath.character}/${galleryPath.for}/original-image?epoch=${epoch.epoch}`
+			return (
+				resolve('/api/characters/[charactername]/[type]/original-image', {
+					charactername: galleryPath.character,
+					type: galleryPath.for
+				}) +
+				'?' +
+				String(
+					new URLSearchParams({
+						epoch: String(epoch.epoch)
+					})
+				)
 			);
 		}
 	});
@@ -36,8 +54,8 @@
 </script>
 
 {#if isVideo}
-	<video loop controls muted autoplay src={thumbSrc} class="h-full w-full object-contain {cls}"
+	<video loop controls muted autoplay src={thumbSrc} class="h-full w-full {cls || 'object-contain'}"
 	></video>
 {:else}
-	<img {src} class="h-full w-full object-contain {cls}" alt="" />
+	<img {src} class="h-full w-full {cls || 'object-contain'}" alt="" />
 {/if}

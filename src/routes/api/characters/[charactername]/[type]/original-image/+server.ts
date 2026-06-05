@@ -27,6 +27,8 @@ export const GET: RequestHandler = async ({ params }) => {
 			logger.warn('Character thumbnail missing @', params.charactername);
 			return error(404);
 		}
+	} else if (params.type === 'prefer-thumb') {
+		piece = character.thumbnail ?? character.picture;
 	} else {
 		logger.warn('Character image type invalid @', params.charactername, 'type', params.type);
 		return error(400);

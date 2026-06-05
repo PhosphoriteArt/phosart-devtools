@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import SearchInput from '../search/SearchInput.svelte';
 	import { hasKey, hasVisualize } from '../search/SearchResults.svelte';
+	import { CircleX } from '@lucide/svelte';
 
 	interface Props {
 		label: string;
@@ -19,11 +20,8 @@
 		search: string;
 
 		renderChip?: Snippet<[obj: T]>;
-		labelClass?: string;
 		class?: string;
 	}
-
-	const id = $props.id();
 
 	let {
 		label,
@@ -37,7 +35,6 @@
 		validationError,
 		onRemove,
 		noReportValidation,
-		labelClass,
 		class: cls
 	}: Props = $props();
 
@@ -83,60 +80,69 @@
 		}
 	}}
 >
-	<label for="form-{id}"><pre class={labelClass ?? 'w-36'}>{label}</pre></label>
 	<div
-		class="relative m-2 {cls} flex flex-wrap items-center gap-1 rounded-xl border bg-white p-2 focus:border-blue-300"
+		class="relative m-2 {cls} flex flex-wrap items-center gap-1 rounded-xl border border-surface-200-800 p-2 focus:border-blue-300"
 	>
-		{#each value ?? [] as chip, i (chip)}
-			<div class="flex w-max items-center rounded-lg border px-1 py-0.5">
-				{#if onRemove}
-					<button
-						title="remove"
-						class="cursor-pointer"
-						onclick={() => {
-							onRemove(chip, i);
-						}}><i class="fa-regular fa-circle-xmark text-sm text-gray-400"></i></button
+		<label class="label">
+			<span class="label-text">{label}</span>
+			<div class="flex flex-wrap items-center gap-1">
+				{#each value ?? [] as chip, i (chip)}
+					<div
+						class="flex w-max items-center rounded-lg preset-outlined-surface-500 px-1 py-0.5 text-xs"
 					>
-				{/if}
-				{@render (renderChip ?? defaultRenderChip)(chip)}
+						{#if onRemove}
+							<button
+								title="remove"
+								class="mr-1 cursor-pointer"
+								onclick={() => {
+									onRemove(chip, i);
+								}}
+							>
+								<CircleX size={16} class="text-surface-800-200" />
+							</button>
+						{/if}
+						{@render (renderChip ?? defaultRenderChip)(chip)}
+					</div>
+				{/each}
+				<div
+					class="relative flex items-center rounded-lg border border-dotted border-gray-600 px-1 py-0.5"
+					class:border-red-400={!!validationError}
+					title="Type and press enter to add"
+				>
+					<button
+						title="Confirm"
+						class="cursor-pointer pr-0.5"
+						onclick={() => {
+							onSelect?.(search, dedupedOptions?.[search]);
+						}}
+					>
+						<i
+							class="fa-regular fa-square-plus text-sm {validationError
+								? 'text-red-600'
+								: !search
+									? 'text-gray-300'
+									: 'text-green-700'}"
+						></i>
+					</button>
+					<div class="pr-0.5">{prefix}</div>
+					<SearchInput
+						options={dedupedOptions}
+						bind:search
+						acceptSuggestionOnEnter
+						{validationError}
+						{onSelect}
+						{onDeselect}
+						{noReportValidation}
+						class="input"
+						onComplete={(completion, by) => {
+							if (by === 'click') {
+								onSelect?.(completion, dedupedOptions?.[completion]);
+							}
+						}}
+						bind:this={searchInput}
+					/>
+				</div>
 			</div>
-		{/each}
-		<div
-			class="relative flex rounded-lg border border-dotted border-gray-600 px-1 py-0.5"
-			class:border-red-400={!!validationError}
-			title="Type and press enter to add"
-		>
-			<button
-				title="Confirm"
-				class="cursor-pointer pr-0.5"
-				onclick={() => {
-					onSelect?.(search, dedupedOptions?.[search]);
-				}}
-			>
-				<i
-					class="fa-regular fa-square-plus text-sm {validationError
-						? 'text-red-600'
-						: !search
-							? 'text-gray-300'
-							: 'text-green-700'}"
-				></i>
-			</button>
-			<div class="pr-0.5">{prefix}</div>
-			<SearchInput
-				options={dedupedOptions}
-				bind:search
-				acceptSuggestionOnEnter
-				{validationError}
-				{onSelect}
-				{onDeselect}
-				{noReportValidation}
-				onComplete={(completion, by) => {
-					if (by === 'click') {
-						onSelect?.(completion, dedupedOptions?.[completion]);
-					}
-				}}
-				bind:this={searchInput}
-			/>
-		</div>
+		</label>
 	</div>
 </div>

@@ -7,6 +7,7 @@
 	import TextInput from '$lib/form/TextInput.svelte';
 	import ActionButton from '$lib/ActionButton.svelte';
 	import { resolve } from '$app/paths';
+	import Layout from '$lib/Layout.svelte';
 	const { data } = $props();
 
 	let posts: PostWithMatch[] | null = $state(null);
@@ -95,22 +96,30 @@
 	</div>
 {/snippet}
 
-{#if !posts}
-	{#if err}
-		{#if !data.bskyAvailable}
-			{@render login()}
+<Layout title="Bluesky Import">
+	{#snippet navRight()}
+		<a
+			href={resolve('/gallery/[...gallerypath]', { gallerypath: data.galleryPath })}
+			class="mr-4 btn preset-tonal">back</a
+		>
+	{/snippet}
+	{#if !posts}
+		{#if err}
+			{#if !data.bskyAvailable}
+				{@render login()}
+			{:else}
+				<div>Unknown error occurred: {err}</div>
+			{/if}
 		{:else}
-			<div>Unknown error occurred: {err}</div>
+			{@render spinner()}
 		{/if}
 	{:else}
-		{@render spinner()}
+		<BskyImporter
+			config={data.config}
+			gallery={data.gallery}
+			galleryPath={data.galleryPath}
+			{posts}
+			ss={data.ss}
+		/>
 	{/if}
-{:else}
-	<BskyImporter
-		config={data.config}
-		gallery={data.gallery}
-		galleryPath={data.galleryPath}
-		{posts}
-		ss={data.ss}
-	/>
-{/if}
+</Layout>

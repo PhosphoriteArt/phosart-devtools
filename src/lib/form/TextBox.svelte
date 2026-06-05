@@ -14,17 +14,19 @@
 </script>
 
 <div class="flex flex-row items-center gap-x-2">
-	<pre class="w-36">{label}</pre>
-	<div
-		class="m-2 max-w-full {dimensions} rounded-xl border bg-white p-2 focus:border-blue-300"
-		class:border-dashed={disabled}
-		class:opacity-50={disabled}
-	>
-		<CodeEditor
-			{disabled}
-			language="markdown"
-			bind:value={() => value ?? '', (v) => void (value = v)}
-			theme="vs-light"
-		/>
-	</div>
+	<label class="label">
+		<span class="label-text">{label}</span>
+		<div
+			class="m-2 max-w-full {dimensions} overflow-hidden rounded-xl bg-surface-50-950 outline-surface-500 focus-within:outline"
+			class:border-dashed={disabled}
+			class:opacity-50={disabled}
+		>
+			<CodeEditor
+				{disabled}
+				language="markdown"
+				bind:value={() => value ?? '', (v) => void (value = v)}
+				theme="vs-dark"
+			/>
+		</div>
+	</label>
 </div>

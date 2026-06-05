@@ -12,12 +12,10 @@
 
 <a
 	href={resolve(asAny)}
-	class="mx-4 cursor-pointer rounded-xl px-8 py-2 select-none"
-	class:bg-gray-300={path == href}
-	class:bg-gray-200={path != href}
-	class:hover:bg-gray-400={path != href}
-	class:active:bg-gray-500={path != href}
-	class:cursor-default={path == href}
+	class="btn"
+	class:preset-tonal={path != href.replace(/#.*$/, '')}
+	class:text-surface-contrast-light={path != href.replace(/#.*$/, '')}
+	class:preset-filled={path == href.replace(/#.*$/, '')}
 >
 	{@render children?.()}
 </a>

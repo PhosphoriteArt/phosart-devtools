@@ -24,7 +24,7 @@
 {#if !right}
 	{@render lbl()}
 {/if}
-<input {id} type="checkbox" class="cursor-pointer" bind:checked />
+<input {id} type="checkbox" class="checkbox [&&]:checked:bg-primary-800" bind:checked />
 {#if right}
 	{@render lbl()}
 {/if}

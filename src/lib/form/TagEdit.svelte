@@ -6,15 +6,13 @@
 		possibleTags: Array<string>;
 		prefix?: string;
 		label?: string;
-		labelClass?: string;
 	}
 
-	let { label, labelClass, possibleTags, value = $bindable(), prefix }: Props = $props();
+	let { label, possibleTags, value = $bindable(), prefix }: Props = $props();
 </script>
 
 <ChippedInput
 	label={label ?? 'Tags'}
-	{labelClass}
 	options={arrAsObject(possibleTags)}
 	bind:value
 	{prefix}

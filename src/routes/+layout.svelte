@@ -14,12 +14,16 @@
 	import Circle from '$lib/ext/Circle.svelte';
 	import { Circle as BigCircle } from 'svelte-loading-spinners';
 	import { navigating } from '$app/state';
-	import ActionButton from '$lib/ActionButton.svelte';
-	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { GitStatus } from '$lib/server/gitops/git';
+	import { setNavbarOpen } from '$lib/navbarstate.svelte.js';
+	import ActionButton from '$lib/ActionButton.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	let { children, data } = $props();
+
+	let sidebarOpen = $state({ open: true });
+	setNavbarOpen(sidebarOpen);
 
 	let showPreview = $state(false);
 
@@ -169,25 +173,6 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div
-	bind:this={statusBar}
-	class="fixed bottom-0 z-50 no-scrollbar h-5 w-screen overflow-scroll border-t bg-white text-[8pt] hover:h-32"
->
-	{#each logs as log, i (log)}
-		<LogLine
-			{log}
-			isLatest={i === logs.length - 1}
-			parent={statusBar}
-			disableScroll={isHoveringStatusBar}
-		/>
-	{/each}
-	{#if numFetchesInFlight > 0 || isServerDoingWork}
-		<div class="fixed right-0 bottom-0 flex h-4.75 items-end justify-center pb-0.5">
-			<Circle size={16} color="#04F" duration="0.4s" />
-		</div>
-	{/if}
-</div>
-
 {#if navigating.to}
 	<div
 		class="fixed top-0 left-0 z-40 flex w-screen items-center justify-center bg-[#0005]"
@@ -197,101 +182,105 @@
 	</div>
 {/if}
 
-<div class="flex w-full justify-center pt-4 pb-8">
-	<div class="container">
-		<div
-			class="relative flex min-h-10 w-full items-center justify-center rounded-xl bg-gray-100 py-2 select-none"
-		>
-			<NavLink href="/#stay"
-				><span class="visible md:hidden">Art</span><span class="hidden md:inline">Galleries</span
-				></NavLink
-			>
-			<NavLink href="/characters"
-				><span class="visible md:hidden">Chr</span><span class="hidden md:inline">Characters</span
-				></NavLink
-			>
-			<NavLink href="/artists"
-				><span class="visible md:hidden">Ppl</span><span class="hidden md:inline">Artists</span
-				></NavLink
-			>
-			<NavLink href="/config"
-				><span class="visible md:hidden">Cfg</span><span class="hidden md:inline">Config</span
-				></NavLink
-			>
-
-			<Tooltip tooltip="Git (coming soon)">
-				{#snippet children(attach)}
-					<div
-						{@attach attach}
-						class="absolute right-16 flex h-8 w-16 cursor-pointer items-center justify-center rounded-xl bg-gray-200 hover:bg-gray-300 active:bg-gray-400"
-					>
-						<ActionButton
-							action={() => {}}
-							disabled
-							class="h-full w-full [&&]:border-none [&&]:bg-gray-200 [&&]:shadow-none [&&]:hover:bg-gray-400"
-						>
-							<div class="flex items-center justify-center">
-								<i class="fa-solid fa-code-branch text-gray-600"></i>
-								<div class="flex flex-col" style="line-height: 1; font-size: 6pt;">
-									{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'M').length ?? 0) > 0}
-										<div class="text-yellow-600">
-											~{gitStatus?.changes.filter(
-												(m) => m.type === 'normal' && m.status.index === 'M'
-											).length ?? 0}
-										</div>
-									{/if}
-									{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'A').length ?? 0) > 0}
-										<div class="text-green-700">
-											+{gitStatus?.changes.filter(
-												(m) => m.type === 'normal' && m.status.index === 'A'
-											).length ?? 0}
-										</div>
-									{/if}
-									{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'D').length ?? 0) > 0}
-										<div class="text-red-700">
-											-{gitStatus?.changes.filter(
-												(m) => m.type === 'normal' && m.status.index === 'D'
-											).length ?? 0}
-										</div>
-									{/if}
-								</div>
-							</div>
-						</ActionButton>
-					</div>
-				{/snippet}
-			</Tooltip>
-
-			<Tooltip tooltip="Reload / Regenerate">
-				{#snippet children(attach)}
-					<div
-						{@attach attach}
-						class="absolute right-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl bg-gray-200 hover:bg-gray-300 active:bg-gray-400"
-					>
-						{#snippet loadingContent()}
-							<i
-								class="fa-solid fa-arrow-rotate-right animate-[spin_300ms_linear_infinite] text-gray-600"
-							></i>
-						{/snippet}
-						<ActionButton
-							action={async () => {
-								await fetch(resolve('/api/reload'), { method: 'POST' });
-								await invalidateAll();
-							}}
-							{loadingContent}
-							class="[&&]:border-none [&&]:bg-gray-200 [&&]:shadow-none [&&]:hover:bg-gray-400"
-						>
-							{#if isServerImageProcessing}
-								{@render loadingContent()}
-							{:else}
-								<i class="fa-solid fa-arrow-rotate-right text-gray-600"></i>
-							{/if}
-						</ActionButton>
-					</div>
-				{/snippet}
-			</Tooltip>
+<div class="flex h-full w-full overflow-hidden">
+	<div
+		class="absolute top-0 bottom-0 flex w-50 max-w-50 min-w-50 flex-col items-center gap-1 bg-surface-300-700 py-8 inset-shadow-sm inset-shadow-surface-900 transition-transform"
+		style="transform: translateX({sidebarOpen.open ? '0px' : '-200px'});"
+	>
+		<div class="grid grid-cols-1 gap-2">
+			<NavLink href="/#stay">Galleries</NavLink>
+			<NavLink href="/characters">Characters</NavLink>
+			<NavLink href="/artists">Artists</NavLink>
+			<NavLink href="/config">Config</NavLink>
 		</div>
 
-		{@render children()}
+		<div class="grow"></div>
+
+		<Tooltip tooltip="Git (coming soon)">
+			{#snippet children(attach)}
+				<div {@attach attach}>
+					<ActionButton action={() => {}} disabled>
+						<div class="flex items-center justify-center">
+							<i class="fa-solid fa-code-branch text-gray-600"></i>
+							<div class="flex flex-col" style="line-height: 1; font-size: 6pt;">
+								{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'M').length ?? 0) > 0}
+									<div class="text-yellow-600">
+										~{gitStatus?.changes.filter(
+											(m) => m.type === 'normal' && m.status.index === 'M'
+										).length ?? 0}
+									</div>
+								{/if}
+								{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'A').length ?? 0) > 0}
+									<div class="text-green-700">
+										+{gitStatus?.changes.filter(
+											(m) => m.type === 'normal' && m.status.index === 'A'
+										).length ?? 0}
+									</div>
+								{/if}
+								{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'D').length ?? 0) > 0}
+									<div class="text-red-700">
+										-{gitStatus?.changes.filter(
+											(m) => m.type === 'normal' && m.status.index === 'D'
+										).length ?? 0}
+									</div>
+								{/if}
+							</div>
+						</div>
+					</ActionButton>
+				</div>
+			{/snippet}
+		</Tooltip>
+
+		<div class="grow"></div>
+
+		<Tooltip tooltip="Reload / Regenerate">
+			{#snippet children(attach)}
+				<div {@attach attach}>
+					{#snippet loadingContent()}
+						<i
+							class="fa-solid fa-arrow-rotate-right animate-[spin_300ms_linear_infinite] text-primary-contrast-500"
+						></i>
+					{/snippet}
+					<ActionButton
+						action={async () => {
+							await fetch(resolve('/api/reload'), { method: 'POST' });
+							await invalidateAll();
+						}}
+						{loadingContent}
+						class="btn-icon preset-filled"
+					>
+						{#if isServerImageProcessing}
+							{@render loadingContent()}
+						{:else}
+							<i class="fa-solid fa-arrow-rotate-right text-primary-contrast-50"></i>
+						{/if}
+					</ActionButton>
+				</div>
+			{/snippet}
+		</Tooltip>
+	</div>
+	<div class="transition-all" style="min-width: {sidebarOpen.open ? '200px' : '0px'};"></div>
+	<div class="flex grow flex-col" style="min-width: min(100vw, 500px);">
+		{@render children?.()}
+
+		<div
+			bind:this={statusBar}
+			class="no-scrollbar h-5 max-h-5 min-h-5 w-full max-w-full overflow-scroll border-t-surface-500 bg-surface-100-900 text-[8pt] hover:h-32 hover:max-h-32 hover:min-h-32"
+		>
+			{#each logs as log, i (log)}
+				<LogLine
+					{log}
+					isLatest={i === logs.length - 1}
+					parent={statusBar}
+					disableScroll={isHoveringStatusBar}
+				/>
+			{/each}
+			{#if numFetchesInFlight > 0 || isServerDoingWork}
+				<div class="fixed right-0 bottom-0 flex h-4.75 items-end justify-center pb-0.5">
+					<Circle size={16} color="#04F" duration="0.4s" />
+				</div>
+			{/if}
+		</div>
 	</div>
 </div>
 

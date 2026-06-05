@@ -1,10 +1,8 @@
 <script lang="ts">
-	import FileTree from '$lib/tree/FileTree.svelte';
-	import TreeButton from '$lib/tree/TreeButton.svelte';
 	import { goto as go, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import Collapsable from '$lib/Collapsable.svelte';
-	import type { File } from '$lib/structure.js';
+	import type { File, FileStructure } from '$lib/structure.js';
 	import Checkbox from '$lib/form/Checkbox.svelte';
 	import Modal from '$lib/Modal.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
@@ -13,12 +11,17 @@
 	import { browser } from '$app/environment';
 	import SearchInput from '$lib/form/search/SearchInput.svelte';
 	import { copyPieces, isBaseGallery } from '$lib/galleryutil.js';
+	import Layout from '$lib/Layout.svelte';
+	import DirectoryList from '$lib/ui_from_template/DirectoryList.svelte';
+	import { usePath } from '$lib/path.svelte.js';
+	import { FolderPlus, ImagesIcon } from '@lucide/svelte';
 
 	const { data } = $props();
 
-	let showEmpty = $state(false);
 	let newName = $state('');
 	let isExtendedGallery = $state(false);
+
+	const fpath = $derived.by(usePath);
 
 	$effect(() => {
 		if (data.redirectGallery && browser && window.location.hash !== '#stay') {
@@ -29,85 +32,39 @@
 	const id = $props.id();
 	let search = $state('');
 	let copyPath = $state('');
+
+	function fldr(item: File | FileStructure): FileStructure {
+		if (item.$type !== 'folder') {
+			throw new Error('RIP');
+		}
+		return item;
+	}
+
+	function gotoPath(tree: FileStructure, fpath: string[]): FileStructure {
+		while (fpath.length > 0) {
+			tree = fldr(tree.structure[fpath[0]]);
+			fpath = fpath.slice(1);
+		}
+		return tree;
+	}
 </script>
 
 <svelte:head>
 	<title>Art Site Editor</title>
 </svelte:head>
 
-<div class="my-4">
-	<Checkbox bind:checked={showEmpty} label="Show empty folders" right />
-</div>
-
-<div class="my-4 flex gap-x-2 rounded-2xl border border-dashed p-2">
-	<label for="{id}-search-box">
-		<i class="fa-solid fa-search"></i>
-	</label>
-	<div class="relative flex grow">
-		<SearchInput
-			id="{id}-search-box"
-			autoFocus
-			bind:search
-			class="grow"
-			noReportValidation
-			acceptSuggestionOnEnter
-			validationError={search !== '' && !data.galleryPaths.includes(search)
-				? 'invalid path'
-				: undefined}
-			options={asRecord(data.galleryPaths, (p) => p)}
-			onSelect={(s) => {
-				if (data.galleryPaths.includes(s)) {
-					go(resolve('/gallery/[...gallerypath]', { gallerypath: s }));
-				}
-			}}
-		/>
-	</div>
-</div>
-
-{#snippet file(fileName: string, file: File, path: string[])}
-	{@const base = file.$type === 'gallery' ? 'gallery' : file.$type === 'artist' ? 'artists' : null}
-	{@const icon =
-		file.$type === 'gallery' && file.isBase
-			? 'images'
-			: file.$type === 'gallery' && !file.isBase
-				? 'anchor'
-				: file.$type === 'artist'
-					? 'palette'
-					: undefined}
-	<TreeButton
-		{icon}
-		onclick={() => {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			go(resolve(`/${base}/${path.join('/') + '/' + fileName}` as any));
-		}}>{fileName}</TreeButton
-	>
-{/snippet}
-
-{#snippet folder(folderName: string, path: string[])}
-	<Collapsable
-		title={folderName}
-		class="my-1"
-		openIcon="fa-folder-open"
-		closedIcon="fa-folder"
-		iconFamily="regular"
-	>
-		{@render controls([...path, folderName])}
-		<FileTree {showEmpty} structure={data.tree} {folder} {file} path={[...path, folderName]} />
-	</Collapsable>
-{/snippet}
-
 {#snippet controls(path: string[])}
 	<div class="mb-4 flex gap-x-1">
 		<Modal
-			title=""
-			tooltip="New Folder"
-			icon="fa-solid fa-folder-plus"
+			title="New Folder"
 			onClose={() => void (newName = '')}
-			hideHeader
+			class="preset-outlined-primary-50-950 bg-surface-300-700"
 		>
+			{#snippet icon()}
+				<FolderPlus size="8pt" />
+			{/snippet}
 			{#snippet children(close)}
-				<div class="m-2 border-b p-3 font-bold">New Folder</div>
-				<div>
+				<div class="m-4">
 					<TextInput bind:value={newName} label="Folder name" />
 					<ActionButton
 						disabled={!newName}
@@ -119,26 +76,30 @@
 								{ method: 'PATCH' }
 							);
 							await invalidateAll();
-							showEmpty = true;
 							close();
-						}}>Create</ActionButton
+						}}
+						unstyled
+						class="btn w-full preset-filled-primary-500"
 					>
+						Create
+					</ActionButton>
 				</div>
 			{/snippet}
 		</Modal>
 		<Modal
-			tooltip="New Gallery"
-			title=""
-			icon="fa-regular fa-images"
+			title="New Gallery"
 			onClose={() => {
 				newName = '';
 				isExtendedGallery = false;
 			}}
-			hideHeader
+			class="preset-filled-primary-50-950"
 		>
+			{#snippet icon()}
+				<ImagesIcon size="8pt" />
+			{/snippet}
+
 			{#snippet children(close)}
-				<div class="m-2 border-b p-3 font-bold">New Gallery</div>
-				<div>
+				<div class="m-4">
 					<TextInput bind:value={newName} label="Gallery Name" />
 					<ActionButton
 						disabled={!newName}
@@ -164,8 +125,12 @@
 							);
 							await invalidateAll();
 							close();
-						}}>Create</ActionButton
+						}}
+						unstyled
+						class="btn w-full preset-filled-primary-500"
 					>
+						Create
+					</ActionButton>
 
 					<Collapsable title="Advanced" class="mt-4">
 						<Checkbox label="Is extended gallery" bind:checked={isExtendedGallery} />
@@ -193,5 +158,37 @@
 	</div>
 {/snippet}
 
-{@render controls([])}
-<FileTree structure={data.tree} {folder} {file} {showEmpty} />
+<Layout title="Galleries" breadcrumbs>
+	{#snippet navRight()}
+		<div class="my-4 flex max-w-64 grow items-center gap-x-2 pr-4">
+			<label for="{id}-search-box">
+				<i class="fa-solid fa-search"></i>
+			</label>
+			<div class="relative flex grow overflow-visible">
+				<SearchInput
+					id="{id}-search-box"
+					autoFocus
+					bind:search
+					class="input h-8 w-0 grow"
+					noReportValidation
+					acceptSuggestionOnEnter
+					validationError={search !== '' && !data.galleryPaths.includes(search)
+						? 'invalid path'
+						: undefined}
+					options={asRecord(data.galleryPaths ?? [], (p) => p)}
+					onSelect={(s) => {
+						if (data.galleryPaths.includes(s)) {
+							go(resolve('/gallery/[...gallerypath]', { gallerypath: s }));
+						}
+					}}
+				/>
+			</div>
+		</div>
+	{/snippet}
+
+	<DirectoryList path={fpath} tree={gotoPath(data.tree, fpath)} />
+
+	<div class="absolute right-3 bottom-0">
+		{@render controls(fpath)}
+	</div>
+</Layout>

@@ -9,6 +9,16 @@
 	import fz from 'fuzzysort';
 	import { normalizeArtist } from '@phosart/common/util';
 	import { addKey, arrAsObject } from '$lib/form/search/SearchResults.svelte';
+	import Layout from '$lib/Layout.svelte';
+	import {
+		CircleXIcon,
+		EarthIcon,
+		LinkIcon,
+		PlusIcon,
+		SaveIcon,
+		StarIcon,
+		TrashIcon
+	} from '@lucide/svelte';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -107,202 +117,214 @@
 	<title>Artist Editor | Art Site Editor</title>
 </svelte:head>
 
-<div class="my-4 flex gap-x-2 rounded-2xl border border-dashed p-2">
-	<label for="{id}-search-box">
-		<i class="fa-solid fa-search"></i>
-	</label>
-	<div class="relative flex grow">
-		<SearchInput
-			id="{id}-search-box"
-			autoFocus
-			bind:search
-			class="grow"
-			noReportValidation
-			acceptSuggestionOnEnter
-			{options}
-			onSelect={(k, artist) => {
-				if (artist) {
-					selectedHandle = k;
-				}
-			}}
-		/>
-	</div>
-</div>
-
-<button
-	onclick={() => {
-		artists[''] = { name: '', links: {}, type: 'Artist' };
-		selectedHandle = '';
-	}}
-	class="my-4 w-full cursor-pointer rounded-2xl border p-3 hover:bg-gray-300 active:bg-gray-500"
->
-	<i class="fa-solid fa-plus"></i>
-	<span>Add Artist</span>
-</button>
-
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-	{#each results as [handle], i (`${i}-${results.length}`)}
-		<Modal
-			title="@{handle}"
-			class="m-2 rounded-2xl border"
-			overrideOnClick={() => {
-				selectedHandle = handle;
-			}}
-		/>
-	{/each}
-</div>
-
-{#if selectedHandle !== undefined && selectedHandle !== null && artists[selectedHandle]}
-	{@const handle = selectedHandle}
-	{@const artist = artists[selectedHandle]}
-	<Modal
-		headless
-		title="@{handle}"
-		class="m-2 rounded-2xl border"
-		bind:open={
-			() => true,
-			(v) => {
-				if (!v) {
-					selectedHandle = null;
-					search = '';
-				}
-			}
-		}
-	>
-		{#snippet modalRight()}
-			<div class="flex items-stretch gap-x-3 py-1">
-				<div>
-					<button
-						onclick={(ev) => {
-							if (!ev.shiftKey) return;
-							delete artists[handle];
-
-							save();
+<Layout title="Artists">
+	{#snippet navRight()}
+		<div class="flex items-center gap-2">
+			<div class="my-4 flex w-64 grow items-center gap-x-2 pr-4">
+				<label for="{id}-search-box">
+					<i class="fa-solid fa-search"></i>
+				</label>
+				<div class="relative flex grow overflow-visible">
+					<SearchInput
+						id="{id}-search-box"
+						autoFocus
+						bind:search
+						class="input h-8 w-0 grow"
+						noReportValidation
+						acceptSuggestionOnEnter
+						{options}
+						onSelect={(k, artist) => {
+							if (artist) {
+								selectedHandle = k;
+							}
 						}}
-						class="w-40 rounded-2xl border p-3 text-center"
-						class:hover:bg-gray-300={shiftDown}
-						class:active:bg-gray-500={shiftDown}
-						class:cursor-pointer={shiftDown}
-						class:hover:font-bold={!shiftDown}
-						class:cursor-not-allowed={!shiftDown}
-						style="line-height: 1;"
-					>
-						<div>
-							<i class="fa-solid fa-trash"></i>
-							<span class="font-normal">Delete</span>
-						</div>
-						<div class="text-[8pt]">(requires shift-click)</div>
-					</button>
+					/>
 				</div>
-				<div>
-					{#if !loading}
-						<button
-							onclick={() => void save()}
-							class="h-full cursor-pointer rounded-2xl border p-3 hover:bg-gray-300 active:bg-gray-500"
-						>
-							<i class="fa-regular fa-save"></i>
-							<span>Save</span>
-						</button>
-					{:else}
-						<div class="h-full cursor-pointer rounded-2xl border p-3">Saving...</div>
-					{/if}
-					{#if error}
-						<div class="h-full">ERROR: {error}</div>
-					{/if}
-				</div>
-			</div>
-		{/snippet}
-		<div>
-			<TextInput
-				label="Handle"
-				bind:value={
-					() => handle,
-					(v) => {
-						if (!(v in artists)) {
-							artists = renameKey(artists, handle, v);
-							selectedHandle = v;
-						}
-					}
-				}
-			/>
-			<TextInput label="Name" bind:value={artist.name} />
-			<div>
-				<pre>Links</pre>
-				<div class="grid" style="grid-template-columns: 1fr 1fr auto auto;">
-					{#each Object.keys(artist.links) as site, i (i)}
-						<div class="flex w-full items-center">
-							<TextInput
-								placeholder="site"
-								bind:this={
-									() => null,
-									(t) => {
-										if (Object.keys(artist.links).length - 1 === i) {
-											focusableInput = t;
-										}
-									}
-								}
-								bind:value={
-									() => site,
-									(v) => {
-										artist.links = renameKey(artist.links, site, v, false);
-									}
-								}
-								label=""
-								icon="earth"
-							/>
-						</div>
-						<div class="flex w-full items-end">
-							<TextInput placeholder="url" bind:value={artist.links[site]} label="" icon="link" />
-						</div>
-
-						<button
-							disabled={i === 0}
-							class={i === 0
-								? 'cursor-not-allowed text-gray-300'
-								: 'cursor-pointer hover:bg-gray-200 active:bg-gray-500'}
-							title="Promote"
-							onclick={() => {
-								artist.links = promoteKey(artist.links, site);
-							}}
-						>
-							<i class="fa-regular fa-star"></i>
-						</button>
-
-						<button
-							class="cursor-pointer hover:bg-gray-200 active:bg-gray-500"
-							title="Delete"
-							onclick={() => {
-								delete artist.links[site];
-							}}
-						>
-							<i class="fa-regular fa-circle-xmark"></i>
-						</button>
-					{/each}
-					<button
-						onclick={() => {
-							artist.links = Object.fromEntries([...Object.entries(artist.links), ['', '']]);
-							tick().then(() => {
-								focusableInput?.focus();
-							});
-						}}
-						class="justify-left relative col-span-4 m-2 flex items-center justify-center rounded-xl border p-2 hover:bg-gray-300 active:bg-gray-400"
-					>
-						<i class="fa-solid fa-plus"></i>
-						<span>Add Link</span>
-					</button>
-				</div>
-			</div>
-			<div>
-				<Collapsable title="Advanced" class="my-3">
-					<Collapsable
-						title="JSON"
-						initial={false}
-						class="mt-2 no-scrollbar overflow-scroll border-t border-gray-300 text-gray-400"
-					>
-						<pre class="text-gray-900">{JSON.stringify(artist, null, 4)}</pre>
-					</Collapsable>
-				</Collapsable>
 			</div>
 		</div>
-	</Modal>
-{/if}
+	{/snippet}
+
+	<button
+		onclick={() => {
+			artists[''] = { name: '', links: {}, type: 'Artist' };
+			selectedHandle = '';
+		}}
+		class="absolute right-3 bottom-3 z-10 btn preset-filled-primary-200-800 btn-sm"
+	>
+		<i class="fa-solid fa-plus"></i>
+		<span>Add Artist</span>
+	</button>
+
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+		{#each results as [handle], i (`${i}-${results.length}`)}
+			<Modal
+				title="@{handle}"
+				class="m-2 rounded-2xl border"
+				overrideOnClick={() => {
+					selectedHandle = handle;
+				}}
+			/>
+		{/each}
+	</div>
+
+	{#if selectedHandle !== undefined && selectedHandle !== null && artists[selectedHandle]}
+		{@const handle = selectedHandle}
+		{@const artist = artists[selectedHandle]}
+		<Modal
+			headless
+			title="@{handle}"
+			class="m-2 rounded-2xl border"
+			bind:open={
+				() => true,
+				(v) => {
+					if (!v) {
+						selectedHandle = null;
+						search = '';
+					}
+				}
+			}
+		>
+			{#snippet modalRight()}
+				<div class="mr-4 flex items-stretch gap-x-3 py-1">
+					<div>
+						<button
+							onclick={(ev) => {
+								if (!ev.shiftKey) return;
+								delete artists[handle];
+
+								save();
+							}}
+							class="btn flex flex-col items-center preset-filled-error-50-950 p-3"
+							class:hover:bg-gray-300={shiftDown}
+							class:active:bg-gray-500={shiftDown}
+							class:cursor-pointer={shiftDown}
+							class:hover:font-bold={!shiftDown}
+							class:cursor-not-allowed={!shiftDown}
+							style="line-height: 1;"
+						>
+							<div class="flex items-center">
+								<TrashIcon size={16} />
+								<span class="font-normal">Delete</span>
+							</div>
+							<div class="text-[8pt]">(requires shift-click)</div>
+						</button>
+					</div>
+					<div>
+						{#if !loading}
+							<button onclick={() => void save()} class="btn preset-filled-primary-50-950 p-3">
+								<SaveIcon size={16} />
+								<span>Save</span>
+							</button>
+						{:else}
+							<div class="h-full cursor-pointer rounded-2xl border p-3">Saving...</div>
+						{/if}
+						{#if error}
+							<div class="h-full">ERROR: {error}</div>
+						{/if}
+					</div>
+				</div>
+			{/snippet}
+			<div class="min-w-[50vw] p-4">
+				<TextInput
+					label="Handle"
+					bind:value={
+						() => handle,
+						(v) => {
+							if (!(v in artists)) {
+								artists = renameKey(artists, handle, v);
+								selectedHandle = v;
+							}
+						}
+					}
+				/>
+				<TextInput label="Name" bind:value={artist.name} />
+				<div>
+					<div class="flex items-center">
+						<div class="grow border-b border-b-surface-600-400"></div>
+						<div class="mx-2">Links</div>
+						<div class="grow border-b border-b-surface-600-400"></div>
+					</div>
+					<div class="grid items-center" style="grid-template-columns: 1fr 1fr auto auto;">
+						{#each Object.keys(artist.links) as site, i (i)}
+							<div class="flex w-full items-center">
+								<TextInput
+									placeholder="site"
+									bind:this={
+										() => null,
+										(t) => {
+											if (Object.keys(artist.links).length - 1 === i) {
+												focusableInput = t;
+											}
+										}
+									}
+									bind:value={
+										() => site,
+										(v) => {
+											artist.links = renameKey(artist.links, site, v, false);
+										}
+									}
+									label=""
+								>
+									{#snippet icon()}
+										<EarthIcon size={16} />
+									{/snippet}
+								</TextInput>
+							</div>
+							<div class="flex w-full items-end">
+								<TextInput placeholder="url" bind:value={artist.links[site]} label="">
+									{#snippet icon()}
+										<LinkIcon size={16} />
+									{/snippet}
+								</TextInput>
+							</div>
+
+							<button
+								disabled={i === 0}
+								class="mx-2 btn-icon btn preset-tonal"
+								title="Promote"
+								onclick={() => {
+									artist.links = promoteKey(artist.links, site);
+								}}
+							>
+								<StarIcon size={16} />
+							</button>
+
+							<button
+								class="mx-2 btn-icon btn preset-tonal-warning"
+								title="Delete"
+								onclick={() => {
+									delete artist.links[site];
+								}}
+							>
+								<CircleXIcon size={16} />
+							</button>
+						{/each}
+						<button
+							onclick={() => {
+								artist.links = Object.fromEntries([...Object.entries(artist.links), ['', '']]);
+								tick().then(() => {
+									focusableInput?.focus();
+								});
+							}}
+							class="col-span-4 btn w-full preset-tonal"
+						>
+							<PlusIcon />
+							<span>Add Link</span>
+						</button>
+					</div>
+				</div>
+				<div>
+					<Collapsable title="Advanced" class="my-3">
+						<Collapsable
+							title="JSON"
+							initial={false}
+							class="mt-2 no-scrollbar overflow-scroll border-t border-gray-300 text-gray-400"
+						>
+							<pre class="text-gray-900">{JSON.stringify(artist, null, 4)}</pre>
+						</Collapsable>
+					</Collapsable>
+				</div>
+			</div>
+		</Modal>
+	{/if}
+</Layout>

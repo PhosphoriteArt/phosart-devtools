@@ -10,13 +10,11 @@
 		onAddUnknown?: (s: string) => T;
 
 		renderChip?: Snippet<[obj: T]>;
-		labelClass?: string;
 		class?: string;
 	}
 
 	let {
 		label,
-		labelClass,
 		value = $bindable(),
 		options,
 		prefix,
@@ -37,7 +35,6 @@
 
 <ControlledChippedInput
 	{label}
-	{labelClass}
 	bind:search
 	{renderChip}
 	{prefix}

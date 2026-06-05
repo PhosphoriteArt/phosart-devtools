@@ -68,7 +68,7 @@
 
 <Droppable
 	bind:over
-	class="block grow cursor-copy rounded-2xl border p-4 text-left select-none {over
+	class="btn block min-w-80 grow cursor-copy border border-green-700 bg-surface-50-950 p-4 text-left select-none dark:border-green-300 {over
 		? ''
 		: 'border-dashed'} {cls}"
 	{onDrop}

@@ -18,7 +18,7 @@
 	});
 </script>
 
-<div class="flex items-center">
+<div class="inline-flex flex-col overflow-hidden">
 	<TextInput
 		bind:value={dateString}
 		placeholder={DateTime.fromJSDate(date).toFormat('fff')}
@@ -34,6 +34,6 @@
 		validationError={dateString ? 'Press enter to confirm' : undefined}
 	/>
 	{#if dateParsed}
-		<span> = {dateParsed.toFormat('fff')} </span>
+		<span class="ml-4"> = {dateParsed.toFormat('fff')} </span>
 	{/if}
 </div>

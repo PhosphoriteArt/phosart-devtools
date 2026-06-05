@@ -4,15 +4,14 @@
 
 	interface Props extends TooltipOptions {
 		title: string;
-		subtitle?: string;
 		open?: boolean | null;
 		children?: Snippet<[close: () => void]>;
 		class?: string;
 		buttonClass?: string;
-		right?: Snippet;
-		modalRight?: Snippet;
-		icon?: string;
+		modalRight?: Snippet<[close: () => void]>;
+		icon?: Snippet;
 		hideHeader?: boolean;
+		disabled?: boolean;
 
 		headless?: boolean;
 		overrideOnClick?: (ev: MouseEvent | KeyboardEvent) => void;
@@ -21,18 +20,17 @@
 
 	let {
 		title,
-		subtitle,
 		open = $bindable(false),
 		children,
 		class: cls,
 		buttonClass,
-		right,
 		modalRight,
 		icon,
 		onClose,
 		hideHeader,
 		overrideOnClick,
 		headless,
+		disabled,
 		...tooltipOptions
 	}: Props = $props();
 
@@ -76,44 +74,35 @@
 {#if !headless}
 	<Tooltip {...tooltipOptions}>
 		{#snippet children(attach)}
-			<div class="rounded-2xl border {cls}" {@attach attach}>
-				<div
-					role="button"
-					tabindex="0"
-					onkeypress={(ev) => {
-						if (overrideOnClick) {
-							overrideOnClick(ev);
-						} else {
-							open = !open;
-						}
-					}}
-					onclick={(ev) => {
-						if (overrideOnClick) {
-							overrideOnClick(ev);
-						} else {
-							open = !open;
-						}
-					}}
-					class="hover-effect flex h-full cursor-pointer items-center justify-between overflow-hidden rounded-2xl px-2 select-none"
-				>
-					<div class="flex flex-col items-start {buttonClass}">
-						<div class="font-semibold">
-							{#if icon}
-								<i class={icon}></i>
-							{/if}
-							{title}
-						</div>
-						{#if subtitle}
-							<div class="text-xs text-gray-400">{subtitle}</div>
-						{/if}
-					</div>
-					{#if right}
-						<div>
-							{@render right()}
-						</div>
-					{/if}
+			<button
+				{@attach attach}
+				{disabled}
+				tabindex="0"
+				onkeypress={(ev) => {
+					if (overrideOnClick) {
+						overrideOnClick(ev);
+					} else {
+						open = !open;
+					}
+				}}
+				onclick={(ev) => {
+					if (overrideOnClick) {
+						overrideOnClick(ev);
+					} else {
+						open = !open;
+					}
+				}}
+				class="btn btn-sm {cls || 'preset-outlined'}"
+			>
+				{#if typeof icon === 'string'}
+					{icon}
+				{:else}
+					{@render icon?.()}
+				{/if}
+				<div>
+					{title}
 				</div>
-			</div>
+			</button>
 		{/snippet}
 	</Tooltip>
 {/if}
@@ -122,7 +111,7 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_interactive_supports_focus -->
 	<div
-		class="fixed flex w-screen items-center justify-center bg-[#0004]"
+		class="fixed flex w-screen cursor-auto items-center justify-center bg-[#0004]"
 		style="height: calc(100vh - 1.25rem)"
 		role="button"
 		onclick={(e) => {
@@ -131,23 +120,29 @@
 			}
 		}}
 	>
-		<div class="flex h-10/12 max-h-10/12 w-9/12 max-w-10/12 flex-col rounded-3xl bg-white">
-			<div class="flex items-center justify-between border-b border-b-gray-400 p-4 py-0">
+		<!-- h-10/12  w-9/12  -->
+		<div
+			class="flex max-h-10/12 max-w-10/12 flex-col rounded-3xl border border-surface-400-600 bg-surface-50-950 drop-shadow-xl drop-shadow-surface-50-950"
+		>
+			<div
+				class="flex items-center justify-between border-surface-400-600"
+				class:border-b={!hideHeader}
+			>
 				{#if !hideHeader}
-					<div class="flex flex-col items-start">
+					<div class="flex flex-col items-start px-4 py-1">
 						<div class="font-semibold">{title}</div>
-						{#if subtitle}
+						<!-- {#if subtitle}
 							<div class="text-xs text-gray-400">{subtitle}</div>
-						{/if}
+						{/if} -->
 					</div>
 				{/if}
 				{#if modalRight}
 					<div>
-						{@render modalRight()}
+						{@render modalRight(() => void (open = false))}
 					</div>
 				{/if}
 			</div>
-			<div bind:this={childContainer} class="no-scrollbar grow overflow-scroll p-4">
+			<div bind:this={childContainer} class="no-scrollbar grow overflow-scroll">
 				{@render children?.(() => void (open = false))}
 			</div>
 		</div>

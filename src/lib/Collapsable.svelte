@@ -32,9 +32,8 @@
 	let isCollapsed = $derived(collapsed ?? uncontrolledCollapsed);
 </script>
 
-<div class="rounded-2xl border {cls}">
-	<div
-		role="button"
+<div class="overflow-hidden rounded-xl border border-primary-50-950 {cls}">
+	<button
 		tabindex="0"
 		onkeypress={() => {
 			if (collapsed !== undefined) {
@@ -48,11 +47,12 @@
 			}
 			uncontrolledCollapsed = !uncontrolledCollapsed;
 		}}
-		class="flex cursor-pointer items-center justify-between overflow-hidden rounded-t-2xl select-none hover:bg-gray-300 active:bg-gray-500"
-		class:rounded-b-2xl={isCollapsed}
+		class="btn flex w-full cursor-pointer items-center justify-between rounded-t-lg select-none hover:bg-surface-700-300"
+		class:rounded-b-lg={isCollapsed}
+		class:rounded-b-none={!isCollapsed}
 		class:pb-0={!isCollapsed}
 	>
-		<div class="flex items-center p-2">
+		<div class="flex items-center py-1">
 			<i
 				class="fa-{iconFamily ?? 'solid'} {isCollapsed
 					? (closedIcon ?? 'fa-chevron-right')
@@ -65,9 +65,9 @@
 				{@render collapsedRight?.()}
 			</div>
 		{/if}
-	</div>
+	</button>
 	{#if !isCollapsed}
-		<div class="mb-4 border-b border-gray-300"></div>
+		<div class="mb-4 border-b border-primary-50-950"></div>
 		<div class="m-4">
 			{@render children?.()}
 		</div>

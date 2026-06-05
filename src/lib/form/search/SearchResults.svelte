@@ -178,7 +178,7 @@
 
 {#if showPicker}
 	<div
-		class="absolute top-full z-10 flex max-h-20 w-full flex-col overflow-y-scroll bg-white select-none"
+		class="absolute top-full z-10 flex max-h-20 w-full flex-col overflow-y-scroll bg-surface-50-950 select-none"
 		onpointerenter={() => void (enableKeyboardSelector = false)}
 		onpointerleave={() => void (enableKeyboardSelector = true)}
 		bind:this={container}
@@ -193,9 +193,10 @@
 					selected = hasDefaultSelected ? 0 : -1;
 					justConfirmed = true;
 				}}
-				class="cursor-pointer text-left hover:bg-blue-300"
+				class="cursor-pointer border-b-surface-500 text-left hover:bg-primary-200-800 hover:text-primary-contrast-200-800"
 				class:border-b={i != results.length - 1}
-				class:bg-blue-300={selected === i && enableKeyboardSelector}
+				class:bg-primary-200-800={selected === i && enableKeyboardSelector}
+				class:text-primary-contrast-200-800={selected === i && enableKeyboardSelector}
 				{@attach manageRef(i)}
 			>
 				{hasVisualize(value) ? value.asVisualized() : hasKey(value) ? value.asKey() : key}

@@ -8,7 +8,6 @@
 	import { getOverrides } from '$lib/galleryoverride.svelte';
 	import OriginalImage from './OriginalImage.svelte';
 	import type { GalleryPath } from '$lib/util';
-	import Checkbox from './Checkbox.svelte';
 
 	interface Props {
 		galleryPath: GalleryPath;
@@ -31,14 +30,18 @@
 	});
 </script>
 
-<div>
+<div class="flex min-w-[25vw] flex-col p-4">
 	<div>{label ?? 'Alternatives'}:</div>
-	<div class="ml-4">
+	<div>
 		{#each value as alt, i (oids.get(alt) ?? `${i}-${value?.length}`)}
 			<Collapsable
 				title={alt.name}
-				class="my-2 border {alt.nsfw ? 'outline-2 outline-amber-600' : ''} {alt.deindexed
-					? ' bg-gray-200'
+				class="my-2 border {value![i].deindexed
+					? 'border-warning-600-400 bg-surface-100-900 hover:bg-surface-300-700 active:bg-surface-400-600'
+					: 'border-surface-600-400 bg-surface-200-800 hover:bg-surface-300-700 active:bg-surface-400-600'} {value![
+					i
+				].nsfw
+					? 'outline-2 outline-amber-600'
 					: ''}"
 			>
 				{#snippet collapsedRight()}
@@ -53,28 +56,22 @@
 					</div>
 				{/snippet}
 
-				<TextInput label="Name" bind:value={alt.name} />
-				<TextBox label="Description" bind:value={alt.description} />
-				<TextBox label="Alt Text" bind:value={alt.alt} />
-				<div class="my-4"></div>
-				<Checkbox
-					label="NSFW?"
-					bind:checked={() => !!alt.nsfw, (v) => void (alt.nsfw = v || undefined)}
-				/>
-				<div class="my-4"></div>
-				<Checkbox
-					label="Deindexed?"
-					bind:checked={() => !!alt.deindexed, (v) => void (alt.deindexed = v || undefined)}
-				/>
-				<div class="my-4"></div>
-
 				<ImageEdit
 					galleryPath={{ ...galleryPath, alt: alt.name, altIndex: i }}
 					bind:resource={value![i]}
+					bind:alt={value![i].alt}
+					bind:isNsfw={value![i].nsfw}
+					bind:isDeindexed={value![i].deindexed}
+					alts={null}
+					isComic={null}
 					class={alt.nsfw
 						? 'duration-300ms blur-lg transition-[filter] hover:blur-none hover:duration-[3s]'
 						: ''}
 				/>
+
+				<TextInput label="Name" bind:value={alt.name} />
+				<TextBox label="Description" bind:value={alt.description} />
+
 				<div>
 					<button
 						onclick={() => {

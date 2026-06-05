@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import type { SearchResultsImperativeHandle } from './search/SearchResults.svelte';
 	import SearchResults, { arrAsObject, control } from './search/SearchResults.svelte';
 
@@ -13,13 +14,10 @@
 		class?: string;
 		validationError?: string;
 		options?: string[];
-		icon?: string;
+		icon?: string | Snippet;
 		password?: boolean;
-		labelClass?: string;
 		noReportValidation?: true;
 	}
-
-	const id = $props.id();
 
 	let {
 		label,
@@ -33,7 +31,6 @@
 		options,
 		icon,
 		password,
-		labelClass,
 		noReportValidation
 	}: Props = $props();
 
@@ -59,34 +56,42 @@
 </script>
 
 <div class="flex flex-row items-center gap-x-2">
-	{#if label}
-		<label for="form-{id}"><pre class={labelClass ?? 'w-36'}>{label}</pre></label>
-	{/if}
-	<div class="relative m-2 flex min-w-sm items-center rounded-xl border border-gray-500">
-		{#if icon}
-			<i
-				aria-hidden="true"
-				class="fa-solid fa-{icon} ml-1 text-gray-500"
-				onclick={() => {
-					inputRef?.focus();
-				}}
-			></i>
-		{/if}
-		<input
-			id="form-{id}"
-			type={password ? 'password' : 'text'}
-			bind:value
-			bind:this={inputRef}
-			{placeholder}
-			{onkeydown}
-			{disabled}
-			class:text-gray-400={disabled}
-			class="grow rounded-xl p-2 focus:border-blue-300 {cls}"
-			class:bg-white={!disabled}
-			class:bg-gray-100={disabled}
-			onpointerdown={onclick}
-			{@attach control(searchRef)}
-		/>
+	<div class="relative m-2 flex items-center rounded-xl">
+		<label class="label">
+			<span class="label-text font-light">{label}</span>
+			<div class="input-group {icon ? 'grid-cols-[auto_1fr]' : ''}">
+				{#if icon}
+					<div class="ig-cell preset-tonal">
+						{#if typeof icon === 'string'}
+							<i
+								aria-hidden="true"
+								class="fa-solid fa-{icon} ml-1 text-gray-500"
+								onclick={() => {
+									inputRef?.focus();
+								}}
+							></i>
+						{:else}
+							{@render icon()}
+						{/if}
+					</div>
+				{/if}
+
+				<input
+					type={password ? 'password' : 'text'}
+					bind:value
+					bind:this={inputRef}
+					{placeholder}
+					{onkeydown}
+					{disabled}
+					class:text-gray-400={disabled}
+					class="input ig-input grow {cls}"
+					class:bg-white={!disabled}
+					class:bg-gray-100={disabled}
+					onpointerdown={onclick}
+					{@attach control(searchRef)}
+				/>
+			</div>
+		</label>
 		{#if options}
 			<SearchResults
 				bind:this={searchRef}

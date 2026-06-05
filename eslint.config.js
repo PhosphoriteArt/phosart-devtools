@@ -35,7 +35,8 @@ export default defineConfig(
 					varsIgnorePattern: '^_',
 					ignoreRestSiblings: true
 				}
-			]
+			],
+			'svelte/no-navigation-without-resolve': 'warn'
 		}
 	},
 	{
