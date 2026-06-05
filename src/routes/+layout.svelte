@@ -19,6 +19,7 @@
 	import { setNavbarOpen } from '$lib/navbarstate.svelte.js';
 	import ActionButton from '$lib/ActionButton.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import { EyeIcon } from '@lucide/svelte';
 
 	let { children, data } = $props();
 
@@ -289,13 +290,13 @@
 {#if data.previewPort}
 	<Tooltip tooltip="Preview Website">
 		{#snippet children(attach)}
-			<div class="fixed right-4 bottom-8 z-110" {@attach attach}>
+			<div class="fixed bottom-8 left-4 z-110" {@attach attach}>
 				<button
 					onclick={() => void (showPreview = !showPreview)}
 					title="Open/close Preview"
-					class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border bg-white hover:bg-gray-300 active:bg-gray-600"
+					class="btn flex btn-icon-sm h-8 w-8 cursor-pointer items-center justify-center preset-tonal"
 				>
-					<i class="fa-regular fa-eye"></i>
+					<EyeIcon size={16} />
 				</button>
 			</div>
 		{/snippet}

@@ -9,8 +9,9 @@
 		tree: FileStructure;
 		path: string[];
 		search?: string | null;
+		showEmpty?: boolean;
 	}
-	const { tree, path, search }: Props = $props();
+	const { tree, path, search, showEmpty }: Props = $props();
 
 	const folders = $derived(
 		qsearchObj(
@@ -38,15 +39,17 @@
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 		{#each Object.entries(folders) as [k, v] (k)}
 			{@const empty = Object.keys(v.structure).length == 0}
-			<a
-				class="btn flex items-center preset-outlined-surface-950-50 p-2 whitespace-normal"
-				href={resolve('/') + '?' + String(new URLSearchParams({ path: [...path, k].join('/') }))}
-				class:font-extralight={empty}
-				class:text-gray-500={empty}
-			>
-				<Folder />
-				{k}{#if empty}&nbsp;(empty){/if}
-			</a>
+			{#if !empty || showEmpty}
+				<a
+					class="btn flex items-center preset-outlined-surface-950-50 p-2 whitespace-normal"
+					href={resolve('/') + '?' + String(new URLSearchParams({ path: [...path, k].join('/') }))}
+					class:font-extralight={empty}
+					class:text-gray-500={empty}
+				>
+					<Folder />
+					{k}{#if empty}&nbsp;(empty){/if}
+				</a>
+			{/if}
 		{/each}
 		{#each Object.entries(galleries) as [k, v] (k)}
 			{#if v.$type === 'gallery' && !v.isBase}

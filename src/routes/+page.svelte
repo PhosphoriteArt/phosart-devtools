@@ -14,12 +14,14 @@
 	import Layout from '$lib/Layout.svelte';
 	import DirectoryList from '$lib/ui_from_template/DirectoryList.svelte';
 	import { usePath } from '$lib/path.svelte.js';
-	import { FolderPlus, ImagesIcon } from '@lucide/svelte';
+	import { EyeClosed, EyeIcon, FolderPlus, ImagesIcon } from '@lucide/svelte';
+	import Tooltip from '$lib/Tooltip.svelte';
 
 	const { data } = $props();
 
 	let newName = $state('');
 	let isExtendedGallery = $state(false);
+	let showEmpty = $state(false);
 
 	const fpath = $derived.by(usePath);
 
@@ -160,33 +162,52 @@
 
 <Layout title="Galleries" breadcrumbs>
 	{#snippet navRight()}
-		<div class="my-4 flex max-w-64 grow items-center gap-x-2 pr-4">
-			<label for="{id}-search-box">
-				<i class="fa-solid fa-search"></i>
-			</label>
-			<div class="relative flex grow overflow-visible">
-				<SearchInput
-					id="{id}-search-box"
-					autoFocus
-					bind:search
-					class="input h-8 w-0 grow"
-					noReportValidation
-					acceptSuggestionOnEnter
-					validationError={search !== '' && !data.galleryPaths.includes(search)
-						? 'invalid path'
-						: undefined}
-					options={asRecord(data.galleryPaths ?? [], (p) => p)}
-					onSelect={(s) => {
-						if (data.galleryPaths.includes(s)) {
-							go(resolve('/gallery/[...gallerypath]', { gallerypath: s }));
-						}
-					}}
-				/>
+		<div class="flex items-center gap-2">
+			<div class="my-4 flex w-64 grow items-center gap-x-2 pr-4">
+				<label for="{id}-search-box">
+					<i class="fa-solid fa-search"></i>
+				</label>
+				<div class="relative flex grow overflow-visible">
+					<SearchInput
+						id="{id}-search-box"
+						autoFocus
+						bind:search
+						class="input h-8 w-0 grow"
+						noReportValidation
+						acceptSuggestionOnEnter
+						validationError={search !== '' && !data.galleryPaths.includes(search)
+							? 'invalid path'
+							: undefined}
+						options={asRecord(data.galleryPaths ?? [], (p) => p)}
+						onSelect={(s) => {
+							if (data.galleryPaths.includes(s)) {
+								go(resolve('/gallery/[...gallerypath]', { gallerypath: s }));
+							}
+						}}
+					/>
+				</div>
+				<Tooltip tooltip="show/hide empty folders" placement="bottom">
+					{#snippet children(attach)}
+						<button
+							{@attach attach}
+							class="btn-icon btn"
+							class:preset-filled={showEmpty}
+							class:preset-tonal={!showEmpty}
+							onclick={() => void (showEmpty = !showEmpty)}
+						>
+							{#if showEmpty}
+								<EyeIcon />
+							{:else}
+								<EyeClosed />
+							{/if}
+						</button>
+					{/snippet}
+				</Tooltip>
 			</div>
 		</div>
 	{/snippet}
 
-	<DirectoryList path={fpath} tree={gotoPath(data.tree, fpath)} />
+	<DirectoryList path={fpath} tree={gotoPath(data.tree, fpath)} {showEmpty} />
 
 	<div class="absolute right-3 bottom-0">
 		{@render controls(fpath)}

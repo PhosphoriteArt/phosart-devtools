@@ -248,7 +248,7 @@
 						>
 							{#if character.thumbnail || !fullView}
 								<OriginalImage
-									class="object-cover object-top"
+									class="object-cover object-center"
 									galleryPath={{
 										character: originalName,
 										for: fullView ? 'thumb' : character.thumbnail ? 'thumb' : 'full'
@@ -329,7 +329,7 @@
 							{@html markdown(character.short_description)}
 						</div>
 					{/if}
-					<div class="mx-3 mt-3 max-h-80 min-w-0 shrink overflow-scroll">
+					<div class="mx-3 mt-3 max-h-80 min-w-0 shrink overflow-x-auto overflow-y-scroll">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html markdown(character.description)}
 					</div>
