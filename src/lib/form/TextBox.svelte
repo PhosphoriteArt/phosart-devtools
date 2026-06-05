@@ -14,7 +14,7 @@
 </script>
 
 <div class="flex flex-row items-center gap-x-2">
-	<label class="label">
+	<div class="label">
 		<span class="label-text">{label}</span>
 		<div
 			class="m-2 max-w-full {dimensions} overflow-hidden rounded-xl bg-surface-50-950 outline-surface-500 focus-within:outline"
@@ -28,5 +28,5 @@
 				theme="vs-dark"
 			/>
 		</div>
-	</label>
+	</div>
 </div>
