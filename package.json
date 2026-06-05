@@ -1,6 +1,6 @@
 {
 	"name": "@phosart/devtool",
-	"version": "0.2.68",
+	"version": "0.3.0",
 	"type": "module",
 	"scripts": {
 		"dev": "dotenvx run -- vite dev",
