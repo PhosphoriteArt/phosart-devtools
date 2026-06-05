@@ -232,7 +232,7 @@
 
 			<div class="my-8 flex">
 				{#if fullView}
-					<div class="h-128 w-128 shrink-0 max-lg:h-64 max-lg:w-64">
+					<div class="h-128 w-128 shrink-0 max-xl:h-64 max-xl:w-64">
 						<OriginalImage
 							galleryPath={{
 								character: originalName,
@@ -244,7 +244,7 @@
 				<div class="flex grow flex-col items-stretch">
 					<div class="flex items-center gap-3 border-b border-surface-600-400 pb-3">
 						<div
-							class="mr-4 flex h-24 min-h-24 w-24 min-w-24 items-center justify-center overflow-hidden rounded-full border border-surface-600-400 max-lg:h-16 max-lg:min-h-16 max-lg:w-16 max-lg:min-w-16"
+							class="mr-4 flex h-24 min-h-24 w-24 min-w-24 items-center justify-center overflow-hidden rounded-full border border-surface-600-400 max-xl:h-16 max-xl:min-h-16 max-xl:w-16 max-xl:min-w-16"
 						>
 							{#if character.thumbnail || !fullView}
 								<OriginalImage
@@ -258,11 +258,11 @@
 								<ImageOff />
 							{/if}
 						</div>
-						<div class="pb-2 text-6xl font-extralight max-lg:text-3xl">
+						<div class="pb-2 text-6xl font-extralight max-xl:text-3xl">
 							{character.name}
 						</div>
 						<div
-							class="px-2 pb-2 text-6xl font-extralight max-lg:text-3xl"
+							class="px-2 pb-2 text-6xl font-extralight max-xl:text-3xl"
 							style="transform: scaleX(0.1);"
 						>
 							|
@@ -323,7 +323,7 @@
 					</div>
 					{#if character.short_description}
 						<div
-							class="mx-3 mt-3 border-l-3 border-l-primary-200-800 pl-3 text-xl font-extralight italic max-lg:text-lg"
+							class="mx-3 mt-3 border-l-3 border-l-primary-200-800 pl-3 text-xl font-extralight italic max-xl:text-lg"
 						>
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html markdown(character.short_description)}
