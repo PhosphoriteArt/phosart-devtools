@@ -247,7 +247,7 @@
 							await invalidateAll();
 						}}
 						{loadingContent}
-						class="btn-icon preset-filled"
+						class="btn-icon preset-filled-surface-700-300"
 					>
 						{#if isServerImageProcessing}
 							{@render loadingContent()}
@@ -258,6 +258,8 @@
 				</div>
 			{/snippet}
 		</Tooltip>
+
+		<div class="text-xs text-surface-700-300">© phosphoriteart {new Date().getFullYear()}</div>
 	</div>
 	<div class="transition-all" style="min-width: {sidebarOpen.open ? '200px' : '0px'};"></div>
 	<div class="flex grow flex-col" style="min-width: min(100vw, 500px);">
