@@ -17,6 +17,7 @@ async function ensureGitRepo() {
 	} catch {
 		try {
 			(await rootedGit()).init(['-b', 'main']);
+			await new Promise((resolve) => setTimeout(resolve, 250));
 		} catch (error) {
 			throw new Error('Git failed to initialize a new repository: ' + String(error));
 		}
