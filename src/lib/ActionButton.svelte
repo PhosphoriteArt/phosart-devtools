@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import type { TooltipOptions } from './Tooltip.svelte';
+	import Tooltip from './Tooltip.svelte';
 
-	interface Props {
+	interface Props extends TooltipOptions {
 		action?: (mev: MouseEvent) => Promise<void> | void;
 		setLoading?: (loading: boolean) => void;
 		children?: Snippet;
@@ -14,11 +16,12 @@
 	const {
 		action,
 		setLoading,
-		children,
+		children: subChild,
 		loadingContent,
 		class: userClass,
 		disabled: userDisabled,
-		unstyled
+		unstyled,
+		...tooltipOptions
 	}: Props = $props();
 
 	let loading = $state(false);
@@ -51,10 +54,14 @@
 	Loading...
 {/snippet}
 
-<button onclick={doAction} class={cls} {disabled}>
-	{#if !loading}
-		{@render children?.()}
-	{:else}
-		{@render (loadingContent ?? defaultLoadingContent)()}
-	{/if}
-</button>
+<Tooltip {...tooltipOptions}>
+	{#snippet children(attach)}
+		<button {@attach attach} onclick={doAction} class={cls} {disabled}>
+			{#if !loading}
+				{@render subChild?.()}
+			{:else}
+				{@render (loadingContent ?? defaultLoadingContent)()}
+			{/if}
+		</button>
+	{/snippet}
+</Tooltip>

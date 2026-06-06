@@ -634,9 +634,16 @@
 			<div class="flex items-center justify-around">
 				{#snippet gitPush(small: boolean, close?: () => void)}
 					<ActionButton
+						placement="right"
+						tooltip={(gitStatus?.ahead ?? 0) == 0 && (gitStatus?.behind ?? 0) == 0
+							? 'Nothing to push'
+							: (gitStatus?.conflicted.length ?? 0) > 0
+								? 'Conflicts present'
+								: gitStatus?.current === 'HEAD'
+									? 'Detached head'
+									: ''}
 						disabled={((gitStatus?.ahead ?? 0) == 0 && (gitStatus?.behind ?? 0) == 0) ||
 							(gitStatus?.conflicted.length ?? 0) > 0 ||
-							gitStatus?.tracking === null ||
 							gitStatus?.current === 'HEAD'}
 						class="bg-gray-950 {small ? 'btn-sm' : ''} text-white"
 						action={async () => {
