@@ -4,6 +4,7 @@
 	import ActionButton from '$lib/ActionButton.svelte';
 	import ChippedInput from '$lib/form/chipped/ChippedInput.svelte';
 	import TagEdit from '$lib/form/TagEdit.svelte';
+	import TextBox from '$lib/form/TextBox.svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import Layout from '$lib/Layout.svelte';
 
@@ -37,6 +38,8 @@
 		{#each Object.entries(data.themeSchema) as [key, scheme] (key)}
 			{#if scheme.type === 'string'}
 				<TextInput bind:value={settings[key]} label={key} />
+			{:else if scheme.type === 'textbox' || scheme.type === 'markdown' || scheme.type === 'json'}
+				<TextBox bind:value={settings[key]} label={key} big />
 			{:else if scheme.type === 'color'}
 				<div class="flex items-center gap-x-2">
 					<TextInput
