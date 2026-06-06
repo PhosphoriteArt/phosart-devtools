@@ -77,7 +77,17 @@
 	{:else if typeof el === 'boolean'}
 		<span class="text-orange-700">{el}</span>
 	{:else}
-		<pre class="text-gray-800">{JSON.stringify(el)}</pre>
+		{@const nativeError =
+			typeof el === 'object' &&
+			el &&
+			'nativeError' in el &&
+			'message' in el &&
+			typeof el.message === 'string'}
+		{#if nativeError}
+			<pre class="text-surface-contrast-5-950">{el.message}</pre>
+		{:else}
+			<pre class="text-surface-contrast-5-950">{JSON.stringify(el)}</pre>
+		{/if}
 	{/if}
 {/snippet}
 

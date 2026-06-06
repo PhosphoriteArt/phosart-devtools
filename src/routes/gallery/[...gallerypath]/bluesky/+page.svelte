@@ -93,6 +93,12 @@
 			(If you use 2FA, this needs to be an app password. Password will be saved in your browser.)
 		</div>
 		<ActionButton action={sync}>Login</ActionButton>
+
+		{#if err}
+			<div class="p-1 text-error-400-600 underline decoration-error-500">
+				{err}
+			</div>
+		{/if}
 	</div>
 {/snippet}
 
