@@ -8,9 +8,21 @@
 		children?: Snippet;
 		class?: string;
 		disabled?: boolean;
+		unstyled?: boolean;
+		disableClick?: boolean;
+		targetOverride?: Window | HTMLElement;
 	}
 
-	let { over = $bindable(false), onDrop, children, class: cls, disabled }: Props = $props();
+	let {
+		over = $bindable(false),
+		onDrop,
+		children,
+		class: cls,
+		disabled,
+		unstyled,
+		disableClick,
+		targetOverride
+	}: Props = $props();
 
 	async function doOnDrop(dev: DragEvent): Promise<void> {
 		if (disabled || !dev.dataTransfer) return;
@@ -26,6 +38,7 @@
 	}
 
 	let fileInp: HTMLInputElement | null = $state(null);
+	let defaultInp: HTMLDivElement | null = $state(null);
 
 	function doAskUpload() {
 		if (disabled) return;
@@ -44,6 +57,45 @@
 		over = false;
 	}
 
+	function attach(el: Window | HTMLElement) {
+		function onDragEnter(dev: DragEvent) {
+			if (disabled) return;
+			if (dev.dataTransfer) {
+				over = true;
+			}
+		}
+		function onDragExit() {
+			over = false;
+		}
+		function onClick() {
+			if (disableClick) return;
+
+			doAskUpload();
+		}
+
+		el.addEventListener('drop', doOnDrop as unknown as EventListener);
+		el.addEventListener('dragenter', onDragEnter as unknown as EventListener);
+		el.addEventListener('dragexit', onDragExit as unknown as EventListener);
+		el.addEventListener('click', onClick);
+
+		return () => {
+			el.removeEventListener('drop', doOnDrop as unknown as EventListener);
+			el.removeEventListener('dragenter', onDragEnter as unknown as EventListener);
+			el.removeEventListener('dragexit', onDragExit as unknown as EventListener);
+			el.removeEventListener('click', onClick);
+		};
+	}
+
+	$effect(() => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		disableClick;
+		const target = targetOverride ?? defaultInp;
+
+		if (target) {
+			return attach(target);
+		}
+	});
+
 	disableWindowDrag();
 </script>
 
@@ -58,22 +110,13 @@
 
 <div
 	role="form"
-	onclick={doAskUpload}
-	ondrop={doOnDrop}
-	ondragenter={(dev) => {
-		if (disabled) return;
-		if (dev.dataTransfer) {
-			over = true;
-		}
-	}}
-	ondragexit={() => {
-		over = false;
-	}}
-	class="cursor-copy {cls}"
-	class:outline-2={over}
-	class:outline-green-700={over}
-	class:text-green-700={over}
+	class={cls}
+	class:cursor-copy={!unstyled}
+	class:outline-2={over && !unstyled}
+	class:outline-green-700={over && !unstyled}
+	class:text-green-700={over && !unstyled}
 	title="Drag a file over to upload"
+	bind:this={defaultInp}
 >
 	{@render children?.()}
 </div>

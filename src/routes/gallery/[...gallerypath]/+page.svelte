@@ -19,7 +19,7 @@
 </script>
 
 <script lang="ts">
-	import AddImageButton from '$lib/AddImageButton.svelte';
+	import AddImageButton, { addImageOnDrop, type PieceData } from '$lib/AddImageButton.svelte';
 	import Collapsable from '$lib/Collapsable.svelte';
 	import { getEpoch } from '$lib/epoch.svelte.js';
 	import ArtistEdit from '$lib/form/ArtistEdit.svelte';
@@ -58,6 +58,7 @@
 	import ChippedInput from '$lib/form/chipped/ChippedInput.svelte';
 	import Layout from '$lib/Layout.svelte';
 	import { FunnelIcon, SaveIcon, TrashIcon } from '@lucide/svelte';
+	import Droppable from '$lib/form/Droppable.svelte';
 
 	const { data } = $props();
 	const rawGallery = $derived(data.galleries[data.galleryPath]);
@@ -66,6 +67,7 @@
 
 	let filters: (ResourceRef & { negated: boolean })[] = $state([]);
 	let searchMode: 'some' | 'every' = $state('every');
+	let draggingOver = $state(false);
 
 	const sorted: (readonly [BaseArtPiece, number])[] = $derived(
 		g && isBaseGallery(g)
@@ -258,6 +260,10 @@
 		limit += 9;
 	}
 
+	const existingIdentifiers = $derived(
+		isBaseGallery(g) ? (g?.pieces?.map((p) => p.slug) ?? []) : []
+	);
+
 	onMount(() => {
 		const f = (ev: KeyboardEvent) => {
 			shiftDown = ev.shiftKey;
@@ -322,6 +328,17 @@
 		$state(null);
 
 	let copyPath = $state('');
+
+	const onUploadImage = (additionalPieces: PieceData[]) => {
+		if (!isBaseGallery(g)) return;
+
+		for (const piece of additionalPieces) {
+			overrides.setFromNew({ gallery: data.galleryPath, piece: piece.piece.slug }, piece.file);
+		}
+		g.pieces = [...g.pieces, ...additionalPieces.map((p) => p.piece)];
+
+		save();
+	};
 
 	const filterable: Record<string, ResourceRef> = $derived.by(() => {
 		const artistRefs: ResourceRef[] = normalizeArtist(
@@ -429,21 +446,9 @@
 						<AddImageButton
 							title="Drag (or paste) an image to add it"
 							defaultArtist={data.config?.defaultArtist ?? null}
-							existingIdentifiers={isBaseGallery(g) ? (g?.pieces?.map((p) => p.slug) ?? []) : []}
+							{existingIdentifiers}
 							galleryPath={{ gallery: data.galleryPath, piece: '' }}
-							onUpload={(additionalPieces) => {
-								if (!isBaseGallery(g)) return;
-
-								for (const piece of additionalPieces) {
-									overrides.setFromNew(
-										{ gallery: data.galleryPath, piece: piece.piece.slug },
-										piece.file
-									);
-								}
-								g.pieces = [...g.pieces, ...additionalPieces.map((p) => p.piece)];
-
-								save();
-							}}
+							onUpload={onUploadImage}
 						/>
 					{/if}
 				</div>
@@ -479,6 +484,30 @@
 				</div>
 			</div>
 		</div>
+
+		<Droppable
+			targetOverride={typeof window === 'undefined' ? undefined : window}
+			disableClick
+			unstyled
+			class="pointer-events-none absolute top-0 right-0 bottom-0 left-0 z-10 p-8 "
+			bind:over={draggingOver}
+			onDrop={(files) =>
+				addImageOnDrop(
+					files,
+					onUploadImage,
+					existingIdentifiers,
+					{ gallery: data.galleryPath, piece: '' },
+					data.config?.defaultArtist ?? null
+				)}
+		>
+			{#if draggingOver}
+				<div
+					class="pointer-events-none flex h-full w-full items-center justify-center rounded-4xl border-4 border-dashed border-success-500 bg-[#0005] text-4xl"
+				>
+					Drop image to upload it
+				</div>
+			{/if}
+		</Droppable>
 
 		<div
 			class="grid grid-cols-1 items-stretch justify-stretch md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"

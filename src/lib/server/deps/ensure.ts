@@ -5,8 +5,13 @@ export async function ensureNode(): Promise<string> {
 }
 
 export async function ensurePnpm(): Promise<string> {
+	let executable = 'pnpm';
+	if (process.platform === 'win32') {
+		executable = 'pnpm.cmd';
+	}
+
 	try {
-		return await ensure('pnpm');
+		return await ensure(executable);
 	} catch (e) {
 		throw new Error(
 			`Failed to find pnpm. Please make sure it's installed on your computer. Error: ${e}`

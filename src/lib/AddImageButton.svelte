@@ -1,38 +1,18 @@
-<script lang="ts">
-	import type { BaseArtPiece } from '@phosart/common/util';
-	import { createNewPiece } from './galleryutil';
-	import { disableWindowDrag } from './dragutil.svelte';
-	import { uploadImage, type UploadPath } from './util';
-	import Droppable from './form/Droppable.svelte';
-
-	interface PieceData {
+<script lang="ts" module>
+	export interface PieceData {
 		file: File;
 		piece: BaseArtPiece;
 	}
 
-	interface Props {
-		existingIdentifiers: Array<string>;
-		galleryPath: UploadPath;
-		onUpload: (pieces: PieceData[]) => void;
-
-		title?: string;
-		class?: string;
-		defaultArtist?: string | null;
-	}
-
-	const {
-		existingIdentifiers,
-		galleryPath,
-		onUpload,
-		title,
-		class: cls,
-		defaultArtist
-	}: Props = $props();
-
 	let numLoading = $state(0);
-	let over = $state(false);
 
-	async function onDrop(files: File[]): Promise<void> {
+	export async function addImageOnDrop(
+		files: File[],
+		onUpload: (pieces: PieceData[]) => void,
+		existingIdentifiers: Array<string>,
+		galleryPath: UploadPath,
+		defaultArtist?: string | null
+	): Promise<void> {
 		numLoading++;
 		let extra = existingIdentifiers.length;
 		const promises: Array<Promise<PieceData | null>> = [];
@@ -59,9 +39,45 @@
 			onUpload((await Promise.all(promises)).filter((v): v is PieceData => !!v));
 		} finally {
 			numLoading--;
+		}
+	}
+</script>
+
+<script lang="ts">
+	import type { BaseArtPiece } from '@phosart/common/util';
+	import { createNewPiece } from './galleryutil';
+	import { disableWindowDrag } from './dragutil.svelte';
+	import { uploadImage, type UploadPath } from './util';
+	import Droppable from './form/Droppable.svelte';
+
+	interface Props {
+		existingIdentifiers: Array<string>;
+		galleryPath: UploadPath;
+		onUpload: (pieces: PieceData[]) => void;
+
+		title?: string;
+		class?: string;
+		defaultArtist?: string | null;
+	}
+
+	const {
+		existingIdentifiers,
+		galleryPath,
+		onUpload,
+		title,
+		class: cls,
+		defaultArtist
+	}: Props = $props();
+
+	async function onDrop(files: File[]) {
+		try {
+			await addImageOnDrop(files, onUpload, existingIdentifiers, galleryPath, defaultArtist);
+		} finally {
 			over = false;
 		}
 	}
+
+	let over = $state(false);
 
 	disableWindowDrag();
 </script>
