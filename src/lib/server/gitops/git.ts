@@ -63,8 +63,13 @@ export async function commit(message: string): Promise<CommitResult> {
 export async function push(): Promise<PushResult> {
 	await ensureGitRepo();
 
+	const curBranch = (await status()).current;
+	if (curBranch === 'HEAD' || !curBranch) {
+		throw new Error('Cannot push with a detached HEAD');
+	}
+
 	try {
-		return (await rootedGit()).push();
+		return (await rootedGit()).push('origin', curBranch, ['--set-upstream']);
 	} catch (error) {
 		throw new Error('Git push failed: ' + error);
 	}

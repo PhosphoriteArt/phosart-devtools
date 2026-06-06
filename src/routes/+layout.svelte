@@ -91,6 +91,8 @@
 	let isOnboardingZip = $state(false);
 	let newOrigin = $state('');
 
+	let newGitOrigin = $state('');
+
 	let isOnboarding = $state(false);
 	let onboardSelection = $state('automatic');
 	$effect(() => {
@@ -635,16 +637,12 @@
 				{#snippet gitPush(small: boolean, close?: () => void)}
 					<ActionButton
 						placement="right"
-						tooltip={(gitStatus?.ahead ?? 0) == 0 && (gitStatus?.behind ?? 0) == 0
-							? 'Nothing to push'
-							: (gitStatus?.conflicted.length ?? 0) > 0
-								? 'Conflicts present'
-								: gitStatus?.current === 'HEAD'
-									? 'Detached head'
-									: ''}
-						disabled={((gitStatus?.ahead ?? 0) == 0 && (gitStatus?.behind ?? 0) == 0) ||
-							(gitStatus?.conflicted.length ?? 0) > 0 ||
-							gitStatus?.current === 'HEAD'}
+						tooltip={(gitStatus?.conflicted.length ?? 0) > 0
+							? 'Conflicts present'
+							: gitStatus?.current === 'HEAD'
+								? 'Detached head'
+								: ''}
+						disabled={(gitStatus?.conflicted.length ?? 0) > 0 || gitStatus?.current === 'HEAD'}
 						class="bg-gray-950 {small ? 'btn-sm' : ''} text-white"
 						action={async () => {
 							await runDeploy([
@@ -658,16 +656,12 @@
 											}
 										]
 									: []),
-								...((gitStatus?.ahead ?? 0) > 0
-									? [
-											{
-												step: 'git push',
-												run: async () => {
-													await fetchEnsureSuccess(resolve('/api/git/push'), { method: 'POST' });
-												}
-											}
-										]
-									: []),
+								{
+									step: 'git push',
+									run: async () => {
+										await fetchEnsureSuccess(resolve('/api/git/push'), { method: 'POST' });
+									}
+								},
 								{
 									step: 'Update Status',
 									run: async () => {
@@ -823,6 +817,72 @@
 							{@render deployCf(false, close)}
 							{@render gitPush(false, close)}
 							{@render dlZip(false, close)}
+							<Modal
+								title="Advanced options"
+								class="my-2 btn place-self-center preset-outlined-surface-600-400 btn-sm"
+							>
+								{#snippet children(close)}
+									<div class="flex flex-col gap-3 p-3">
+										<ActionButton
+											unstyled
+											class="btn preset-outlined-surface-600-400"
+											action={async () => {
+												await fetch(resolve('/api/deploy/config'), {
+													body: JSON.stringify({
+														last_used: 'ZIP',
+														cloudflare_project_name: '_clear',
+														zip_origin: '_clear'
+													} satisfies DeploySettings),
+													headers: { 'Content-Type': 'application/json' },
+													method: 'PUT'
+												});
+												await invalidateAll();
+												close();
+											}}
+										>
+											Clear deployment settings
+										</ActionButton>
+										<Modal
+											title="Set Git Origin"
+											class="btn preset-outlined-surface-600-400"
+											onClose={() => {
+												newGitOrigin = '';
+											}}
+										>
+											{#snippet children(closeOrigin)}
+												<div class="flex flex-col items-stretch p-4 pt-2">
+													<div>
+														<div>Current origins:</div>
+														<ol class="ml-3 list-disc">
+															{#each data.gitRemotes as remote (JSON.stringify(remote))}
+																<li>{remote.name} {remote.target} ({remote.role})</li>
+															{/each}
+														</ol>
+													</div>
+													<TextInput label="Origin URL" bind:value={newGitOrigin} />
+													<ActionButton
+														disabled={!newGitOrigin}
+														unstyled
+														class="btn preset-tonal-primary"
+														action={async () => {
+															await fetch(resolve('/api/git/remotes'), {
+																method: 'PUT',
+																body: JSON.stringify({
+																	url: newGitOrigin
+																})
+															});
+															closeOrigin();
+															close();
+														}}
+													>
+														Set
+													</ActionButton>
+												</div>
+											{/snippet}
+										</Modal>
+									</div>
+								{/snippet}
+							</Modal>
 						</div>
 					{/snippet}
 				</Modal>

@@ -5,6 +5,7 @@ import { createLogger } from '$lib/log';
 import { psk } from '$lib/psk';
 import { ensureGit } from '$lib/server/deps/ensure';
 import { readDeploySettings } from './api/deploy/config/util';
+import { remotes } from '$lib/server/gitops/git';
 const logger = createLogger();
 
 export const prerender = false;
@@ -22,7 +23,8 @@ export const load: LayoutServerLoad = async () => {
 		gitAvailable: await isGitAvailable(),
 		platform: process.platform,
 		deploySettings: await readDeploySettings(),
-		shouldOnboard: Object.values(await rawGalleries()).length === 0
+		shouldOnboard: Object.values(await rawGalleries()).length === 0,
+		gitRemotes: await remotes()
 	};
 };
 

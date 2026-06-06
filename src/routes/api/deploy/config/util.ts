@@ -34,6 +34,9 @@ export async function writeDeploySettings(ds: DeploySettings): Promise<void> {
 			ds.zip_origin = 'https://' + ds.zip_origin;
 			ds.zip_origin = ds.zip_origin.replace(/\/+$/g, '');
 		}
+		if (ds.cloudflare_project_name === '_clear') {
+			delete ds.cloudflare_project_name;
+		}
 		await writeFile(join($ART(), 'deployment.json'), JSON.stringify(ds), {
 			encoding: 'utf-8'
 		});
