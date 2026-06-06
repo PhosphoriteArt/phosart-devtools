@@ -637,12 +637,16 @@
 				{#snippet gitPush(small: boolean, close?: () => void)}
 					<ActionButton
 						placement="right"
-						tooltip={(gitStatus?.conflicted.length ?? 0) > 0
-							? 'Conflicts present'
-							: gitStatus?.current === 'HEAD'
-								? 'Detached head'
-								: ''}
-						disabled={(gitStatus?.conflicted.length ?? 0) > 0 || gitStatus?.current === 'HEAD'}
+						tooltip={data.gitRemotes.length === 0
+							? 'No origin configured'
+							: (gitStatus?.conflicted.length ?? 0) > 0
+								? 'Conflicts present'
+								: gitStatus?.current === 'HEAD'
+									? 'Detached head'
+									: ''}
+						disabled={data.gitRemotes.length === 0 ||
+							(gitStatus?.conflicted.length ?? 0) > 0 ||
+							gitStatus?.current === 'HEAD'}
 						class="bg-gray-950 {small ? 'btn-sm' : ''} text-white"
 						action={async () => {
 							await runDeploy([
