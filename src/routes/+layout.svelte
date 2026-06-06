@@ -45,7 +45,7 @@
 	import NavLink from '$lib/nav/NavLink.svelte';
 	import { createSharedEpoch } from '$lib/epoch.svelte';
 	import { createSharedGalleryOverrides } from '$lib/galleryoverride.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import Tooltip from '$lib/Tooltip.svelte';
 	import type { LogObj } from '$lib/log';
 	import LogLine, { logAsArray } from '$lib/log/LogLine.svelte';
@@ -67,6 +67,9 @@
 		EllipsisIcon,
 		EyeIcon,
 		HourglassIcon,
+		LaptopMinimalCheck,
+		Moon,
+		Sun,
 		TimerIcon,
 		WrenchIcon
 	} from '@lucide/svelte';
@@ -117,6 +120,28 @@
 
 		runCloudflareOnboard = true;
 	}
+
+	let themeMode = $state<string | null>(null);
+	$effect(() => {
+		untrack(() => {
+			themeMode = window.localStorage.getItem('theme-preference') ?? 'system';
+		});
+	});
+
+	$effect(() => {
+		if (themeMode) {
+			window.localStorage.setItem('theme-preference', themeMode);
+			if (themeMode === 'system') {
+				document.querySelector('html')!.dataset['mode'] = window.matchMedia(
+					'(prefers-color-scheme: dark)'
+				).matches
+					? 'dark'
+					: 'light';
+			} else {
+				document.querySelector('html')!.dataset['mode'] = themeMode;
+			}
+		}
+	});
 
 	const isServerDoingWork = $derived.by(() => {
 		const lastLog = logs[logs.length - 1] ?? null;
@@ -755,32 +780,63 @@
 
 		<div class="grow"></div>
 
-		<Tooltip tooltip="Reload / Regenerate">
-			{#snippet children(attach)}
-				<div {@attach attach}>
-					{#snippet loadingContent()}
-						<i
-							class="fa-solid fa-arrow-rotate-right animate-[spin_300ms_linear_infinite] text-primary-contrast-500"
-						></i>
-					{/snippet}
-					<ActionButton
-						action={async () => {
-							await fetch(resolve('/api/reload'), { method: 'POST' });
-							await invalidateAll();
-						}}
-						{loadingContent}
-						class="btn-icon preset-filled-surface-700-300"
-					>
-						{#if isServerImageProcessing}
-							{@render loadingContent()}
-						{:else}
-							<i class="fa-solid fa-arrow-rotate-right text-primary-contrast-50"></i>
-						{/if}
-					</ActionButton>
-				</div>
-			{/snippet}
-		</Tooltip>
+		<div class="flex flex-row-reverse items-center gap-2">
+			<Tooltip tooltip="Reload / Regenerate">
+				{#snippet children(attach)}
+					<div {@attach attach}>
+						{#snippet loadingContent()}
+							<i
+								class="fa-solid fa-arrow-rotate-right animate-[spin_300ms_linear_infinite] text-primary-contrast-500"
+							></i>
+						{/snippet}
+						<ActionButton
+							action={async () => {
+								await fetch(resolve('/api/reload'), { method: 'POST' });
+								await invalidateAll();
+							}}
+							{loadingContent}
+							class="btn-icon preset-filled-surface-700-300"
+						>
+							{#if isServerImageProcessing}
+								{@render loadingContent()}
+							{:else}
+								<i class="fa-solid fa-arrow-rotate-right text-primary-contrast-50"></i>
+							{/if}
+						</ActionButton>
+					</div>
+				{/snippet}
+			</Tooltip>
 
+			<div class="btn-group flex items-center preset-outlined-surface-600-400 p-1 text-xs">
+				<button
+					onclick={() => {
+						themeMode = 'system';
+					}}
+					class="btn-icon btn btn-icon-sm"
+					class:preset-tonal-surface={themeMode === 'system'}
+				>
+					<LaptopMinimalCheck />
+				</button>
+				<button
+					onclick={() => {
+						themeMode = 'dark';
+					}}
+					class="btn-icon btn btn-icon-sm"
+					class:preset-tonal-surface={themeMode === 'dark'}
+				>
+					<Moon />
+				</button>
+				<button
+					onclick={() => {
+						themeMode = 'light';
+					}}
+					class="btn-icon btn btn-icon-sm"
+					class:preset-tonal-surface={themeMode === 'light'}
+				>
+					<Sun />
+				</button>
+			</div>
+		</div>
 		<div class="text-xs text-surface-700-300">© phosphoriteart {new Date().getFullYear()}</div>
 	</div>
 	<div class="transition-all" style="min-width: {sidebarOpen.open ? '200px' : '0px'};"></div>
