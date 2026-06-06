@@ -103,20 +103,20 @@
 						open = !open;
 					}
 				}}
-				class="btn btn-sm {cls || 'preset-outlined'}"
+				class="btn {cls || 'preset-outlined btn-sm'}"
 			>
 				{#if typeof icon === 'string'}
 					{icon}
 				{:else}
 					{@render icon?.()}
 				{/if}
-				<div>
-					{#if buttonContent}
-						{@render buttonContent()}
-					{:else}
+				{#if buttonContent}
+					{@render buttonContent()}
+				{:else}
+					<div>
 						{title}
-					{/if}
-				</div>
+					</div>
+				{/if}
 			</button>
 		{/snippet}
 	</Tooltip>

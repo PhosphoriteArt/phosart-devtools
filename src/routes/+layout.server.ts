@@ -18,7 +18,8 @@ export const load: LayoutServerLoad = async () => {
 		previewPort: getPreviewPort(),
 		bskyAvailable: isBlueskyAvailable(),
 		psk: psk,
-		gitAvailable: await isGitAvailable()
+		gitAvailable: await isGitAvailable(),
+		platform: process.platform
 	};
 };
 

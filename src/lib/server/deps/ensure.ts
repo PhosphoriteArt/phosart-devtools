@@ -5,13 +5,21 @@ export async function ensureNode(): Promise<string> {
 }
 
 export async function ensurePnpm(): Promise<string> {
-	return await ensure('pnpm');
+	try {
+		return await ensure('pnpm');
+	} catch (e) {
+		throw new Error(
+			`Failed to find pnpm. Please make sure it's installed on your computer. Error: ${e}`
+		);
+	}
 }
 
 export async function ensureGit(): Promise<string> {
-	return await ensure('git');
-}
-
-export async function ensureWrangler(): Promise<string> {
-	return await ensure('wrangler');
+	try {
+		return await ensure('git');
+	} catch (e) {
+		throw new Error(
+			`Failed to find git. Please make sure it's installed on your computer. Error: ${e}`
+		);
+	}
 }

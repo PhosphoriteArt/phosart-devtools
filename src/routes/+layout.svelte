@@ -66,7 +66,8 @@
 		EllipsisIcon,
 		EyeIcon,
 		HourglassIcon,
-		TimerIcon
+		TimerIcon,
+		WrenchIcon
 	} from '@lucide/svelte';
 	import TextInput from '$lib/form/TextInput.svelte';
 	import Modal from '$lib/Modal.svelte';
@@ -122,6 +123,7 @@
 		run: (updateDetails: (details: string) => void) => Promise<void>;
 	}>;
 
+	let deployTitle = $state<string | null>(null);
 	let deployStatus = $state<DeployStatus | null>(null);
 
 	async function fetchEnsureSuccess(...args: Parameters<typeof fetch>): ReturnType<typeof fetch> {
@@ -144,7 +146,8 @@
 		return ret;
 	}
 
-	async function runDeploy(steps: DeploySteps): Promise<void> {
+	async function runDeploy(steps: DeploySteps, title: string | null = null): Promise<void> {
+		deployTitle = title;
 		let status: DeployStatus = steps.map((s) => ({
 			step: s.step,
 			status: 'waiting',
@@ -418,7 +421,7 @@
 							title="Changes"
 							tooltip={gitTooltip}
 							placement="right"
-							class="preset-outlined-surface-600-400"
+							class="preset-outlined-surface-600-400 btn-sm"
 						>
 							{#snippet buttonContent()}
 								<div class="flex items-center justify-center gap-2">
@@ -485,8 +488,79 @@
 						<div class="text-center text-xs italic">No changes</div>
 					{/if}
 				{/if}
-				<div class="mt-4 mb-2 w-full border-b border-b-surface-600-400"></div>
+			{:else}
+				<div class="flex items-center justify-center text-center italic">
+					<div>Git Unavailable</div>
+					<Modal
+						title="Install Git"
+						class="ml-2 btn-icon btn btn-icon-sm preset-outlined-surface-600-400"
+					>
+						{#snippet buttonContent()}
+							<WrenchIcon size={12} />
+						{/snippet}
+						<div class="max-w-lg min-w-sm p-8 xl:max-w-xl xl:min-w-xl">
+							<h2 class="h4">Looks like we can't find Git on your system.</h2>
+							<p>
+								<tt>git</tt> is required to use checkpoints or deploy to certain website hosts that require
+								it.
+							</p>
+							{#if data.platform === 'darwin'}
+								<p>On MacOS, the easiest way to get it is through the XCode Command Line Tools.</p>
+								<p>
+									You can view Apple's <a
+										href="https://developer.apple.com/documentation/xcode/installing-the-command-line-tools/"
+										rel="noreferrer noopener"
+										target="_blank"
+										class="underline"
+									>
+										Documentation
+									</a>
+									on this, or <ActionButton
+										action={async () => {
+											await runDeploy(
+												[
+													{
+														step: 'Request XCode Command Line Tool installation',
+														run: async () => {
+															await fetchEnsureSuccess(resolve('/api/deps/install-xcode-tools'), {
+																method: 'POST'
+															});
+														}
+													}
+												],
+												'Triggering installation...'
+											);
+										}}>click here</ActionButton
+									> to automatically trigger installation (you'll see a pop-up asking you to install it)
+								</p>
+							{:else if data.platform === 'win32'}
+								<p>
+									On Windows, you can download an installer from
+									<a
+										href="https://git-scm.com/install/windows"
+										rel="noreferrer noopener"
+										target="_blank"
+										class="underline"
+									>
+										git's website
+									</a>
+									and install it directly. Make sure you check the option to make
+									<strong><tt>git</tt> utilities</strong> available in your system PATH; it should be
+									selected by default.
+								</p>
+							{:else}
+								<p>
+									On Linux, you should be able to easily acquire <tt>git</tt> via your system package
+									manager.
+								</p>
+							{/if}
+							<p>When complete, you'll need to restart the editor.</p>
+						</div>
+					</Modal>
+				</div>
 			{/if}
+			<div class="mt-4 mb-2 w-full border-b border-b-surface-600-400"></div>
+
 			<div class="mb-2 flex items-center justify-center gap-2 font-light">
 				<span>Deployment</span>
 				<Tooltip>
@@ -705,7 +779,7 @@
 	{/if}
 {/if}
 
-<Modal headless open={deployStatus !== null} title="Deploying..." captive>
+<Modal headless open={deployStatus !== null} title={deployTitle ?? 'Deploying...'} captive>
 	{#if deployStatus}
 		{@const complete = deployStatus.every((s) => s.status !== 'working')}
 		<Spinner loading={!complete} />
