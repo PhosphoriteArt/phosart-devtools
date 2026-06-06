@@ -9,23 +9,24 @@ const execProm = promisify(execFile);
 export const POST: RequestHandler = async () => {
 	const rt = $ROOT() + '/..';
 
+	let pnpmPath: string;
 	try {
-		await ensurePnpm();
+		pnpmPath = await ensurePnpm();
 	} catch (err) {
 		return json(
 			{
-				error: String(err)
+				message: String(err)
 			},
 			{ status: 500 }
 		);
 	}
 	try {
-		await execProm('pnpm', ['run', 'build'], {
+		await execProm(pnpmPath, ['run', 'build'], {
 			cwd: rt,
 			env: { ...process.env, FORCE_STATIC: 'true' }
 		});
 	} catch (err) {
-		return json({ error: String(err) }, { status: 500 });
+		return json({ message: String(err) }, { status: 500 });
 	}
 
 	return json({

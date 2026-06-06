@@ -2,15 +2,28 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { artroot } from '../util';
+import { ensurePnpm } from '$lib/server/deps/ensure';
 
 const execProm = promisify(execFile);
 
 export const GET: RequestHandler = async () => {
+	let pnpmPath: string;
+	try {
+		pnpmPath = await ensurePnpm();
+	} catch (err) {
+		return json(
+			{
+				message: String(err)
+			},
+			{ status: 500 }
+		);
+	}
+
 	try {
 		return json(
 			JSON.parse(
 				(
-					await execProm('pnpm', ['dlx', 'wrangler', 'pages', 'project', 'list', '--json'], {
+					await execProm(pnpmPath, ['dlx', 'wrangler', 'pages', 'project', 'list', '--json'], {
 						cwd: artroot()
 					})
 				).stdout
@@ -37,11 +50,24 @@ export const POST: RequestHandler = async ({ request }) => {
 			{ status: 400 }
 		);
 	}
+
+	let pnpmPath: string;
+	try {
+		pnpmPath = await ensurePnpm();
+	} catch (err) {
+		return json(
+			{
+				message: String(err)
+			},
+			{ status: 500 }
+		);
+	}
+
 	try {
 		return json({
 			out: (
 				await execProm(
-					'pnpm',
+					pnpmPath,
 					[
 						'dlx',
 						'wrangler',
