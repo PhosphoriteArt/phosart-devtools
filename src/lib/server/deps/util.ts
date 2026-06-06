@@ -14,7 +14,7 @@ export async function ensure(command: string): Promise<string> {
 	if (!path) {
 		throw new Error(`Invalid path ${path} returned`);
 	}
-	return path;
+	return path.trim();
 }
 
 export async function tryInstallXcodeTools(): Promise<string> {
