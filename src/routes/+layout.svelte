@@ -73,6 +73,7 @@
 	import Modal from '$lib/Modal.svelte';
 	import { Spinner } from '@phosart/common';
 	import TextBox from '$lib/form/TextBox.svelte';
+	import type { DeploySettings } from './api/deploy/config/util';
 
 	let { children, data } = $props();
 
@@ -563,16 +564,6 @@
 
 			<div class="mb-2 flex items-center justify-center gap-2 font-light">
 				<span>Deployment</span>
-				<Tooltip>
-					{#snippet tooltip()}
-						<div class="max-w-64">
-							<p>Get your site live!</p>
-						</div>
-					{/snippet}
-					{#snippet children(attach)}
-						<CircleQuestionMarkIcon size={16} {@attach attach} />
-					{/snippet}
-				</Tooltip>
 			</div>
 			<div class="flex items-center justify-around">
 				{#snippet gitPush(close?: () => void)}
@@ -608,6 +599,14 @@
 									step: 'Update Status',
 									run: async () => {
 										gitStatus = await fetchStatus();
+										await fetch(resolve('/api/deploy/config'), {
+											body: JSON.stringify({
+												...data.deploySettings,
+												last_used: 'Git'
+											} satisfies DeploySettings),
+											method: 'PUT'
+										});
+										await invalidateAll();
 									}
 								}
 							]);
@@ -644,6 +643,19 @@
 										a.click();
 										a.remove();
 									}
+								},
+								{
+									step: 'Update Status',
+									run: async () => {
+										await fetch(resolve('/api/deploy/config'), {
+											body: JSON.stringify({
+												...data.deploySettings,
+												last_used: 'ZIP'
+											} satisfies DeploySettings),
+											method: 'PUT'
+										});
+										await invalidateAll();
+									}
 								}
 							]);
 							close?.();
@@ -653,7 +665,7 @@
 						Site ZIP
 					</ActionButton>
 				{/snippet}
-				{#if data.gitAvailable}
+				{#if (!data.deploySettings.last_used && data.gitAvailable) || data.deploySettings.last_used === 'Git'}
 					{@render gitPush()}
 				{:else}
 					{@render dlZip()}

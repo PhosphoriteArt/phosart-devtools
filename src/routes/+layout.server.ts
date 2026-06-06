@@ -4,6 +4,7 @@ import { normalizeGalleryPath } from '$lib/galleryutil';
 import { createLogger } from '$lib/log';
 import { psk } from '$lib/psk';
 import { ensureGit } from '$lib/server/deps/ensure';
+import { readDeploySettings } from './api/deploy/config/util';
 const logger = createLogger();
 
 export const prerender = false;
@@ -19,7 +20,8 @@ export const load: LayoutServerLoad = async () => {
 		bskyAvailable: isBlueskyAvailable(),
 		psk: psk,
 		gitAvailable: await isGitAvailable(),
-		platform: process.platform
+		platform: process.platform,
+		deploySettings: await readDeploySettings()
 	};
 };
 
