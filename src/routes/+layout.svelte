@@ -1287,9 +1287,12 @@
 						if (onboardSelection === 'manual') {
 							window.localStorage.setItem('prefers-multigallery', 'true');
 						} else {
+							await fetch(resolve('/api/folder/[...folderpath]', { folderpath: 'art' }), {
+								method: 'PATCH'
+							});
 							await fetch(
 								resolve('/api/gallery/[...gallerypath]/save', {
-									gallerypath: 'main.gallery'
+									gallerypath: 'art/art.gallery'
 								}),
 								{
 									method: 'POST',
