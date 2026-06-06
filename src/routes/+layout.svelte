@@ -59,6 +59,7 @@
 	import ActionButton from '$lib/ActionButton.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import {
+		CircleAlertIcon,
 		CircleCheck,
 		CircleQuestionMarkIcon,
 		CircleX,
@@ -94,6 +95,28 @@
 	let isHoveringStatusBar = $state(false);
 	let isServerImageProcessing = $state(false);
 	let gitStatus: StatusResult | null = $state(null);
+	let runCloudflareOnboard = $state(false);
+	let isCloudflareLoggedIn = $state<Promise<boolean> | null>(null);
+	interface CloudflareProject {
+		'Project Name': string;
+		'Project Domains': string;
+		'Git Provider': string;
+		'Last Modified': string;
+	}
+	let cfProjects = $state<Promise<CloudflareProject[]> | null>();
+	let newProjectName = $state('');
+	let createProjectError = $state('');
+
+	async function setupCloudflareOnboard() {
+		isCloudflareLoggedIn = fetch(resolve('/api/deploy/cloudflare/whoami')).then((res) => {
+			return res.status === 200;
+		});
+		cfProjects = fetch(resolve('/api/deploy/cloudflare/projects')).then((res) => {
+			return res.json();
+		});
+
+		runCloudflareOnboard = true;
+	}
 
 	const isServerDoingWork = $derived.by(() => {
 		const lastLog = logs[logs.length - 1] ?? null;
@@ -572,7 +595,7 @@
 							(gitStatus?.conflicted.length ?? 0) > 0 ||
 							gitStatus?.tracking === null ||
 							gitStatus?.current === 'HEAD'}
-						class="bg-gray-950 text-white"
+						class="bg-gray-950 btn-sm text-white"
 						action={async () => {
 							await runDeploy([
 								...((gitStatus?.behind ?? 0) > 0
@@ -604,6 +627,7 @@
 												...data.deploySettings,
 												last_used: 'Git'
 											} satisfies DeploySettings),
+											headers: { 'Content-Type': 'application/json' },
 											method: 'PUT'
 										});
 										await invalidateAll();
@@ -619,7 +643,7 @@
 				{/snippet}
 				{#snippet dlZip(close?: () => void)}
 					<ActionButton
-						class="preset-tonal-primary"
+						class="preset-tonal-primary btn-sm"
 						action={async () => {
 							await runDeploy([
 								{
@@ -652,6 +676,7 @@
 												...data.deploySettings,
 												last_used: 'ZIP'
 											} satisfies DeploySettings),
+											headers: { 'Content-Type': 'application/json' },
 											method: 'PUT'
 										});
 										await invalidateAll();
@@ -665,8 +690,51 @@
 						Site ZIP
 					</ActionButton>
 				{/snippet}
+				{#snippet deployCf(close?: () => void)}
+					<ActionButton
+						class="bg-orange-800 btn-sm text-white"
+						action={async () => {
+							if (!data.deploySettings.cloudflare_project_name) {
+								setupCloudflareOnboard();
+							} else {
+								await runDeploy([
+									{
+										step: 'Ensure Logged In',
+										run: async () => {
+											const res = await fetch(resolve('/api/deploy/cloudflare/whoami'));
+											if (res.status === 403) {
+												setupCloudflareOnboard();
+												throw new Error('CloudFlare is not currently logged in');
+											}
+										}
+									},
+									{
+										step: 'Build project',
+										run: async () => {
+											await fetchEnsureSuccess(resolve('/api/deploy/build'), { method: 'POST' });
+										}
+									},
+									{
+										step: 'Deploy project',
+										run: async () => {
+											await fetchEnsureSuccess(resolve('/api/deploy/cloudflare/deploy'), {
+												method: 'POST'
+											});
+										}
+									}
+								]);
+								close?.();
+							}
+						}}
+					>
+						<i class="fa-brands fa-cloudflare"></i>
+						CloudFlare
+					</ActionButton>
+				{/snippet}
 				{#if (!data.deploySettings.last_used && data.gitAvailable) || data.deploySettings.last_used === 'Git'}
 					{@render gitPush()}
+				{:else if data.deploySettings.last_used === 'CloudFlare'}
+					{@render deployCf()}
 				{:else}
 					{@render dlZip()}
 				{/if}
@@ -676,6 +744,7 @@
 					{/snippet}
 					{#snippet children(close)}
 						<div class="flex flex-col items-stretch justify-center">
+							{@render deployCf(close)}
 							{@render gitPush(close)}
 							{@render dlZip(close)}
 						</div>
@@ -834,4 +903,149 @@
 			{/if}
 		</div>
 	{/if}
+</Modal>
+
+<Modal
+	headless
+	open={runCloudflareOnboard}
+	title="Cloudflare Setup"
+	onClose={() => {
+		runCloudflareOnboard = false;
+		newProjectName = '';
+	}}
+>
+	{#snippet children(close)}
+		<div class="min-w-lg p-4">
+			<p>
+				In order to deploy to CloudFlare, we'll need to make sure you're logged in, then select a
+				project to deploy to.
+			</p>
+			<p>
+				By default, your project will be available at <tt>&lt;project-name&gt;.pages.dev</tt>.
+			</p>
+			{#await isCloudflareLoggedIn}
+				<Spinner loading />
+				<div class="my-4 flex items-center gap-2">
+					<HourglassIcon class="animate-pulse" />
+					<div>Loading login status...</div>
+				</div>
+			{:then isLoggedIn}
+				{#if isLoggedIn === false}
+					<div class="my-4 flex items-center gap-2">
+						<div>
+							<CircleAlertIcon class="fill-warning-300-700" />
+						</div>
+						<p>
+							Click <ActionButton
+								class="preset-tonal-warning btn-sm"
+								action={async () => {
+									await fetch(resolve('/api/deploy/cloudflare/whoami'), { method: 'POST' });
+									await setupCloudflareOnboard();
+								}}
+							>
+								here
+							</ActionButton> to log into CloudFlare. A new browser window will open.
+						</p>
+					</div>
+				{:else}
+					<div class="my-4 flex items-center gap-2">
+						<div>
+							<CircleCheck class="fill-success-300-700" />
+						</div>
+						<p>Logged in!</p>
+					</div>
+
+					{#if !data.deploySettings.cloudflare_project_name}
+						<p>You also need to set up a Cloudflare Project to host your website.</p>
+						<div>
+							{#await cfProjects}
+								<Spinner loading />
+								<div class="my-4 flex items-center gap-2">
+									<HourglassIcon class="animate-pulse" />
+									<div>Loading project list...</div>
+								</div>
+							{:then projs}
+								<p>You can use an existing project...</p>
+
+								<ol class="list-disc pl-8">
+									{#each projs as proj (proj['Project Name'])}
+										<li>
+											<ActionButton
+												action={async () => {
+													await fetch(resolve('/api/deploy/config'), {
+														body: JSON.stringify({
+															...data.deploySettings,
+															last_used: 'CloudFlare',
+															cloudflare_project_name: proj['Project Name']
+														} satisfies DeploySettings),
+														headers: { 'Content-Type': 'application/json' },
+														method: 'PUT'
+													});
+													await invalidateAll();
+												}}
+												unstyled
+												class="btn preset-outlined-surface-600-400 btn-sm text-sm"
+											>
+												Use {proj['Project Name']} (@ {proj['Project Domains']})
+											</ActionButton>
+										</li>
+									{/each}
+								</ol>
+
+								<div class="mt-2">or, you can create a new project:</div>
+								<div class="flex items-center">
+									<TextInput label="Project Name" bind:value={newProjectName} />
+									<ActionButton
+										action={async () => {
+											try {
+												await fetchEnsureSuccess(resolve('/api/deploy/cloudflare/projects'), {
+													method: 'POST',
+													body: JSON.stringify({ project_name: newProjectName }),
+													headers: { 'Content-Type': 'application/json' }
+												});
+											} catch (e) {
+												createProjectError = String(e);
+												return;
+											}
+											await fetch(resolve('/api/deploy/config'), {
+												body: JSON.stringify({
+													...data.deploySettings,
+													last_used: 'CloudFlare',
+													cloudflare_project_name: newProjectName
+												} satisfies DeploySettings),
+												headers: { 'Content-Type': 'application/json' },
+												method: 'PUT'
+											});
+											await invalidateAll();
+										}}
+									>
+										Create
+									</ActionButton>
+									{#if createProjectError}
+										<div class="ml-4 text-error-600-400">
+											{createProjectError}
+										</div>
+									{/if}
+								</div>
+							{/await}
+						</div>
+					{:else}
+						<div class="my-4 flex items-center gap-2">
+							<div>
+								<CircleCheck class="fill-success-300-700" />
+							</div>
+							<p>Using project {data.deploySettings.cloudflare_project_name}!</p>
+						</div>
+
+						<ActionButton
+							class="preset-tonal-success"
+							action={async () => {
+								close();
+							}}>Close</ActionButton
+						>
+					{/if}
+				{/if}
+			{/await}
+		</div>
+	{/snippet}
 </Modal>
