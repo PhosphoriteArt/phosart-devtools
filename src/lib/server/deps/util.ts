@@ -6,7 +6,7 @@ const execProm = promisify(execFile);
 export async function ensure(command: string): Promise<string> {
 	let findCmd = 'which';
 	if (process.platform === 'win32') {
-		findCmd = 'where';
+		findCmd = 'where.exe';
 	}
 
 	const out = await execProm(findCmd, [command]);

@@ -3,7 +3,14 @@ import { $ROOT } from '@phosart/common/server';
 import { ensureGit } from '../deps/ensure';
 
 async function rootedGit() {
-	return simpleGit({ baseDir: $ROOT() + '/..', binary: await ensureGit() });
+	return simpleGit({
+		baseDir: $ROOT() + '/..',
+		binary: await ensureGit(),
+
+		// This is OK since the custom binary only comes from which/where
+		// needed to accept paths with spaces...
+		unsafe: { allowUnsafeCustomBinary: true }
+	});
 }
 
 export async function status() {
