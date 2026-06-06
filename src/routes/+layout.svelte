@@ -632,13 +632,13 @@
 				<span>Deployment</span>
 			</div>
 			<div class="flex items-center justify-around">
-				{#snippet gitPush(close?: () => void)}
+				{#snippet gitPush(small: boolean, close?: () => void)}
 					<ActionButton
 						disabled={((gitStatus?.ahead ?? 0) == 0 && (gitStatus?.behind ?? 0) == 0) ||
 							(gitStatus?.conflicted.length ?? 0) > 0 ||
 							gitStatus?.tracking === null ||
 							gitStatus?.current === 'HEAD'}
-						class="bg-gray-950 btn-sm text-white"
+						class="bg-gray-950 {small ? 'btn-sm' : ''} text-white"
 						action={async () => {
 							await runDeploy([
 								...((gitStatus?.behind ?? 0) > 0
@@ -684,9 +684,9 @@
 						Git {(gitStatus?.behind ?? 0) === 0 ? 'Push' : 'Sync'}
 					</ActionButton>
 				{/snippet}
-				{#snippet dlZip(close?: () => void)}
+				{#snippet dlZip(small: boolean, close?: () => void)}
 					<ActionButton
-						class="preset-tonal-primary btn-sm"
+						class="preset-tonal-primary {small ? 'btn-sm' : ''}"
 						action={async () => {
 							if (data.deploySettings.zip_origin === undefined) {
 								isOnboardingZip = true;
@@ -737,9 +737,9 @@
 						Site ZIP
 					</ActionButton>
 				{/snippet}
-				{#snippet deployCf(close?: () => void)}
+				{#snippet deployCf(small: boolean, close?: () => void)}
 					<ActionButton
-						class="bg-orange-800 btn-sm text-white"
+						class="bg-orange-800 {small ? 'btn-sm' : ''} text-white"
 						action={async () => {
 							if (!data.deploySettings.cloudflare_project_name) {
 								setupCloudflareOnboard();
@@ -801,11 +801,11 @@
 					</ActionButton>
 				{/snippet}
 				{#if (!data.deploySettings.last_used && data.gitAvailable) || data.deploySettings.last_used === 'Git'}
-					{@render gitPush()}
+					{@render gitPush(true)}
 				{:else if data.deploySettings.last_used === 'CloudFlare'}
-					{@render deployCf()}
+					{@render deployCf(true)}
 				{:else}
-					{@render dlZip()}
+					{@render dlZip(true)}
 				{/if}
 				<Modal title="Other Deployment Options" class="btn-icon preset-outlined">
 					{#snippet buttonContent()}
@@ -813,9 +813,9 @@
 					{/snippet}
 					{#snippet children(close)}
 						<div class="flex flex-col items-stretch justify-center">
-							{@render deployCf(close)}
-							{@render gitPush(close)}
-							{@render dlZip(close)}
+							{@render deployCf(false, close)}
+							{@render gitPush(false, close)}
+							{@render dlZip(false, close)}
 						</div>
 					{/snippet}
 				</Modal>
