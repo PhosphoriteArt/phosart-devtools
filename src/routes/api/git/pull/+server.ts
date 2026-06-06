@@ -7,10 +7,10 @@ const logger = createLogger();
 
 export const POST: RequestHandler = async () => {
 	try {
-		const success = await tryPull();
-		return json({ success, message: 'Git pull completed successfully' });
+		const ok = await tryPull();
+		return json({ ok });
 	} catch (error) {
 		logger.error('Git pull failed:', String(error));
-		return json({ success: false, error: (error as Error).message }, { status: 500 });
+		return json({ message: String(error) }, { status: 500 });
 	}
 };

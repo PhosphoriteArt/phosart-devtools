@@ -9,12 +9,11 @@ export const POST: RequestHandler = async () => {
 	try {
 		const result = await push();
 		return json({
-			success: true,
-			result,
-			message: 'Git push completed successfully'
+			ok: true,
+			result
 		});
 	} catch (error) {
 		logger.error('Git push failed:', String(error));
-		return json({ success: false, error: (error as Error).message }, { status: 500 });
+		return json({ message: String(error) }, { status: 500 });
 	}
 };

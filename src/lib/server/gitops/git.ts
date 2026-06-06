@@ -1,6 +1,7 @@
 import simpleGit, { type CommitResult, type PushResult } from 'simple-git';
 import { $ROOT } from '@phosart/common/server';
 import { ensureGit } from '../deps/ensure';
+import { access } from 'node:fs/promises';
 
 async function rootedGit() {
 	return simpleGit({
@@ -9,11 +10,27 @@ async function rootedGit() {
 	});
 }
 
+async function ensureGitRepo() {
+	try {
+		await access($ROOT() + '/../.git');
+		return true;
+	} catch {
+		try {
+			(await rootedGit()).init(['-b', 'main']);
+		} catch (error) {
+			throw new Error('Git failed to initialize a new repository: ' + String(error));
+		}
+	}
+}
+
 export async function status() {
+	await ensureGitRepo();
 	return await (await rootedGit()).status();
 }
 
 export async function tryPull() {
+	await ensureGitRepo();
+
 	try {
 		await (await rootedGit()).pull(['--rebase']);
 		return true; // Indicate success if no error was thrown
@@ -34,6 +51,8 @@ export async function tryPull() {
 }
 
 export async function commit(message: string): Promise<CommitResult> {
+	await ensureGitRepo();
+
 	try {
 		return (await rootedGit()).add(['-A']).commit(message);
 	} catch (error) {
@@ -42,6 +61,8 @@ export async function commit(message: string): Promise<CommitResult> {
 }
 
 export async function push(): Promise<PushResult> {
+	await ensureGitRepo();
+
 	try {
 		return (await rootedGit()).push();
 	} catch (error) {
@@ -50,9 +71,27 @@ export async function push(): Promise<PushResult> {
 }
 
 export async function remotes() {
-	return (await rootedGit()).remote(['--list']);
+	await ensureGitRepo();
+
+	return String(await (await rootedGit()).remote(['-v']))
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((v) => !!v)
+		.map((line) => {
+			const [name, rest] = line.split('\t');
+			const [target, role] = rest.split(' ');
+			return { name, target, role: role.replace(/^\(/g, '').replace(/\)$/g, '') };
+		});
 }
 
-export async function addRemote(name: string, url: string) {
-	return (await rootedGit()).remote(['add', name, url]);
+export async function setRemote(url: string) {
+	await ensureGitRepo();
+
+	const git = await rootedGit();
+
+	for (const remote of new Set((await remotes()).map((r) => r.name))) {
+		await git.remote(['remove', remote]);
+	}
+
+	return await git.remote(['add', 'origin', url]);
 }

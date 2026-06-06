@@ -12,12 +12,11 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		const result = await commit(message);
 		return json({
-			success: true,
-			result,
-			message: `Commit created: ${result.commit}`
+			ok: true,
+			result
 		});
 	} catch (error) {
 		logger.error('Git commit failed:', String(error));
-		return json({ success: false, error: (error as Error).message }, { status: 500 });
+		return json({ message: String(error) }, { status: 500 });
 	}
 };
