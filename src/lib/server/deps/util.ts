@@ -11,7 +11,7 @@ export async function ensure(command: string): Promise<string> {
 
 	const out = await execProm(findCmd, [command]);
 	const path = out.stdout.split('\n')[0];
-	if (!path || path[0] !== '/') {
+	if (!path) {
 		throw new Error(`Invalid path ${path} returned`);
 	}
 	return path;
