@@ -26,7 +26,12 @@
 	const fpath = $derived.by(usePath);
 
 	$effect(() => {
-		if (data.redirectGallery && browser && window.location.hash !== '#stay') {
+		if (
+			data.redirectGallery &&
+			browser &&
+			window.location.hash !== '#stay' &&
+			!window.localStorage.getItem('prefers-multigallery')
+		) {
 			go(resolve(`/gallery/${data.redirectGallery}`));
 		}
 	});

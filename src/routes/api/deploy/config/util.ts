@@ -19,6 +19,7 @@ export async function readDeploySettings(): Promise<DeploySettings> {
 		return ZDeploySettings.parse(JSON.parse(res));
 	} catch (e) {
 		logger.warn('Could not read deployment file:', e);
+		await writeDeploySettings({});
 		return {};
 	}
 }

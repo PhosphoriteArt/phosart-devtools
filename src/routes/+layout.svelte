@@ -78,6 +78,7 @@
 	import { Spinner } from '@phosart/common';
 	import TextBox from '$lib/form/TextBox.svelte';
 	import type { DeploySettings } from './api/deploy/config/util';
+	import type { RawGallery } from '@phosart/common/util';
 
 	let { children, data } = $props();
 
@@ -85,6 +86,20 @@
 		if (data.psk) {
 			patchFetch(data.psk);
 		}
+	});
+
+	let isOnboarding = $state(false);
+	let onboardSelection = $state('automatic');
+	$effect(() => {
+		untrack(() => {
+			if (window.localStorage.getItem('onboarding-done')) {
+				return;
+			}
+
+			if (data.shouldOnboard) {
+				isOnboarding = true;
+			}
+		});
 	});
 
 	let sidebarOpen = $state({ open: true });
@@ -1102,6 +1117,89 @@
 					{/if}
 				{/if}
 			{/await}
+		</div>
+	{/snippet}
+</Modal>
+
+<Modal headless open={isOnboarding} title="Welcome!">
+	{#snippet children(close)}
+		<div class="min-w-xl p-4">
+			<h4 class="mb-4 h4">Welcome to @phosart/devtool!</h4>
+
+			<p>Choose your preference:</p>
+
+			<form class="flex flex-col space-y-2">
+				<label class="flex items-center space-x-2">
+					<input
+						class="radio"
+						type="radio"
+						checked
+						bind:group={onboardSelection}
+						name="experience"
+						value="automatic"
+					/>
+					<div
+						class="m-2 max-w-md cursor-pointer rounded-2xl border border-surface-600-400 p-2 hover:bg-surface-100-900"
+					>
+						<div class="mb-2 text-xl font-extralight italic">Automatic Categories</div>
+						<div>As you upload your work, you may:</div>
+						<ol class="ml-4 list-disc text-primary-900-100">
+							<li>Organize art by tags</li>
+							<li>Organize art by characters featured</li>
+							<li>Organize art by the creating artists</li>
+						</ol>
+						<div>And we'll automatically take care of creating categories for all of these</div>
+					</div>
+				</label>
+				<label class="flex items-center space-x-2">
+					<input
+						class="radio"
+						type="radio"
+						bind:group={onboardSelection}
+						name="experience"
+						value="manual"
+					/>
+					<div
+						class="m-2 max-w-md cursor-pointer rounded-2xl border border-surface-600-400 p-2 hover:bg-surface-100-900"
+					>
+						<div class="mb-2 text-xl font-extralight italic">Multigallery</div>
+						<div>All of the above, and:</div>
+						<ol class="ml-4 list-disc text-primary-900-100">
+							<li>You can further organize your art into your own Galleries</li>
+							<li>
+								The automatic categorization above will automatically work across all galleries
+							</li>
+						</ol>
+					</div>
+				</label>
+			</form>
+
+			<div class="flex justify-end">
+				<ActionButton
+					class="btn preset-tonal-primary"
+					action={async () => {
+						window.localStorage.setItem('onboarding-done', 'true');
+						if (onboardSelection === 'manual') {
+							window.localStorage.setItem('prefers-multigallery', 'true');
+						} else {
+							await fetch(
+								resolve('/api/gallery/[...gallerypath]/save', {
+									gallerypath: 'main.gallery'
+								}),
+								{
+									method: 'POST',
+									headers: { 'Content-Type': 'application/json' },
+									body: JSON.stringify({ pieces: [] } satisfies RawGallery)
+								}
+							);
+							await invalidateAll();
+						}
+						close();
+					}}
+				>
+					Continue
+				</ActionButton>
+			</div>
 		</div>
 	{/snippet}
 </Modal>

@@ -27,7 +27,7 @@
 
 <nav class="flex w-full justify-center font-light select-none" aria-label="Breadcrumb">
 	<div class="flex flex-wrap items-center gap-2">
-		<a class="hover:underline" href={resolve('/')}>Home</a>
+		<a class="hover:underline" href={resolve('/#stay')}>Home</a>
 		{#if path.length > 0}
 			<span class="opacity-60">/</span>
 		{/if}

@@ -21,7 +21,8 @@ export const load: LayoutServerLoad = async () => {
 		psk: psk,
 		gitAvailable: await isGitAvailable(),
 		platform: process.platform,
-		deploySettings: await readDeploySettings()
+		deploySettings: await readDeploySettings(),
+		shouldOnboard: Object.values(await rawGalleries()).length === 0
 	};
 };
 
