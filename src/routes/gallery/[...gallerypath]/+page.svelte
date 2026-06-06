@@ -534,10 +534,14 @@
 							/>
 						</div>
 						<div
-							class="grid h-6 border-t border-surface-600-400 px-4"
+							class="grid h-6 overflow-hidden border-t border-surface-600-400 px-4"
 							style="grid-template-columns: 75% 25%;"
 						>
-							<div class="place-self-center justify-self-start font-bold">{piece.name}</div>
+							<div
+								class="max-w-3/4 min-w-0 place-self-center justify-self-start overflow-hidden text-xs font-bold text-ellipsis whitespace-nowrap"
+							>
+								{piece.name}
+							</div>
 							<div class="place-self-center justify-self-end text-xs font-extralight">
 								{DateTime.fromJSDate(piece.date).toFormat('D')}
 							</div>
@@ -545,35 +549,37 @@
 						<div class="my-1 flex h-6 items-center px-4">
 							<i class="fa-solid fa-person mr-1"></i>
 							{#each normalizeCharacter(piece.characters, data.allCharacters).slice(0, 3) as ch (ch.name)}
-								<div class="m-1 min-w-0 overflow-hidden rounded-2xl border border-gray-400 px-2">
+								<div
+									class="m-1 min-w-0 overflow-hidden rounded-2xl border border-gray-400 px-2 text-xs"
+								>
 									{ch.name}
 								</div>
 							{/each}
 							{#if normalizeCharacter(piece.characters, data.allCharacters).length > 3}
-								<div>
+								<div class="text-xs">
 									+{normalizeCharacter(piece.characters, data.allCharacters).length - 3}
 								</div>
 							{/if}
 							{#if normalizeCharacter(piece.characters, data.allCharacters).length === 0}
-								<div class="font-extralight italic">None</div>
+								<div class="text-xs font-extralight italic">None</div>
 							{/if}
 						</div>
 						<div class="my-1 flex h-6 items-center px-4">
 							<i class="fa-solid fa-tag mr-1"></i>
 							{#each piece.tags.slice(0, 3) as t (t)}
 								<div
-									class="m-1 min-w-0 overflow-hidden rounded-2xl border border-gray-400 px-2 text-ellipsis whitespace-nowrap"
+									class="m-1 min-w-0 overflow-hidden rounded-2xl border border-gray-400 px-2 text-xs text-ellipsis whitespace-nowrap"
 								>
 									{t}
 								</div>
 							{/each}
 							{#if piece.tags.length > 3}
-								<div>
+								<div class="text-xs">
 									+{piece.tags.length - 3}
 								</div>
 							{/if}
 							{#if piece.tags.length === 0}
-								<div class="font-extralight italic">None</div>
+								<div class="text-xs font-extralight italic">None</div>
 							{/if}
 						</div>
 					</button>
