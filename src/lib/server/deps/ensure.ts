@@ -15,8 +15,12 @@ export async function ensurePnpm(): Promise<string> {
 }
 
 export async function ensureGit(): Promise<string> {
+	let executable = 'git';
+	if (process.platform === 'win32') {
+		executable = 'git.exe';
+	}
 	try {
-		return await ensure('git');
+		return await ensure(executable);
 	} catch (e) {
 		throw new Error(
 			`Failed to find git. Please make sure it's installed on your computer. Error: ${e}`
