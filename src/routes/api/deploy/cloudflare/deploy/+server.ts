@@ -37,7 +37,7 @@ export const POST: RequestHandler = async () => {
 						proj,
 						'--commit-dirty=true'
 					],
-					{ cwd: artroot() }
+					{ cwd: artroot(), shell: process.platform === 'win32' }
 				)
 			).stdout
 		});

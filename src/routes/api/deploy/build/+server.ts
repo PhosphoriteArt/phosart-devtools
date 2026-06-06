@@ -23,7 +23,8 @@ export const POST: RequestHandler = async () => {
 	try {
 		await execProm(pnpmPath, ['run', 'build'], {
 			cwd: rt,
-			env: { ...process.env, FORCE_STATIC: 'true' }
+			env: { ...process.env, FORCE_STATIC: 'true' },
+			shell: process.platform === 'win32'
 		});
 	} catch (err) {
 		return json({ message: String(err) }, { status: 500 });

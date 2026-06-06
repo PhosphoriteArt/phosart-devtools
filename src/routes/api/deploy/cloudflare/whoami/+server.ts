@@ -20,7 +20,12 @@ export const GET: RequestHandler = async () => {
 	}
 	try {
 		const out = JSON.parse(
-			(await execProm(pnpmPath, ['dlx', 'wrangler', 'whoami', '--json'], { cwd: artroot() })).stdout
+			(
+				await execProm(pnpmPath, ['dlx', 'wrangler', 'whoami', '--json'], {
+					cwd: artroot(),
+					shell: process.platform === 'win32'
+				})
+			).stdout
 		);
 		return json({ ok: out.loggedIn });
 	} catch (err) {
@@ -43,7 +48,8 @@ export const POST: RequestHandler = async () => {
 	try {
 		const out = (
 			await execProm(pnpmPath, ['dlx', 'wrangler', 'login', '--no-install-skills', '--browser'], {
-				cwd: artroot()
+				cwd: artroot(),
+				shell: process.platform === 'win32'
 			})
 		).stdout;
 		return json({ ok: out.includes('logged in') });

@@ -24,7 +24,8 @@ export const GET: RequestHandler = async () => {
 			JSON.parse(
 				(
 					await execProm(pnpmPath, ['dlx', 'wrangler', 'pages', 'project', 'list', '--json'], {
-						cwd: artroot()
+						cwd: artroot(),
+						shell: process.platform === 'win32'
 					})
 				).stdout
 			)
@@ -78,7 +79,7 @@ export const POST: RequestHandler = async ({ request }) => {
 						'--production-branch',
 						'main'
 					],
-					{ cwd: artroot() }
+					{ cwd: artroot(), shell: process.platform === 'win32' }
 				)
 			).stdout
 		});
