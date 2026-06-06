@@ -88,6 +88,9 @@
 		}
 	});
 
+	let isOnboardingZip = $state(false);
+	let newOrigin = $state('');
+
 	let isOnboarding = $state(false);
 	let onboardSelection = $state('automatic');
 	$effect(() => {
@@ -685,6 +688,10 @@
 					<ActionButton
 						class="preset-tonal-primary btn-sm"
 						action={async () => {
+							if (data.deploySettings.zip_origin === undefined) {
+								isOnboardingZip = true;
+								return;
+							}
 							await runDeploy([
 								{
 									step: 'Build',
@@ -737,6 +744,7 @@
 							if (!data.deploySettings.cloudflare_project_name) {
 								setupCloudflareOnboard();
 							} else {
+								let origin: string | null = null;
 								await runDeploy([
 									{
 										step: 'Ensure Logged In',
@@ -749,9 +757,30 @@
 										}
 									},
 									{
+										step: 'Get project origin',
+										run: async (setDetail) => {
+											const projs: CloudflareProject[] = await (
+												await fetch(resolve('/api/deploy/cloudflare/projects'))
+											).json();
+											const proj = projs.find(
+												(p) => p['Project Name'] === data.deploySettings.cloudflare_project_name
+											);
+											if (!proj) {
+												setDetail('project not found');
+											} else {
+												setDetail('project found, using origin: ' + proj['Project Domains']);
+												origin = 'https://' + proj['Project Domains'];
+											}
+										}
+									},
+									{
 										step: 'Build project',
 										run: async () => {
-											await fetchEnsureSuccess(resolve('/api/deploy/build'), { method: 'POST' });
+											await fetchEnsureSuccess(resolve('/api/deploy/build'), {
+												method: 'POST',
+												headers: { 'Content-Type': 'application/json' },
+												body: JSON.stringify({ origin })
+											});
 										}
 									},
 									{
@@ -958,7 +987,12 @@
 						{/if}
 					</div>
 					<div class="flex flex-col">
-						<div>{step.step}</div>
+						<div>
+							{step.step}
+							{#if step.details}
+								({step.details})
+							{/if}
+						</div>
 						{#if step.error}
 							<div>
 								<TextBox disabled value={step.error} label="Error Details" />
@@ -1200,6 +1234,112 @@
 					Continue
 				</ActionButton>
 			</div>
+		</div>
+	{/snippet}
+</Modal>
+
+<Modal
+	headless
+	open={isOnboardingZip}
+	title="Zip Download Setup"
+	onClose={() => {
+		isOnboardingZip = false;
+		newOrigin = '';
+	}}
+>
+	{#snippet children(close)}
+		<div class="min-w-lg p-4">
+			<p>
+				On order to enable rich embeds (e.g. in Discord, Telegram, iMessage, etc), we need to know
+				where you'll be uploading your static website.
+			</p>
+			<p>If you'd prefer to skip this step, you may (but rich embeds won't work!)</p>
+			{#if data.deploySettings.zip_origin === undefined}
+				<div class="my-4 flex items-center gap-2">
+					<div>
+						<CircleAlertIcon class="fill-warning-300-700" />
+					</div>
+					<p>No origin specified</p>
+				</div>
+
+				<TextInput label="Origin" bind:value={newOrigin} />
+
+				<ActionButton
+					class="mr-2 preset-tonal-success"
+					action={async () => {
+						await fetch(resolve('/api/deploy/config'), {
+							body: JSON.stringify({
+								...data.deploySettings,
+								last_used: 'ZIP',
+								zip_origin: newOrigin
+							} satisfies DeploySettings),
+							headers: { 'Content-Type': 'application/json' },
+							method: 'PUT'
+						});
+						await invalidateAll();
+					}}
+				>
+					Save
+				</ActionButton>
+				<ActionButton
+					class="preset-tonal-warning"
+					action={async () => {
+						await fetch(resolve('/api/deploy/config'), {
+							body: JSON.stringify({
+								...data.deploySettings,
+								last_used: 'ZIP',
+								zip_origin: null
+							} satisfies DeploySettings),
+							headers: { 'Content-Type': 'application/json' },
+							method: 'PUT'
+						});
+						await invalidateAll();
+					}}
+				>
+					Skip
+				</ActionButton>
+			{:else}
+				<div class="my-4 flex items-center gap-2">
+					<div>
+						{#if data.deploySettings.zip_origin === null}
+							<CircleAlertIcon class="fill-success-300-700" />
+						{:else}
+							<CircleCheck class="fill-success-300-700" />
+						{/if}
+					</div>
+					{#if data.deploySettings.zip_origin === null}
+						<p>Skipped setting origin</p>
+					{:else}
+						<p>Using origin {data.deploySettings.zip_origin}!</p>
+					{/if}
+				</div>
+
+				<ActionButton
+					class="mr-2 preset-tonal-success"
+					action={async () => {
+						close();
+					}}
+				>
+					Close
+				</ActionButton>
+				<ActionButton
+					class="preset-tonal-tertiary"
+					action={async () => {
+						await fetch(resolve('/api/deploy/config'), {
+							body: JSON.stringify({
+								...data.deploySettings,
+								last_used: 'ZIP',
+								zip_origin: '_clear'
+							} satisfies DeploySettings),
+							headers: { 'Content-Type': 'application/json' },
+							method: 'PUT'
+						});
+						await invalidateAll();
+					}}
+				>
+					Change Origin
+				</ActionButton>
+			{/if}
 		</div>
 	{/snippet}
 </Modal>

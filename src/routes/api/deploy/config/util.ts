@@ -8,7 +8,8 @@ const logger = createLogger();
 
 export const ZDeploySettings = z.object({
 	last_used: z.literal(['CloudFlare', 'Git', 'ZIP']).optional(),
-	cloudflare_project_name: z.string().optional()
+	cloudflare_project_name: z.string().optional(),
+	zip_origin: z.string().nullable().optional()
 });
 
 export type DeploySettings = z.infer<typeof ZDeploySettings>;
@@ -26,7 +27,14 @@ export async function readDeploySettings(): Promise<DeploySettings> {
 
 export async function writeDeploySettings(ds: DeploySettings): Promise<void> {
 	try {
-		await writeFile(join($ART(), 'deployment.json'), JSON.stringify(ZDeploySettings.decode(ds)), {
+		ds = ZDeploySettings.decode(ds);
+		if (ds.zip_origin === '_clear') {
+			delete ds.zip_origin;
+		} else if (ds.zip_origin && !ds.zip_origin.includes('://')) {
+			ds.zip_origin = 'https://' + ds.zip_origin;
+			ds.zip_origin = ds.zip_origin.replace(/\/+$/g, '');
+		}
+		await writeFile(join($ART(), 'deployment.json'), JSON.stringify(ds), {
 			encoding: 'utf-8'
 		});
 		logger.info('Wrote deployment settings', ds);
