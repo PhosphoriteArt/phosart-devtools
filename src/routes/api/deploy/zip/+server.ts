@@ -8,14 +8,12 @@ export const POST: RequestHandler = async () => {
 
 	const archive = new ZipArchive({ zlib: { level: 9 } });
 
-	// Add the build directory to the archive
-	archive.directory(rt, 'build');
+	archive.directory(rt, false);
 
 	archive.on('error', (err: unknown) => {
 		throw err;
 	});
 
-	// Finalize the archive (signals no more entries will be added)
 	archive.finalize();
 
 	return new Response(Readable.toWeb(archive) as unknown as ReadableStream, {
