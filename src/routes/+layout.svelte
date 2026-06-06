@@ -1,3 +1,42 @@
+<script lang="ts" module>
+	let patchFetch: (psk: string) => void = () => {};
+	let numFetchesInFlight = $state(0);
+
+	if (typeof window !== 'undefined') {
+		const origFetch: typeof fetch = window.fetch;
+
+		patchFetch = (psk: string) => {
+			window.fetch = async function (
+				...args: Parameters<typeof window.fetch>
+			): ReturnType<typeof window.fetch> {
+				let skipIncrement = false;
+
+				if ((args[1]?.headers as Record<string, string>)?.['skip-increment']) {
+					delete (args[1]!.headers as Record<string, string>)['skip-increment'];
+					skipIncrement = true;
+				}
+
+				if (!skipIncrement) {
+					numFetchesInFlight += 1;
+				}
+				try {
+					return await origFetch(args[0], {
+						...(args[1] ?? 0),
+						headers: {
+							...(args[1]?.headers ?? {}),
+							authorization: `psk ${psk}`
+						}
+					});
+				} finally {
+					if (!skipIncrement) {
+						numFetchesInFlight -= 1;
+					}
+				}
+			};
+		};
+	}
+</script>
+
 <script lang="ts">
 	import './layout.css';
 	import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -15,25 +54,44 @@
 	import { Circle as BigCircle } from 'svelte-loading-spinners';
 	import { navigating } from '$app/state';
 	import { resolve } from '$app/paths';
-	import type { GitStatus } from '$lib/server/gitops/git';
+	import type { StatusResult } from 'simple-git';
 	import { setNavbarOpen } from '$lib/navbarstate.svelte.js';
 	import ActionButton from '$lib/ActionButton.svelte';
 	import { invalidateAll } from '$app/navigation';
-	import { EyeIcon } from '@lucide/svelte';
+	import {
+		CircleCheck,
+		CircleQuestionMarkIcon,
+		CircleX,
+		DownloadIcon,
+		EllipsisIcon,
+		EyeIcon,
+		HourglassIcon,
+		TimerIcon
+	} from '@lucide/svelte';
+	import TextInput from '$lib/form/TextInput.svelte';
+	import Modal from '$lib/Modal.svelte';
+	import { Spinner } from '@phosart/common';
+	import TextBox from '$lib/form/TextBox.svelte';
 
 	let { children, data } = $props();
+
+	$effect.pre(() => {
+		if (data.psk) {
+			patchFetch(data.psk);
+		}
+	});
 
 	let sidebarOpen = $state({ open: true });
 	setNavbarOpen(sidebarOpen);
 
 	let showPreview = $state(false);
+	let commitMessage = $state('');
 
 	let logs: LogObj[] = $state([]);
 	let statusBar: HTMLDivElement | null = $state(null);
 	let isHoveringStatusBar = $state(false);
-	let numFetchesInFlight = $state(0);
 	let isServerImageProcessing = $state(false);
-	let gitStatus: GitStatus | null = $state(null);
+	let gitStatus: StatusResult | null = $state(null);
 
 	const isServerDoingWork = $derived.by(() => {
 		const lastLog = logs[logs.length - 1] ?? null;
@@ -52,21 +110,94 @@
 	createSharedEpoch();
 	createSharedGalleryOverrides();
 
-	onMount(() => {
-		const origFetch = window.fetch;
-		window.fetch = async (...args: Parameters<typeof origFetch>): ReturnType<typeof origFetch> => {
-			numFetchesInFlight += 1;
-			const promise = origFetch(...args);
-			try {
-				return await promise;
-			} finally {
-				numFetchesInFlight -= 1;
-			}
-		};
+	type DeployStatus = Array<{
+		step: string;
+		status: 'waiting' | 'working' | 'completed' | 'error' | 'cancelled';
+		details: string;
+		error: string | null;
+	}>;
 
+	type DeploySteps = Array<{
+		step: string;
+		run: (updateDetails: (details: string) => void) => Promise<void>;
+	}>;
+
+	let deployStatus = $state<DeployStatus | null>(null);
+
+	async function fetchEnsureSuccess(...args: Parameters<typeof fetch>): ReturnType<typeof fetch> {
+		const ret = await fetch(...args);
+		if (ret.status >= 400) {
+			let errTxt = await ret.text();
+			try {
+				const errJson = JSON.parse(errTxt);
+				if (typeof errJson.error === 'string') {
+					errTxt = errJson.error;
+				} else if (typeof errJson.message === 'string') {
+					errTxt = errJson.message;
+				}
+			} catch {
+				// ignore
+			}
+
+			throw new Error(String(ret.status) + ': ' + errTxt);
+		}
+		return ret;
+	}
+
+	async function runDeploy(steps: DeploySteps): Promise<void> {
+		let status: DeployStatus = steps.map((s) => ({
+			step: s.step,
+			status: 'waiting',
+			details: '',
+			error: null
+		}));
+
+		function _update() {
+			deployStatus = status.map((s) => ({ ...s }));
+		}
+
+		_update();
+
+		for (let i = 0; i < steps.length; i++) {
+			const step = steps[i];
+			try {
+				status[i].status = 'working';
+				_update();
+				await step.run((det) => {
+					status[i].details = det;
+					_update();
+				});
+				status[i].status = 'completed';
+				_update();
+			} catch (e) {
+				status[i].error = String(e);
+				status[i].status = 'error';
+				for (i += 1; i < steps.length; i++) {
+					status[i].status = 'cancelled';
+				}
+				_update();
+				break;
+			}
+		}
+	}
+
+	async function fetchStatus(): Promise<StatusResult | null> {
+		try {
+			const res = await fetch(resolve('/api/git/status'), {
+				headers: { 'skip-increment': 'true' }
+			});
+			return await res.json();
+		} catch {
+			return null;
+		}
+	}
+
+	onMount(() => {
 		async function fetchIsWorking(): Promise<boolean> {
 			try {
-				const res = await origFetch(resolve('/api/reload/working'));
+				const res = await fetch(resolve('/api/reload/working'), {
+					headers: { 'skip-increment': 'true' }
+				});
 				return (await res.json()).working;
 			} catch {
 				return false;
@@ -89,7 +220,9 @@
 
 		async function fetchLogs(): Promise<LogObj[] | null> {
 			try {
-				const res = await origFetch(resolve('/api/logs/recent'));
+				const res = await fetch(resolve('/api/logs/recent'), {
+					headers: { 'skip-increment': 'true' }
+				});
 				return await res.json();
 			} catch {
 				return null;
@@ -112,9 +245,11 @@
 
 		periodicallyFetchLogs(250);
 
-		async function fetchStatus(): Promise<GitStatus | null> {
+		async function fetchStatus(): Promise<StatusResult | null> {
 			try {
-				const res = await origFetch(resolve('/api/git/status'));
+				const res = await fetch(resolve('/api/git/status'), {
+					headers: { 'skip-increment': 'true' }
+				});
 				return await res.json();
 			} catch {
 				return null;
@@ -149,7 +284,6 @@
 		window.addEventListener('mousemove', hf);
 
 		return () => {
-			window.fetch = origFetch;
 			window.removeEventListener('mousemove', hf);
 			if (logsHandle) {
 				const clearHandle = logsHandle;
@@ -183,6 +317,28 @@
 	</div>
 {/if}
 
+{#snippet gitTooltip()}
+	{#if gitStatus}
+		<div class="flex flex-col">
+			{#if (gitStatus.modified?.length ?? 0) > 0}
+				<div class="text-yellow-600">
+					{gitStatus.modified?.length ?? 0} file(s) modified
+				</div>
+			{/if}
+			{#if (gitStatus.created?.length ?? 0) + (gitStatus.not_added?.length ?? 0) > 0}
+				<div class="text-green-700">
+					{(gitStatus.created?.length ?? 0) + (gitStatus.not_added?.length ?? 0)} file(s) added
+				</div>
+			{/if}
+			{#if (gitStatus.deleted?.length ?? 0) > 0}
+				<div class="text-red-700">
+					{gitStatus.deleted?.length ?? 0} file(s) deleted
+				</div>
+			{/if}
+		</div>
+	{/if}
+{/snippet}
+
 <div class="flex h-full w-full overflow-hidden">
 	<div
 		class="absolute top-0 bottom-0 flex w-50 max-w-50 min-w-50 flex-col items-center gap-1 bg-surface-300-700 py-8 inset-shadow-sm inset-shadow-surface-900 transition-transform"
@@ -197,40 +353,250 @@
 
 		<div class="grow"></div>
 
-		<Tooltip tooltip="Git (coming soon)">
-			{#snippet children(attach)}
-				<div {@attach attach}>
-					<ActionButton action={() => {}} disabled>
-						<div class="flex items-center justify-center">
-							<i class="fa-solid fa-code-branch text-gray-600"></i>
-							<div class="flex flex-col" style="line-height: 1; font-size: 6pt;">
-								{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'M').length ?? 0) > 0}
-									<div class="text-yellow-600">
-										~{gitStatus?.changes.filter(
-											(m) => m.type === 'normal' && m.status.index === 'M'
-										).length ?? 0}
-									</div>
-								{/if}
-								{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'A').length ?? 0) > 0}
-									<div class="text-green-700">
-										+{gitStatus?.changes.filter(
-											(m) => m.type === 'normal' && m.status.index === 'A'
-										).length ?? 0}
-									</div>
-								{/if}
-								{#if (gitStatus?.changes.filter((m) => m.type === 'normal' && m.status.index === 'D').length ?? 0) > 0}
-									<div class="text-red-700">
-										-{gitStatus?.changes.filter(
-											(m) => m.type === 'normal' && m.status.index === 'D'
-										).length ?? 0}
-									</div>
-								{/if}
+		<div class="flex w-full flex-col bg-surface-100-900 px-3 py-4">
+			{#if data.gitAvailable}
+				<div class="flex items-center justify-center gap-2 font-light">
+					<span>Checkpoints (git)</span>
+					<Tooltip>
+						{#snippet tooltip()}
+							<div class="max-w-64">
+								<p>
+									Allows you to "checkpoint" your project in a series of "commits"; you can save
+									your progress and roll back to previous checkpoints if needed.
+								</p>
+								<p class="mt-2 text-xs">
+									If you use <tt>git</tt> to deploy your project, what's deployed is your most recent
+									checkpoint
+								</p>
 							</div>
-						</div>
-					</ActionButton>
+						{/snippet}
+						{#snippet children(attach)}
+							<CircleQuestionMarkIcon size={16} {@attach attach} />
+						{/snippet}
+					</Tooltip>
 				</div>
-			{/snippet}
-		</Tooltip>
+
+				{#if gitStatus}
+					{@const hasChanges =
+						gitStatus.modified.length +
+							gitStatus.created.length +
+							gitStatus.not_added.length +
+							gitStatus.deleted.length >
+						0}
+					{#if hasChanges && true}
+						<TextInput class="text-xs" label="Checkpoint Message" bind:value={commitMessage}
+						></TextInput>
+						<ActionButton
+							disabled={!commitMessage ||
+								(gitStatus?.conflicted.length ?? 0) > 0 ||
+								gitStatus?.current === 'HEAD'}
+							class="mb-2 {(gitStatus?.conflicted.length ?? 0) === 0 &&
+							gitStatus?.current !== 'HEAD'
+								? 'preset-tonal-primary'
+								: 'preset-tonal-error'}"
+							action={async () => {
+								await fetch(resolve('/api/git/commit'), {
+									method: 'POST',
+									body: JSON.stringify({ message: commitMessage }),
+									headers: {
+										'Content-Type': 'application/json'
+									}
+								});
+								commitMessage = '';
+								gitStatus = await fetchStatus();
+							}}
+						>
+							{#if (gitStatus?.conflicted.length ?? 0) > 0}
+								Conflicts detected
+							{:else if gitStatus?.current === 'HEAD'}
+								Rebasing
+							{:else}
+								Commit
+							{/if}
+						</ActionButton>
+						<Modal
+							title="Changes"
+							tooltip={gitTooltip}
+							placement="right"
+							class="preset-outlined-surface-600-400"
+						>
+							{#snippet buttonContent()}
+								<div class="flex items-center justify-center gap-2">
+									<div>Show Changed Files</div>
+									{#if gitStatus}
+										<div class="flex flex-col" style="line-height: 1; font-size: 6pt;">
+											{#if (gitStatus.conflicted?.length ?? 0) > 0}
+												<div class="text-error-500">
+													! {gitStatus.conflicted?.length ?? 0}
+												</div>
+											{/if}
+											{#if (gitStatus.modified?.length ?? 0) > 0}
+												<div class="text-yellow-600">
+													~{gitStatus.modified?.length ?? 0}
+												</div>
+											{/if}
+											{#if (gitStatus.created?.length ?? 0) + (gitStatus.not_added?.length ?? 0) > 0}
+												<div class="text-green-700">
+													+{(gitStatus.created?.length ?? 0) + (gitStatus.not_added?.length ?? 0)}
+												</div>
+											{/if}
+											{#if (gitStatus.deleted?.length ?? 0) > 0}
+												<div class="text-red-700">
+													-{gitStatus.deleted?.length ?? 0}
+												</div>
+											{/if}
+										</div>
+									{/if}
+								</div>
+							{/snippet}
+							<div
+								class="flex max-h-[75vh] w-full min-w-[50vw] flex-col gap-1 overflow-auto overflow-y-auto p-4 text-xs"
+							>
+								<ul class="ml-4 list-disc">
+									{#each gitStatus.conflicted as file (file)}
+										<li class="whitespace-nowrap text-error-500">
+											Conflict {file}
+										</li>
+									{/each}
+									{#each gitStatus.modified as file (file)}
+										<li class="whitespace-nowrap">
+											Modified {file}
+										</li>
+									{/each}
+									{#each gitStatus.created as file (file)}
+										<li class="whitespace-nowrap">
+											Added {file}
+										</li>
+									{/each}
+									{#each gitStatus.not_added as file (file)}
+										<li class="whitespace-nowrap">
+											Added {file}
+										</li>
+									{/each}
+									{#each gitStatus.deleted as file (file)}
+										<li class="whitespace-nowrap">
+											Deleted {file}
+										</li>
+									{/each}
+								</ul>
+							</div>
+						</Modal>
+					{:else}
+						<div class="text-center text-xs italic">No changes</div>
+					{/if}
+				{/if}
+				<div class="mt-4 mb-2 w-full border-b border-b-surface-600-400"></div>
+			{/if}
+			<div class="mb-2 flex items-center justify-center gap-2 font-light">
+				<span>Deployment</span>
+				<Tooltip>
+					{#snippet tooltip()}
+						<div class="max-w-64">
+							<p>Get your site live!</p>
+						</div>
+					{/snippet}
+					{#snippet children(attach)}
+						<CircleQuestionMarkIcon size={16} {@attach attach} />
+					{/snippet}
+				</Tooltip>
+			</div>
+			<div class="flex items-center justify-around">
+				{#snippet gitPush(close?: () => void)}
+					<ActionButton
+						disabled={((gitStatus?.ahead ?? 0) == 0 && (gitStatus?.behind ?? 0) == 0) ||
+							(gitStatus?.conflicted.length ?? 0) > 0 ||
+							gitStatus?.tracking === null ||
+							gitStatus?.current === 'HEAD'}
+						class="bg-gray-950 text-white"
+						action={async () => {
+							await runDeploy([
+								...((gitStatus?.behind ?? 0) > 0
+									? [
+											{
+												step: 'git pull',
+												run: async () => {
+													await fetchEnsureSuccess(resolve('/api/git/pull'), { method: 'POST' });
+												}
+											}
+										]
+									: []),
+								...((gitStatus?.ahead ?? 0) > 0
+									? [
+											{
+												step: 'git push',
+												run: async () => {
+													await fetchEnsureSuccess(resolve('/api/git/push'), { method: 'POST' });
+												}
+											}
+										]
+									: []),
+								{
+									step: 'Update Status',
+									run: async () => {
+										gitStatus = await fetchStatus();
+									}
+								}
+							]);
+							close?.();
+						}}
+					>
+						<i class="fa-brands fa-github"></i>
+						Git {(gitStatus?.behind ?? 0) === 0 ? 'Push' : 'Sync'}
+					</ActionButton>
+				{/snippet}
+				{#snippet dlZip(close?: () => void)}
+					<ActionButton
+						class="preset-tonal-primary"
+						action={async () => {
+							await runDeploy([
+								{
+									step: 'Build',
+									run: async () => {
+										await fetchEnsureSuccess(resolve('/api/deploy/build'), { method: 'POST' });
+									}
+								},
+								{
+									step: 'Download Zip',
+									run: async () => {
+										const res = await fetchEnsureSuccess(resolve('/api/deploy/zip'), {
+											method: 'POST'
+										});
+										const url = URL.createObjectURL(await res.blob());
+										const a = document.createElement('a');
+										a.download = 'build.zip';
+										a.href = url;
+										a.style.visibility = 'hidden';
+										document.body.appendChild(a);
+										a.click();
+										a.remove();
+									}
+								}
+							]);
+							close?.();
+						}}
+					>
+						<DownloadIcon size={16} />
+						Site ZIP
+					</ActionButton>
+				{/snippet}
+				{#if data.gitAvailable}
+					{@render gitPush()}
+				{:else}
+					{@render dlZip()}
+				{/if}
+				<Modal title="Other Deployment Options" class="btn-icon preset-outlined">
+					{#snippet buttonContent()}
+						<EllipsisIcon />
+					{/snippet}
+					{#snippet children(close)}
+						<div class="flex flex-col items-stretch justify-center">
+							{@render gitPush(close)}
+							{@render dlZip(close)}
+						</div>
+					{/snippet}
+				</Modal>
+			</div>
+		</div>
 
 		<div class="grow"></div>
 
@@ -338,3 +704,48 @@
 		</div>
 	{/if}
 {/if}
+
+<Modal headless open={deployStatus !== null} title="Deploying..." captive>
+	{#if deployStatus}
+		{@const complete = deployStatus.every((s) => s.status !== 'working')}
+		<Spinner loading={!complete} />
+		<div class="flex min-w-80 flex-col gap-2 p-4">
+			{#each deployStatus as step, i (i)}
+				<div class="flex items-center gap-2">
+					<div>
+						{#if step.status === 'waiting'}
+							<TimerIcon />
+						{/if}
+						{#if step.status === 'working'}
+							<div class="animate-pulse">
+								<HourglassIcon />
+							</div>
+						{/if}
+						{#if step.status === 'completed'}
+							<CircleCheck class="fill-success-300-700" />
+						{/if}
+						{#if step.status === 'cancelled'}
+							<CircleX />
+						{/if}
+						{#if step.status === 'error'}
+							<CircleX class="fill-error-500" />
+						{/if}
+					</div>
+					<div class="flex flex-col">
+						<div>{step.step}</div>
+						{#if step.error}
+							<div>
+								<TextBox disabled value={step.error} label="Error Details" />
+							</div>
+						{/if}
+					</div>
+				</div>
+			{/each}
+			{#if complete}
+				<button class="btn preset-tonal-success" onclick={() => void (deployStatus = null)}>
+					Close
+				</button>
+			{/if}
+		</div>
+	{/if}
+</Modal>

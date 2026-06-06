@@ -4,6 +4,7 @@
 
 	interface Props extends TooltipOptions {
 		title: string;
+		buttonContent?: Snippet;
 		open?: boolean | null;
 		children?: Snippet<[close: () => void]>;
 		class?: string;
@@ -12,6 +13,7 @@
 		icon?: Snippet;
 		hideHeader?: boolean;
 		disabled?: boolean;
+		captive?: boolean;
 
 		headless?: boolean;
 		overrideOnClick?: (ev: MouseEvent | KeyboardEvent) => void;
@@ -24,6 +26,7 @@
 		children,
 		class: cls,
 		buttonClass,
+		buttonContent,
 		modalRight,
 		icon,
 		onClose,
@@ -31,6 +34,7 @@
 		overrideOnClick,
 		headless,
 		disabled,
+		captive,
 		...tooltipOptions
 	}: Props = $props();
 
@@ -39,8 +43,15 @@
 
 	$effect(() => {
 		if (!dialog) return;
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		captive;
 
-		const f = () => {
+		const f = (e: Event) => {
+			if (captive) {
+				e.preventDefault();
+				return;
+			}
+
 			open = false;
 		};
 
@@ -100,14 +111,25 @@
 					{@render icon?.()}
 				{/if}
 				<div>
-					{title}
+					{#if buttonContent}
+						{@render buttonContent()}
+					{:else}
+						{title}
+					{/if}
 				</div>
 			</button>
 		{/snippet}
 	</Tooltip>
 {/if}
 
-<dialog bind:this={dialog}>
+<dialog
+	bind:this={dialog}
+	onkeydown={(ev) => {
+		if (captive && ev.code === 'Escape') {
+			ev.preventDefault();
+		}
+	}}
+>
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_interactive_supports_focus -->
 	<div
@@ -115,7 +137,7 @@
 		style="height: calc(100vh - 1.25rem)"
 		role="button"
 		onclick={(e) => {
-			if (e.target === e.currentTarget) {
+			if (e.target === e.currentTarget && !captive) {
 				open = false;
 			}
 		}}

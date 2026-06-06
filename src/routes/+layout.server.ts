@@ -2,6 +2,8 @@ import { rawGalleries } from '@phosart/common/server';
 import type { LayoutServerLoad } from './$types';
 import { normalizeGalleryPath } from '$lib/galleryutil';
 import { createLogger } from '$lib/log';
+import { psk } from '$lib/psk';
+import { ensureGit } from '$lib/server/deps/ensure';
 const logger = createLogger();
 
 export const prerender = false;
@@ -14,7 +16,9 @@ export const load: LayoutServerLoad = async () => {
 	return {
 		redirectGallery: normalizeGalleryPath(onlyPath) || null,
 		previewPort: getPreviewPort(),
-		bskyAvailable: isBlueskyAvailable()
+		bskyAvailable: isBlueskyAvailable(),
+		psk: psk,
+		gitAvailable: await isGitAvailable()
 	};
 };
 
@@ -39,4 +43,13 @@ function isBlueskyAvailable() {
 	}
 	logger.silly('Bluesky available');
 	return true;
+}
+async function isGitAvailable() {
+	try {
+		await ensureGit();
+		return true;
+	} catch (error) {
+		logger.warn("Couldn't find git: " + String(error));
+		return false;
+	}
 }

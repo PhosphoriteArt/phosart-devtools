@@ -232,7 +232,7 @@
 
 			<div class="my-8 flex">
 				{#if fullView}
-					<div class="h-128 w-128 shrink-0 max-xl:h-64 max-xl:w-64">
+					<div class="mr-2 h-128 w-128 shrink-0 max-xl:h-64 max-xl:w-64">
 						<OriginalImage
 							galleryPath={{
 								character: originalName,
