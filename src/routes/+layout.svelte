@@ -65,6 +65,8 @@
 		CircleX,
 		DownloadIcon,
 		EllipsisIcon,
+		ExternalLink,
+		EyeClosed,
 		EyeIcon,
 		HourglassIcon,
 		LaptopMinimalCheck,
@@ -980,15 +982,21 @@
 </div>
 
 {#if data.previewPort}
-	<Tooltip tooltip="Preview Website">
+	<Tooltip tooltip="Open/close website preview">
 		{#snippet children(attach)}
 			<div class="fixed bottom-8 left-4 z-110" {@attach attach}>
 				<button
 					onclick={() => void (showPreview = !showPreview)}
 					title="Open/close Preview"
-					class="btn flex btn-icon-sm h-8 w-8 cursor-pointer items-center justify-center preset-tonal"
+					class="btn flex btn-icon-sm h-8 w-8 cursor-pointer items-center justify-center"
+					class:preset-tonal-surface={showPreview}
+					class:preset-tonal={!showPreview}
 				>
-					<EyeIcon size={16} />
+					{#if showPreview}
+						<EyeClosed size={16} />
+					{:else}
+						<EyeIcon size={16} />
+					{/if}
 				</button>
 			</div>
 		{/snippet}
@@ -1002,9 +1010,9 @@
 						href="http://localhost:{data.previewPort}"
 						target="_blank"
 						title="Open website"
-						class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border bg-white hover:bg-gray-300 active:bg-gray-600"
+						class="btn flex btn-icon-sm h-8 w-8 cursor-pointer items-center justify-center preset-tonal-surface"
 					>
-						<i class="fa-solid fa-arrow-up-right-from-square"></i>
+						<ExternalLink size={16} />
 					</a>
 				</div>
 			{/snippet}
