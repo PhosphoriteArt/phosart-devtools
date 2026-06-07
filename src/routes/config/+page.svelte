@@ -38,12 +38,12 @@
 		{#each Object.entries(data.themeSchema) as [key, scheme] (key)}
 			{#if scheme.type === 'string'}
 				<TextInput bind:value={settings[key]} label={key} />
-			{:else if scheme.type === 'textbox' || scheme.type === 'markdown' || scheme.type === 'json'}
+			{:else if scheme.type === 'textbox' || scheme.type === 'markdown' || scheme.type === 'json' || scheme.type === 'yaml'}
 				<TextBox
 					bind:value={settings[key]}
 					label={key}
 					big
-					language={scheme.type === 'json' ? 'json' : 'markdown'}
+					language={scheme.type === 'textbox' ? 'markdown' : scheme.type}
 				/>
 			{:else if scheme.type === 'color'}
 				<div class="flex items-center gap-x-2">
