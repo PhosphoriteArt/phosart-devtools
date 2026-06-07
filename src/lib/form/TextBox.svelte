@@ -4,11 +4,12 @@
 	interface Props {
 		value: string | undefined;
 		label: string;
+		language?: string;
 		big?: boolean;
 		disabled?: boolean;
 	}
 
-	let { value = $bindable(), label, big, disabled }: Props = $props();
+	let { value = $bindable(), label, big, disabled, language }: Props = $props();
 
 	const dimensions = $derived(big ? 'grow min-h-90 h-90' : 'w-1/2 min-w-sm min-h-36 h-36');
 </script>
@@ -23,7 +24,7 @@
 		>
 			<CodeEditor
 				{disabled}
-				language="markdown"
+				language={language ?? 'markdown'}
 				bind:value={() => value ?? '', (v) => void (value = v)}
 				theme="vs-dark"
 			/>

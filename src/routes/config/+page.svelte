@@ -39,7 +39,12 @@
 			{#if scheme.type === 'string'}
 				<TextInput bind:value={settings[key]} label={key} />
 			{:else if scheme.type === 'textbox' || scheme.type === 'markdown' || scheme.type === 'json'}
-				<TextBox bind:value={settings[key]} label={key} big />
+				<TextBox
+					bind:value={settings[key]}
+					label={key}
+					big
+					language={scheme.type === 'json' ? 'json' : 'markdown'}
+				/>
 			{:else if scheme.type === 'color'}
 				<div class="flex items-center gap-x-2">
 					<TextInput
