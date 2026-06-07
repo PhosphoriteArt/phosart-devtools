@@ -652,16 +652,12 @@
 						class="bg-gray-950 {small ? 'btn-sm' : ''} text-white"
 						action={async () => {
 							await runDeploy([
-								...((gitStatus?.behind ?? 0) > 0
-									? [
-											{
-												step: 'git pull',
-												run: async () => {
-													await fetchEnsureSuccess(resolve('/api/git/pull'), { method: 'POST' });
-												}
-											}
-										]
-									: []),
+								{
+									step: 'git pull',
+									run: async () => {
+										await fetchEnsureSuccess(resolve('/api/git/pull'), { method: 'POST' });
+									}
+								},
 								{
 									step: 'git push',
 									run: async () => {
@@ -688,7 +684,7 @@
 						}}
 					>
 						<i class="fa-brands fa-github"></i>
-						Git {(gitStatus?.behind ?? 0) === 0 ? 'Push' : 'Sync'}
+						Git Sync
 					</ActionButton>
 				{/snippet}
 				{#snippet dlZip(small: boolean, close?: () => void)}
