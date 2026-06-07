@@ -75,7 +75,7 @@
 	<ActionButton
 		action={save}
 		disabled={loading}
-		class="absolute right-3 bottom-3 preset-filled-primary-50-950"
+		class="absolute right-3 bottom-3 z-10 preset-filled-primary-50-950"
 	>
 		<i class="fa-solid fa-save"></i>
 		<span>{loading ? 'Saving...' : 'Save'}</span>
