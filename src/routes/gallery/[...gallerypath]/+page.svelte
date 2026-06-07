@@ -885,6 +885,16 @@
 
 				<div>
 					<Collapsable title="Advanced" class="my-3">
+						<TextInput
+							label="sort key -- will be sorted before anything without one, in alphabetical/numeric order."
+							bind:value={
+								() => g.pieces[i].sort_key ?? '',
+								(v) => {
+									g.pieces[i].sort_key = v || undefined;
+								}
+							}
+						/>
+
 						<OptionalInput bind:value={piece.id} empty="">
 							{#snippet control(enabled, value)}
 								<TextInput
