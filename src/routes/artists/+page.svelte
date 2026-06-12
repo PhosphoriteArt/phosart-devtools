@@ -211,12 +211,21 @@
 					</div>
 					<div>
 						{#if !loading}
-							<button onclick={() => void save()} class="btn preset-filled-primary-50-950 p-3">
+							<button
+								onclick={() => void save().then(() => void (selectedHandle = null))}
+								class="btn preset-filled-primary-50-950 p-3"
+							>
 								<SaveIcon size={16} />
 								<span>Save</span>
 							</button>
 						{:else}
-							<div class="h-full cursor-pointer rounded-2xl border p-3">Saving...</div>
+							<button
+								disabled
+								class="h-full cursor-pointer rounded-2xl border p-3 hover:bg-gray-300 active:bg-gray-500"
+							>
+								<i class="fa-regular fa-save"></i>
+								<span>Saving...</span>
+							</button>
 						{/if}
 						{#if error}
 							<div class="h-full">ERROR: {error}</div>
