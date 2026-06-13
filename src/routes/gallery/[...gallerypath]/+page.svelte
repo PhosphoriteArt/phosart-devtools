@@ -486,7 +486,9 @@
 		</div>
 
 		<Droppable
-			targetOverride={typeof window === 'undefined' ? undefined : window}
+			targetOverride={typeof window === 'undefined' || selectedPieceData !== null
+				? undefined
+				: window}
 			disableClick
 			unstyled
 			class="pointer-events-none absolute top-0 right-0 bottom-0 left-0 z-10 p-8 "
