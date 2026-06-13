@@ -15,7 +15,12 @@
 	const epoch = getEpoch();
 	const overrides = getOverrides();
 	const override = $derived(
-		overrides.get(galleryPath, galleryPath.piece ?? 'character', galleryPath.alt)
+		overrides.get(
+			galleryPath,
+			galleryPath.piece ?? 'character',
+			galleryPath.alt,
+			galleryPath.altIndex
+		)
 	);
 	const src = $derived.by(() => {
 		if (galleryPath.gallery !== undefined) {
