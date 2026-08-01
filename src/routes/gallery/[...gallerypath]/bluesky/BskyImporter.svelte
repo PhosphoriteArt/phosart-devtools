@@ -64,9 +64,7 @@
 	const skipset = $derived(ss[galleryPath] ?? new Set());
 	const characterAliai = $derived.by(() =>
 		Object.fromEntries(
-			Object.keys(characters).map(
-				(s) => [s.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase(), s] as const
-			)
+			Object.keys(characters).map((s) => [s.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(), s] as const)
 		)
 	);
 
@@ -158,7 +156,12 @@
 			name: post.text.split(' ').slice(0, 5).join(' '),
 			characters: tagsFromPost(post)
 				.filter((t) => /^oc:/.test(t))
-				.map((t) => t.replace(/^oc:/, '').toLowerCase())
+				.map((t) =>
+					t
+						.replace(/^oc:/, '')
+						.replace(/[^a-zA-Z0-9]/g, '')
+						.toLowerCase()
+				)
 				.map((t) => {
 					if (t in characterAliai && !(t in characters)) {
 						return characterAliai[t];
