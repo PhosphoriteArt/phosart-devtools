@@ -1,6 +1,11 @@
 import type { PageServerLoad } from './$types';
 import { readSkipSet } from '$lib/server/bluesky/cache';
-import { rawGalleries, readThemeConfig, readThemeSchema } from '@phosart/common/server';
+import {
+	rawCharacters,
+	rawGalleries,
+	readThemeConfig,
+	readThemeSchema
+} from '@phosart/common/server';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const ss = await readSkipSet();
@@ -10,6 +15,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		ss,
 		galleryPath: params.gallerypath,
 		gallery,
-		config
+		config,
+		characters: await rawCharacters()
 	};
 };

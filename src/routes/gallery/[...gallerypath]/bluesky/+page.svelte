@@ -124,6 +124,7 @@
 			config={data.config}
 			gallery={data.gallery}
 			galleryPath={data.galleryPath}
+			characters={data.characters}
 			{posts}
 			ss={data.ss}
 		/>

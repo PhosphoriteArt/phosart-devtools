@@ -41,7 +41,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import ScreenSentinel from '$lib/ScreenSentinel.svelte';
 	import type { SkipSet } from '$lib/server/bluesky/cache';
-	import type { BuiltinSettings, SettingsFor } from '@phosart/common/server';
+	import type { BuiltinSettings, RawCharacterCache, SettingsFor } from '@phosart/common/server';
 	import { getEpoch } from '$lib/epoch.svelte';
 	import { getOverrides } from '$lib/galleryoverride.svelte';
 	import { resolve } from '$app/paths';
@@ -52,15 +52,23 @@
 		posts: PostWithMatch[];
 		gallery: RawGallery;
 		config: SettingsFor<BuiltinSettings>;
+		characters: RawCharacterCache;
 	}
 
-	const { galleryPath, ss, posts: rawPosts, gallery, config }: Props = $props();
+	const { galleryPath, ss, posts: rawPosts, gallery, config, characters }: Props = $props();
 
 	let showMatched = $state(true);
 	let showMatchedElsewhere = $state(false);
 	let loading = $state(false);
 	let limit = $state(4);
 	const skipset = $derived(ss[galleryPath] ?? new Set());
+	const characterAliai = $derived.by(() =>
+		Object.fromEntries(
+			Object.keys(characters).map(
+				(s) => [s.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase(), s] as const
+			)
+		)
+	);
 
 	const epoch = getEpoch();
 	const overrides = getOverrides();
@@ -150,7 +158,13 @@
 			name: post.text.split(' ').slice(0, 5).join(' '),
 			characters: tagsFromPost(post)
 				.filter((t) => /^oc:/.test(t))
-				.map((t) => t.replace(/^oc:/, '')),
+				.map((t) => t.replace(/^oc:/, '').toLowerCase())
+				.map((t) => {
+					if (t in characterAliai && !(t in characters)) {
+						return characterAliai[t];
+					}
+					return t;
+				}),
 			tags: tagsFromPost(post).filter((t) => !/^oc:/.test(t)),
 			date: DateTime.fromISO(post.date).toJSDate(),
 			image: newImage.filename,
@@ -205,7 +219,6 @@
 			}
 		} while (m);
 
-		console.log(arr);
 		return arr;
 	}
 </script>
