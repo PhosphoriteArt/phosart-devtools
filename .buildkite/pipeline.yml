@@ -11,4 +11,5 @@ steps:
     - corepack enable
     - corepack install
     - pnpm ci
+    - pnpm exec playwright install
     - pnpm run test
